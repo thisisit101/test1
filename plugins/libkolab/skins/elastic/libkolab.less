@@ -24,6 +24,10 @@
 @skin: "elastic";
 @skin-path: "../../../../skins/@{skin}";
 
+// Disable dark mode support for compatibility with Roundcube 1.4.
+// The variable has been added to variables.less in Roundcube 1.5.
+@dark-mode-enabled: false;
+
 @import (reference) "@{skin-path}/styles/variables";
 @import (reference) "@{skin-path}/styles/mixins";
 
@@ -620,4 +624,7 @@ button.btn {
 @import "include/kolab_tags";
 @import "include/libcalendaring";
 @import "include/tasklist";
-@import "include/darkmode";
+
+& when (@dark-mode-enabled = true) {
+    @import "include/darkmode";
+}
