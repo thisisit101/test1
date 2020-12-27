@@ -67,7 +67,7 @@ class kolab_attachments_handler
     public function files_form($attrib = array())
     {
         // add ID if not given
-        if (!$attrib['id']) {
+        if (empty($attrib['id'])) {
             $attrib['id'] = 'kolabuploadform';
         }
 

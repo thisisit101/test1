@@ -136,7 +136,7 @@ class database_driver extends calendar_driver
             $hidden = array_filter(explode(',', $this->rc->config->get('hidden_calendars', '')));
             $id     = self::BIRTHDAY_CALENDAR_ID;
 
-            if (!$active || !in_array($id, $hidden)) {
+            if (empty($active) || !in_array($id, $hidden)) {
                 $calendars[$id] = array(
                     'id'         => $id,
                     'name'       => $this->cal->gettext('birthdays'),
@@ -1099,11 +1099,12 @@ class database_driver extends calendar_driver
 
         // compose (slow) SQL query for searching
         // FIXME: improve searching using a dedicated col and normalized values
+        $sql_add = '';
         if ($query) {
             foreach (array('title','location','description','categories','attendees') as $col) {
                 $sql_query[] = $this->rc->db->ilike($col, '%'.$query.'%');
             }
-            $sql_add = " AND (" . join(' OR ', $sql_query) . ")";
+            $sql_add .= " AND (" . join(' OR ', $sql_query) . ")";
         }
 
         if (!$virtual) {
@@ -1155,7 +1156,7 @@ class database_driver extends calendar_driver
 
         // add events from the address books birthday calendar
         if (in_array(self::BIRTHDAY_CALENDAR_ID, $calendars) && empty($query)) {
-            $events = array_merge($events, $this->load_birthday_events($start, $end, $search, $modifiedsince));
+            $events = array_merge($events, $this->load_birthday_events($start, $end, null, $modifiedsince));
         }
 
         return $events;

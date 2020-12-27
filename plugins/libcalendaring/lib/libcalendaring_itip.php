@@ -815,13 +815,16 @@ class libcalendaring_itip
     {
         $attrib += array('type' => 'button');
 
-        if (!$actions)
+        if (!$actions) {
             $actions = $this->rsvp_actions;
+        }
+
+        $buttons = '';
 
         foreach ($actions as $method) {
             $buttons .= html::tag('input', array(
                 'type'  => $attrib['type'],
-                'name'  => $attrib['iname'],
+                'name'  => !empty($attrib['iname']) ? $attrib['iname'] : null,
                 'class' => 'button',
                 'rel'   => $method,
                 'value' => $this->gettext('itip' . $method),

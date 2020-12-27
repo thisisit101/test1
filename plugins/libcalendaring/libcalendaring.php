@@ -40,23 +40,23 @@ class libcalendaring extends rcube_plugin
     public $ical_message;
 
     public $defaults = array(
-      'calendar_date_format'  => "Y-m-d",
-      'calendar_date_short'   => "M-j",
-      'calendar_date_long'    => "F j Y",
-      'calendar_date_agenda'  => "l M-d",
-      'calendar_time_format'  => "H:m",
-      'calendar_first_day'    => 1,
-      'calendar_first_hour'   => 6,
-      'calendar_date_format_sets' => array(
-        'Y-m-d' => array('d M Y',   'm-d',  'l m-d'),
-        'Y/m/d' => array('d M Y',   'm/d',  'l m/d'),
-        'Y.m.d' => array('d M Y',   'm.d',  'l m.d'),
-        'd-m-Y' => array('d M Y',   'd-m',  'l d-m'),
-        'd/m/Y' => array('d M Y',   'd/m',  'l d/m'),
-        'd.m.Y' => array('d M Y',  'd.m',  'l d.m'),
-        'j.n.Y' => array('d M Y',  'd.m',  'l d.m'),
-        'm/d/Y' => array('M d Y',   'm/d',  'l m/d'),
-      ),
+        'calendar_date_format'  => "Y-m-d",
+        'calendar_date_short'   => "M-j",
+        'calendar_date_long'    => "F j Y",
+        'calendar_date_agenda'  => "l M-d",
+        'calendar_time_format'  => "H:m",
+        'calendar_first_day'    => 1,
+        'calendar_first_hour'   => 6,
+        'calendar_date_format_sets' => array(
+            'Y-m-d' => array('d M Y',   'm-d',  'l m-d'),
+            'Y/m/d' => array('d M Y',   'm/d',  'l m/d'),
+            'Y.m.d' => array('d M Y',   'm.d',  'l m.d'),
+            'd-m-Y' => array('d M Y',   'd-m',  'l d-m'),
+            'd/m/Y' => array('d M Y',   'd/m',  'l d/m'),
+            'd.m.Y' => array('d M Y',  'd.m',  'l d.m'),
+            'j.n.Y' => array('d M Y',  'd.m',  'l d.m'),
+            'm/d/Y' => array('M d Y',   'm/d',  'l m/d'),
+        ),
     );
 
     private static $instance;
@@ -187,10 +187,12 @@ class libcalendaring extends rcube_plugin
      */
     public function adjust_timezone($dt, $dateonly = false)
     {
-        if (is_numeric($dt))
+        if (is_numeric($dt)) {
             $dt = new DateTime('@'.$dt);
-        else if (is_string($dt))
+        }
+        else if (is_string($dt)) {
             $dt = rcube_utils::anytodatetime($dt);
+        }
 
         if ($dt instanceof DateTime && !($dt->_dateonly || $dateonly)) {
             $dt->setTimezone($this->timezone);
@@ -198,7 +200,6 @@ class libcalendaring extends rcube_plugin
 
         return $dt;
     }
-
 
     /**
      *
@@ -351,18 +352,21 @@ class libcalendaring extends rcube_plugin
         $select_type    = new html_select(array('name' => 'alarmtype[]', 'class' => 'edit-alarm-type form-control', 'id' => $attrib['id']));
         $select_offset  = new html_select(array('name' => 'alarmoffset[]', 'class' => 'edit-alarm-offset form-control'));
         $select_related = new html_select(array('name' => 'alarmrelated[]', 'class' => 'edit-alarm-related form-control'));
-        $object_type    = $attrib['_type'] ?: 'event';
+        $object_type    = !empty($attrib['_type']) ? $attrib['_type'] : 'event';
 
         $select_type->add($this->gettext('none'), '');
-        foreach ($alarm_types as $type)
+        foreach ($alarm_types as $type) {
             $select_type->add($this->gettext(strtolower("alarm{$type}option")), $type);
+        }
 
-        foreach (array('-M','-H','-D','+M','+H','+D') as $trigger)
+        foreach (array('-M','-H','-D','+M','+H','+D') as $trigger) {
             $select_offset->add($this->gettext('trigger' . $trigger), $trigger);
+        }
 
         $select_offset->add($this->gettext('trigger0'), '0');
-        if ($absolute_time)
+        if ($absolute_time) {
             $select_offset->add($this->gettext('trigger@'), '@');
+        }
 
         $select_related->add($this->gettext('relatedstart'), 'start');
         $select_related->add($this->gettext('relatedend' . $object_type), 'end');
@@ -1547,5 +1551,4 @@ class libcalendaring extends rcube_plugin
             'c' => '',
         ));
     }
-
 }

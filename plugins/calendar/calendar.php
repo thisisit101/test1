@@ -50,6 +50,7 @@ class calendar extends rcube_plugin
     'calendar_work_start'   => 6,
     'calendar_work_end'     => 18,
     'calendar_agenda_range' => 60,
+    'calendar_show_weekno'  => 0,
     'calendar_event_coloring'  => 0,
     'calendar_time_indicator'  => true,
     'calendar_allow_invite_shared' => false,
@@ -123,7 +124,7 @@ class calendar extends rcube_plugin
     $this->setup();
 
     // load Calendar user interface
-    if (!$this->rc->output->ajax_call && (!$this->rc->output->env['framed'] || $args['action'] == 'preview')) {
+    if (!$this->rc->output->ajax_call && (empty($this->rc->output->env['framed']) || $args['action'] == 'preview')) {
       $this->ui->init();
 
       // settings are required in (almost) every GUI step
@@ -165,7 +166,8 @@ class calendar extends rcube_plugin
       $this->add_hook('refresh', array($this, 'refresh'));
 
       // remove undo information...
-      if ($undo = $_SESSION['calendar_event_undo']) {
+      if (!empty($_SESSION['calendar_event_undo'])) {
+        $undo = $_SESSION['calendar_event_undo'];
         // ...after timeout
         $undo_time = $this->rc->config->get('undo_timeout', 0);
         if ($undo['ts'] < time() - $undo_time) {
@@ -222,8 +224,9 @@ class calendar extends rcube_plugin
    */
   private function load_driver()
   {
-    if (is_object($this->driver))
+    if (!empty($this->driver)) {
       return;
+    }
 
     $driver_name = $this->rc->config->get('calendar_driver', 'database');
     $driver_class = $driver_name . '_driver';
@@ -233,8 +236,9 @@ class calendar extends rcube_plugin
 
     $this->driver = new $driver_class($this);
 
-    if ($this->driver->undelete)
+    if ($this->driver->undelete) {
       $this->driver->undelete = $this->rc->config->get('undo_timeout', 0) > 0;
+    }
   }
 
   /**
@@ -242,10 +246,10 @@ class calendar extends rcube_plugin
    */
   private function load_itip()
   {
-    if (!$this->itip) {
+    if (empty($this->itip)) {
       require_once($this->home . '/lib/calendar_itip.php');
       $this->itip = new calendar_itip($this);
-      
+
       if ($this->rc->config->get('kolab_invitation_calendars'))
         $this->itip->set_rsvp_actions(array('accepted','tentative','declined','delegated','needs-action'));
     }
@@ -261,7 +265,7 @@ class calendar extends rcube_plugin
     if (!$this->ical) {
       $this->ical = libcalendaring::get_ical();
     }
-    
+
     return $this->ical;
   }
 
@@ -1427,7 +1431,7 @@ class calendar extends rcube_plugin
       }
 
       // refresh count for this calendar
-      if ($cal['counts']) {
+      if (!empty($cal['counts'])) {
         $today = new DateTime('today 00:00:00', $this->timezone);
         $counts += $this->driver->count_events($cal['id'], $today->format('U'));
       }
@@ -1445,7 +1449,7 @@ class calendar extends rcube_plugin
   public function pending_alarms($p)
   {
     $this->load_driver();
-    $time = $p['time'] ?: time();
+    $time = !empty($p['time']) ? $p['time'] : time();
     if ($alarms = $this->driver->pending_alarms($time)) {
       foreach ($alarms as $alarm) {
         $alarm['id'] = 'cal:' . $alarm['id'];  // prefix ID with cal:
@@ -1782,8 +1786,9 @@ class calendar extends rcube_plugin
     // get user identity to create default attendee
     if ($this->ui->screen == 'calendar') {
       foreach ($this->rc->user->list_emails() as $rec) {
-        if (!$identity)
+        if (empty($identity)) {
           $identity = $rec;
+        }
         $identity['emails'][] = $rec['email'];
         $settings['identities'][$rec['identity_id']] = $rec['email'];
       }
