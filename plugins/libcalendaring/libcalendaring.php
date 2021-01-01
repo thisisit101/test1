@@ -1242,8 +1242,9 @@ class libcalendaring extends rcube_plugin
             $level = explode('.', $part->mime_id);
 
             while (array_pop($level) !== null) {
-                $parent = $message->mime_parts[join('.', $level) ?: 0];
-                if ($parent->mimetype == 'multipart/report') {
+                $id     = join('.', $level) ?: 0;
+                $parent = !empty($message->mime_parts[$id]) ? $message->mime_parts[$id] : null;
+                if ($parent && $parent->mimetype == 'multipart/report') {
                     return false;
                 }
             }
@@ -1252,7 +1253,7 @@ class libcalendaring extends rcube_plugin
         return (
             in_array($part->mimetype, array('text/calendar', 'text/x-vcalendar', 'application/ics')) ||
             // Apple sends files as application/x-any (!?)
-            ($part->mimetype == 'application/x-any' && $part->filename && preg_match('/\.ics$/i', $part->filename))
+            ($part->mimetype == 'application/x-any' && !empty($part->filename) && preg_match('/\.ics$/i', $part->filename))
         );
     }
 

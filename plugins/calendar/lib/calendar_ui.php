@@ -194,7 +194,10 @@ class calendar_ui
         }
 
         $class = 'cal-' . asciiwords($id, true);
-        $css   = str_replace('$class', $class, $attrib['folder-class']) ?: "li .$class";
+        $css   = "li .$class";
+        if (!empty($attrib['folder-class'])) {
+            $css = str_replace('$class', $class, $attrib['folder-class']);
+        }
         $css  .= " { color: #$folder_color; }\n";
 
         return $css . ".$class .handle { background-color: #$color; }\n";
@@ -768,12 +771,12 @@ class calendar_ui
         $formfields = [
             'name' => [
                 'label' => $this->cal->gettext('name'),
-                'value' => $input_name->show($calendar['name']),
+                'value' => $input_name->show(isset($this->calendar['name']) ? $this->calendar['name'] : ''),
                 'id'    => 'calendar-name',
             ],
             'color' => [
                 'label' => $this->cal->gettext('color'),
-                'value' => $input_color->show($calendar['color']),
+                'value' => $input_color->show(isset($this->calendar['color']) ? $this->calendar['color'] : ''),
                 'id'    => 'calendar-color',
             ],
         ];
@@ -783,7 +786,7 @@ class calendar_ui
 
             $formfields['showalarms'] = [
                 'label' => $this->cal->gettext('showalarms'),
-                'value' => $checkbox->show($this->calendar['showalarms'] ? 1 : 0),
+                'value' => $checkbox->show(!empty($this->calendar['showalarms']) ? 1 : 0),
                 'id'    => 'calendar-showalarms',
             ];
         }

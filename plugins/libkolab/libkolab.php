@@ -93,7 +93,15 @@ class libkolab extends rcube_plugin
      */
     function storage_init($p)
     {
-        $p['fetch_headers'] = trim($p['fetch_headers'] .' X-KOLAB-TYPE X-KOLAB-MIME-VERSION MESSAGE-ID');
+        $kolab_headers = 'X-KOLAB-TYPE X-KOLAB-MIME-VERSION MESSAGE-ID';
+
+        if (!empty($p['fetch_headers'])) {
+            $p['fetch_headers'] .= ' ' . $kolab_headers;
+        }
+        else {
+            $p['fetch_headers'] = $kolab_headers;
+        }
+
         return $p;
     }
 
