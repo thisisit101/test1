@@ -194,7 +194,7 @@ class libcalendaring extends rcube_plugin
             $dt = rcube_utils::anytodatetime($dt);
         }
 
-        if ($dt instanceof DateTime && !($dt->_dateonly || $dateonly)) {
+        if ($dt instanceof DateTime && empty($dt->_dateonly) && !$dateonly) {
             $dt->setTimezone($this->timezone);
         }
 
@@ -294,7 +294,7 @@ class libcalendaring extends rcube_plugin
 
         // handle task objects
         if ($event['_type'] == 'task' && is_object($event['due'])) {
-            $date_format = $event['due']->_dateonly ? self::to_php_date_format($this->rc->config->get('calendar_date_format', $this->defaults['calendar_date_format'])) : null;
+            $date_format = !empty($event['due']->_dateonly) ? self::to_php_date_format($this->rc->config->get('calendar_date_format', $this->defaults['calendar_date_format'])) : null;
             $fromto = $this->rc->format_date($event['due'], $date_format, false);
 
             // add timezone information
@@ -403,7 +403,7 @@ class libcalendaring extends rcube_plugin
         }
 
         // return cached result
-        if (is_array($_emails[$user])) {
+        if (isset($_emails[$user])) {
             return $_emails[$user];
         }
 
@@ -812,6 +812,7 @@ class libcalendaring extends rcube_plugin
 
         if (empty($rrule['FREQ']) && !empty($rrule['RDATE'])) {
             $rdates = array_map($format_fn, $rrule['RDATE']);
+            $more   = false;
 
             if (!empty($exdates)) {
                 $rdates = array_diff($rdates, $exdates);
@@ -822,8 +823,7 @@ class libcalendaring extends rcube_plugin
                 $more   = true;
             }
 
-            return $this->gettext('ondate') . ' ' . join(', ', $rdates)
-                . ($more ? '...' : '');
+            return $this->gettext('ondate') . ' ' . join(', ', $rdates) . ($more ? '...' : '');
         }
 
         $output  = sprintf('%s %d ', $this->gettext('every'), $rrule['INTERVAL'] ?: 1);
@@ -843,10 +843,10 @@ class libcalendaring extends rcube_plugin
             break;
         }
 
-        if ($rrule['COUNT']) {
+        if (!empty($rrule['COUNT'])) {
             $until = $this->gettext(array('name' => 'forntimes', 'vars' => array('nr' => $rrule['COUNT'])));
         }
-        else if ($rrule['UNTIL']) {
+        else if (!empty($rrule['UNTIL'])) {
             $until = $this->gettext('recurrencend') . ' ' . $this->rc->format_date($rrule['UNTIL'], $format);
         }
         else {
@@ -856,13 +856,13 @@ class libcalendaring extends rcube_plugin
         $output .= ', ' . $until;
 
         if (!empty($exdates)) {
+            $more = false;
             if (count($exdates) > $limit) {
                 $exdates = array_slice($exdates, 0, $limit);
                 $more    = true;
             }
 
-            $output  .= '; ' . $this->gettext('except') . ' ' . join(', ', $exdates)
-                . ($more ? '...' : '');
+            $output  .= '; ' . $this->gettext('except') . ' ' . join(', ', $exdates) . ($more ? '...' : '');
         }
 
         return $output;
@@ -1060,16 +1060,16 @@ class libcalendaring extends rcube_plugin
      */
     public function to_client_recurrence($recurrence, $allday = false)
     {
-        if ($recurrence['UNTIL']) {
+        if (!empty($recurrence['UNTIL'])) {
             $recurrence['UNTIL'] = $this->adjust_timezone($recurrence['UNTIL'], $allday)->format('c');
         }
 
         // format RDATE values
-        if (is_array($recurrence['RDATE'])) {
+        if (!empty($recurrence['RDATE'])) {
             $libcal = $this;
             $recurrence['RDATE'] = array_map(function($rdate) use ($libcal) {
                 return $libcal->adjust_timezone($rdate, true)->format('c');
-            }, $recurrence['RDATE']);
+            }, (array) $recurrence['RDATE']);
         }
 
         unset($recurrence['EXCEPTIONS']);
@@ -1086,7 +1086,7 @@ class libcalendaring extends rcube_plugin
             $recurrence['UNTIL'] = new DateTime($recurrence['UNTIL'], $this->timezone);
         }
 
-        if (is_array($recurrence) && is_array($recurrence['RDATE'])) {
+        if (is_array($recurrence) && !empty($recurrence['RDATE'])) {
             $tz = $this->timezone;
             $recurrence['RDATE'] = array_map(function($rdate) use ($tz, $start) {
                 try {
@@ -1293,7 +1293,7 @@ class libcalendaring extends rcube_plugin
      */
     public static function recurrence_id_format($event)
     {
-        return $event['allday'] ? 'Ymd' : 'Ymd\THis';
+        return !empty($event['allday']) ? 'Ymd' : 'Ymd\THis';
     }
 
     /**
@@ -1306,13 +1306,13 @@ class libcalendaring extends rcube_plugin
      */
     public static function recurrence_instance_identifier($event, $allday = null)
     {
-        $instance_date = $event['recurrence_date'] ?: $event['start'];
+        $instance_date = !empty($event['recurrence_date']) ? $event['recurrence_date'] : $event['start'];
 
-        if ($instance_date && is_a($instance_date, 'DateTime')) {
+        if ($instance_date instanceof DateTime) {
             // According to RFC5545 (3.8.4.4) RECURRENCE-ID format should
             // be date/date-time depending on the main event type, not the exception
             if ($allday === null) {
-                $allday = $event['allday'];
+                $allday = !empty($event['allday']);
             }
 
             return $instance_date->format($allday ? 'Ymd' : 'Ymd\THis');

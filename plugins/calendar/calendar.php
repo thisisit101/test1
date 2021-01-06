@@ -1028,6 +1028,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         $action  = rcube_utils::get_input_value('action', rcube_utils::INPUT_GPC);
         $event   = rcube_utils::get_input_value('e', rcube_utils::INPUT_POST, true);
         $success = $reload = $got_msg = false;
+        $old     = null;
 
         // read old event data in order to find changes
         if ((!empty($event['_notify']) || !empty($event['_decline'])) && $action != 'new') {

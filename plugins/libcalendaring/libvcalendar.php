@@ -756,7 +756,7 @@ class libvcalendar implements Iterator
         }
 
         // For date-only we'll keep the date and time intact
-        if ($date->_dateonly) {
+        if (!empty($date->_dateonly)) {
             $dt = new DateTime(null, $this->timezone);
             $dt->setDate($date->format('Y'), $date->format('n'), $date->format('j'));
             $dt->setTime($date->format('G'), $date->format('i'), 0);
