@@ -160,9 +160,10 @@ class libcalendaring_recurrence
         $start      = clone $this->start;
         $orig_start = clone $this->start;
         $r          = $this->recurrence;
-        $interval   = intval($r['INTERVAL'] ?: 1);
+        $interval   = !empty($r['INTERVAL']) ? intval($r['INTERVAL']) : 1;
+        $frequency  = isset($this->recurrence['FREQ']) ? $this->recurrence['FREQ'] : null;
 
-        switch ($this->recurrence['FREQ']) {
+        switch ($frequency) {
         case 'WEEKLY':
             if (empty($this->recurrence['BYDAY'])) {
                 return $start;
@@ -193,7 +194,7 @@ class libcalendaring_recurrence
 
         $r = $this->recurrence;
         $r['INTERVAL'] = $interval;
-        if ($r['COUNT']) {
+        if (!empty($r['COUNT'])) {
             // Increase count so we do not stop the loop to early
             $r['COUNT'] += 100;
         }

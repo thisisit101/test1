@@ -294,11 +294,11 @@ class calendar extends rcube_plugin
 
         if (!$calendar || $sensitivity) {
             foreach ($calendars as $cal) {
-                if ($sensitivity && $cal['subtype'] == $sensitivity) {
+                if ($sensitivity && !empty($cal['subtype']) && $cal['subtype'] == $sensitivity) {
                     $calendar = $cal;
                     break;
                 }
-                if ($cal['default'] && $cal['editable']) {
+                if (!empty($cal['default']) && $cal['editable']) {
                     $calendar = $cal;
                 }
                 if ($cal['editable']) {
@@ -949,7 +949,7 @@ $("#rcmfd_new_category").keypress(function(event) {
             }
             else {
                 $calendars = $this->driver->list_calendars();
-                $calendar  = $calendars[$cal['id']];
+                $calendar  = !empty($calendars[$cal['id']]) ? $calendars[$cal['id']] : null;
 
                 // find parent folder and check if it's a "user calendar"
                 // if it's also activated we need to refresh it (#5340)
@@ -962,7 +962,10 @@ $("#rcmfd_new_category").keypress(function(event) {
                     }
                 }
 
-                if ($calendar['id'] != $cal['id'] && $calendar['active'] && $calendar['group'] == "other user") {
+                if ($calendar && $calendar['id'] != $cal['id']
+                    && !empty($calendar['active'])
+                    && $calendar['group'] == "other user"
+                ) {
                     $this->rc->output->command('plugin.refresh_source', $calendar['id']);
                 }
             }
@@ -997,7 +1000,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                 $this->rc->output->show_message('autocompletemore', 'notice');
             }
 
-            $regid = rcube_utils::get_input_value('_reqid', rcube_utils::INPUT_GPC);
+            $reqid = rcube_utils::get_input_value('_reqid', rcube_utils::INPUT_GPC);
             $this->rc->output->command('multi_thread_http_response', $results, $reqid);
             return;
         }
@@ -1479,7 +1482,9 @@ $("#rcmfd_new_category").keypress(function(event) {
 
             // only notify if data really changed (TODO: do diff check on client already)
             if (!$old || $action == 'remove' || self::event_diff($event, $old)) {
-                $sent = $this->notify_attendees($event, $old, $action, $event['_comment']);
+                $comment = isset($event['_comment']) ? $event['_comment'] : null;
+                $sent    = $this->notify_attendees($event, $old, $action, $comment);
+
                 if ($sent > 0) {
                     $this->rc->output->show_message('calendar.itipsendsuccess', 'confirmation');
                 }
@@ -1805,7 +1810,7 @@ $("#rcmfd_new_category").keypress(function(event) {
             }
 
             // TODO: correctly handle recurring events which start before $rangestart
-            if ($event['end'] < $rangestart
+            if ($rangestart && $event['end'] < $rangestart
                 && (empty($event['recurrence']) || (!empty($event['recurrence']['until']) && $event['recurrence']['until'] < $rangestart))
             ) {
                 continue;
@@ -2053,13 +2058,15 @@ $("#rcmfd_new_category").keypress(function(event) {
             unset($event['recurrence_date']);
         }
 
-        foreach ((array) $event['attachments'] as $k => $attachment) {
-            $event['attachments'][$k]['classname'] = rcube_utils::file2class($attachment['mimetype'], $attachment['name']);
+        if (!empty($event['attachments'])) {
+            foreach ($event['attachments'] as $k => $attachment) {
+                $event['attachments'][$k]['classname'] = rcube_utils::file2class($attachment['mimetype'], $attachment['name']);
 
-            unset($event['attachments'][$k]['data'], $event['attachments'][$k]['content']);
+                unset($event['attachments'][$k]['data'], $event['attachments'][$k]['content']);
 
-            if (empty($attachment['id'])) {
-                $event['attachments'][$k]['id'] = $k;
+                if (empty($attachment['id'])) {
+                    $event['attachments'][$k]['id'] = $k;
+                }
             }
         }
 
@@ -2422,6 +2429,7 @@ $("#rcmfd_new_category").keypress(function(event) {
      */
     private function notify_attendees($event, $old, $action = 'edit', $comment = null, $rsvp = null)
     {
+        $is_cancelled = false;
         if ($action == 'remove' || ($event['status'] == 'CANCELLED' && $old['status'] != $event['status'])) {
             $event['cancelled'] = true;
             $is_cancelled = true;
@@ -2494,24 +2502,26 @@ $("#rcmfd_new_category").keypress(function(event) {
         // TODO: on change of a recurring (main) event, also send updates to differing attendess of recurrence exceptions
 
         // send CANCEL message to removed attendees
-        foreach ($old_attendees as $attendee) {
-            if ($attendee['role'] == 'ORGANIZER'
-                || empty($attendee['email'])
-                || in_array(strtolower($attendee['email']), $current)
-            ) {
-                continue;
-            }
+        if (!empty($old['attendees'])) {
+            foreach ($old['attendees'] as $attendee) {
+                if ($attendee['role'] == 'ORGANIZER'
+                    || empty($attendee['email'])
+                    || in_array(strtolower($attendee['email']), $current)
+                ) {
+                    continue;
+                }
 
-            $vevent = $old;
-            $vevent['cancelled'] = $is_cancelled;
-            $vevent['attendees'] = [$attendee];
-            $vevent['comment']   = $comment;
+                $vevent = $old;
+                $vevent['cancelled'] = $is_cancelled;
+                $vevent['attendees'] = [$attendee];
+                $vevent['comment']   = $comment;
 
-            if ($itip->send_itip_message($vevent, 'CANCEL', $attendee, 'eventcancelsubject', 'eventcancelmailbody')) {
-                $sent++;
-            }
-            else {
-                $sent = -100;
+                if ($itip->send_itip_message($vevent, 'CANCEL', $attendee, 'eventcancelsubject', 'eventcancelmailbody')) {
+                    $sent++;
+                }
+                else {
+                    $sent = -100;
+                }
             }
         }
 
@@ -2697,13 +2707,21 @@ $("#rcmfd_new_category").keypress(function(event) {
         $ignore = ['changed' => 1, 'attachments' => 1];
 
         foreach (array_unique(array_merge(array_keys($a), array_keys($b))) as $key) {
-            if (empty($ignore[$key]) && $key[0] != '_' && $a[$key] != $b[$key]) {
-                $diff[] = $key;
+            if (empty($ignore[$key]) && $key[0] != '_') {
+                $av = isset($a[$key]) ? $a[$key] : null;
+                $bv = isset($b[$key]) ? $b[$key] : null;
+
+                if ($av != $bv) {
+                    $diff[] = $key;
+                }
             }
         }
 
         // only compare number of attachments
-        if (count((array) $a['attachments']) != count((array) $b['attachments'])) {
+        $ac = !empty($a['attachments']) ? count($a['attachments']) : 0;
+        $bc = !empty($b['attachments']) ? count($b['attachments']) : 0;
+
+        if ($ac != $bc) {
             $diff[] = 'attachments';
         }
 
@@ -2884,7 +2902,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         // get a list of writeable calendars to save new events to
         if (
             (!$existing || $is_shared)
-            && !$data['nosave']
+            && empty($data['nosave'])
             && ($response['action'] == 'rsvp' || $response['action'] == 'import')
         ) {
             $calendars       = $this->driver->list_calendars($mode);
@@ -3268,6 +3286,7 @@ $("#rcmfd_new_category").keypress(function(event) {
 
         $error_msg = $this->gettext('errorimportingevent');
         $success   = false;
+        $deleted   = false;
 
         if ($status == 'delegated') {
             $to = rcube_utils::get_input_value('_to', rcube_utils::INPUT_POST, true);
@@ -3283,7 +3302,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         // successfully parsed events?
         if ($event = $this->lib->mail_get_itip_object($mbox, $uid, $mime_id, 'event')) {
             // forward iTip request to delegatee
-            if ($delegate) {
+            if (!empty($delegate)) {
                 $rsvpme = rcube_utils::get_input_value('_rsvp', rcube_utils::INPUT_POST);
                 $itip   = $this->load_itip();
 
@@ -3310,7 +3329,7 @@ $("#rcmfd_new_category").keypress(function(event) {
             $cal_id    = rcube_utils::get_input_value('_folder', rcube_utils::INPUT_POST);
             $dontsave  = $cal_id === '' && $event['_method'] == 'REQUEST';
             $calendars = $this->driver->list_calendars($mode);
-            $calendar  = $calendars[$cal_id];
+            $calendar  = isset($calendars[$cal_id]) ? $calendars[$cal_id] : null;
 
             // select default calendar except user explicitly selected 'none'
             if (!$calendar && !$dontsave) {
@@ -3319,7 +3338,7 @@ $("#rcmfd_new_category").keypress(function(event) {
 
             $metadata = [
                 'uid'       => $event['uid'],
-                '_instance' => $event['_instance'],
+                '_instance' => isset($event['_instance']) ? $event['_instance'] : null,
                 'changed'   => is_object($event['changed']) ? $event['changed']->format('U') : 0,
                 'sequence'  => intval($event['sequence']),
                 'fallback'  => strtoupper($status),
@@ -3376,7 +3395,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                     $calendar = $calendars[$existing['calendar']];
 
                     // forward savemode for correct updates of recurring events
-                    $existing['_savemode'] = $savemode ?: $event['_savemode'];
+                    $existing['_savemode'] = $savemode ?: (!empty($event['_savemode']) ? $event['_savemode'] : null);
 
                     // only update attendee status
                     if ($event['_method'] == 'REPLY') {
@@ -3499,7 +3518,7 @@ $("#rcmfd_new_category").keypress(function(event) {
 
                         // show me as free when declined (#1670)
                         if ($status == 'declined'
-                            || $event['status'] == 'CANCELLED'
+                            || (!empty($event['status']) && $event['status'] == 'CANCELLED')
                             || $event_attendee['role'] == 'NON-PARTICIPANT'
                         ) {
                             $event['free_busy'] = 'free';
@@ -3589,7 +3608,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         }
 
         if ($success || $dontsave) {
-            $metadata['calendar'] = $event['calendar'];
+            $metadata['calendar'] = isset($event['calendar']) ? $event['calendar'] : null;
             $metadata['nosave']   = $dontsave;
             $metadata['rsvp']     = !empty($metadata['rsvp']);
 
@@ -3602,7 +3621,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         }
 
         // send iTip reply
-        if ($event['_method'] == 'REQUEST' && $organizer && !$noreply
+        if ($event['_method'] == 'REQUEST' && !empty($organizer) && !$noreply
             && !in_array(strtolower($organizer['email']), $emails) && !$error_msg
         ) {
             $event['comment'] = $comment;

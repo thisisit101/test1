@@ -577,7 +577,7 @@ class libvcalendar implements Iterator
                         $schedule_agent = $attendee['schedule-agent'];
                     }
                 }
-                else if ($attendee['email'] != $event['organizer']['email']) {
+                else if (empty($event['organizer']) || $attendee['email'] != $event['organizer']['email']) {
                     $event['attendees'][] = $attendee;
                 }
                 break;

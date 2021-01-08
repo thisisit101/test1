@@ -290,10 +290,11 @@ class libcalendaring extends rcube_plugin
      */
     public function event_date_text($event, $tzinfo = false)
     {
-        $fromto = '--';
+        $fromto  = '--';
+        $is_task = !empty($event['_type']) && $event['_type'] == 'task';
 
         // handle task objects
-        if ($event['_type'] == 'task' && is_object($event['due'])) {
+        if ($is_task && !empty($event['due']) && is_object($event['due'])) {
             $date_format = !empty($event['due']->_dateonly) ? self::to_php_date_format($this->rc->config->get('calendar_date_format', $this->defaults['calendar_date_format'])) : null;
             $fromto = $this->rc->format_date($event['due'], $date_format, false);
 
@@ -806,7 +807,7 @@ class libcalendaring extends rcube_plugin
             return rcmail::get_instance()->format_date($dt, $format);
         };
 
-        if (is_array($rrule['EXDATE']) && !empty($rrule['EXDATE'])) {
+        if (!empty($rrule['EXDATE']) && is_array($rrule['EXDATE'])) {
             $exdates = array_map($format_fn, $rrule['EXDATE']);
         }
 
@@ -1199,7 +1200,7 @@ class libcalendaring extends rcube_plugin
             $headers = $imap->get_message_headers($uid);
             $parser  = $this->get_ical();
 
-            if ($part->ctype_parameters['charset']) {
+            if (!empty($part->ctype_parameters['charset'])) {
                 $charset = $part->ctype_parameters['charset'];
             }
 
