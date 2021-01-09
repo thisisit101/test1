@@ -1196,5 +1196,4 @@ class kolab_addressbook extends rcube_plugin
             $this->rc->user->save_prefs(array('calendar_birthday_adressbooks' => $bday_addressbooks));
         }
     }
-
 }
