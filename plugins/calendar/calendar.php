@@ -51,6 +51,9 @@ class calendar extends rcube_plugin
         'calendar_work_end'     => 18,
         'calendar_agenda_range' => 60,
         'calendar_show_weekno'  => 0,
+        'calendar_first_day'    => 1,
+        'calendar_first_hour'   => 6,
+        'calendar_time_format'  => null,
         'calendar_event_coloring'      => 0,
         'calendar_time_indicator'      => true,
         'calendar_allow_invite_shared' => false,
@@ -569,7 +572,8 @@ class calendar extends rcube_plugin
             $filter     = calendar_driver::FILTER_PERSONAL | calendar_driver::FILTER_ACTIVE | calendar_driver::FILTER_INSERTABLE;
             $select_cal = new html_select(['name' => '_default_calendar', 'id' => $field_id, 'is_escaped' => true]);
 
-            foreach ((array)$this->driver->list_calendars($filter) as $id => $prop) {
+            $default_calendar = null;
+            foreach ((array) $this->driver->list_calendars($filter) as $id => $prop) {
                 $select_cal->add($prop['name'], strval($id));
                 if (!empty($prop['default'])) {
                     $default_calendar = $id;
@@ -604,7 +608,7 @@ class calendar extends rcube_plugin
 
         // Invitations handling
         if (!isset($no_override['calendar_itip_after_action'])) {
-            if (!empty($p['current'])) {
+            if (empty($p['current'])) {
                 $p['blocks']['itip']['content'] = true;
                 return $p;
             }
@@ -622,7 +626,9 @@ class calendar extends rcube_plugin
             $select->add($this->gettext('afterflagdeleted'), 3);
             $select->add($this->gettext('aftermoveto'), 4);
 
-            $val = $this->rc->config->get('calendar_itip_after_action', $this->defaults['calendar_itip_after_action']);
+            $val    = $this->rc->config->get('calendar_itip_after_action', $this->defaults['calendar_itip_after_action']);
+            $folder = null;
+
             if ($val !== null && $val !== '' && !is_int($val)) {
                 $folder = $val;
                 $val    = 4;
@@ -647,7 +653,7 @@ class calendar extends rcube_plugin
         }
 
         // category definitions
-        if (!$this->driver->nocategories && !isset($no_override['calendar_categories'])) {
+        if (empty($this->driver->nocategories) && !isset($no_override['calendar_categories'])) {
             $p['blocks']['categories']['name'] = $this->gettext('categories');
 
             if (empty($p['current'])) {
@@ -865,7 +871,7 @@ $("#rcmfd_new_category").keypress(function(event) {
             }
 
             // categories
-            if (!$this->driver->nocategories) {
+            if (empty($this->driver->nocategories)) {
                 $old_categories = $new_categories = [];
 
                 foreach ($this->driver->list_categories() as $name => $color) {
