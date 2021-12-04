@@ -1239,14 +1239,21 @@ $("#rcmfd_new_category").keypress(function(event) {
                 $noreply = intval($noreply) || $status == 'needs-action' || $itip_sending === 0;
                 $reload  = $event['calendar'] != $ev['calendar'] || !empty($event['recurrence']) ? 2 : 1;
                 $emails  = $this->get_user_emails();
+                $ownedResourceEmails  = $this->owned_resources_emails($emails);
                 $organizer = null;
+                $resourceConfirmation = false;
 
                 foreach ($event['attendees'] as $i => $attendee) {
                     if ($attendee['role'] == 'ORGANIZER') {
                         $organizer = $attendee;
                     }
-                    else if (!empty($attendee['email']) && in_array(strtolower($attendee['email']), $emails)) {
+                    else if (!empty($attendee['email']) && in_array_nocase($attendee['email'], $emails)) {
                         $reply_sender = $attendee['email'];
+                    }
+                    else if (!empty($attendee['cutype']) && $attendee['cutype'] == 'RESOURCE' && !empty($attendee['email']) && in_array_nocase($attendee['email'], $ownedResourceEmails)) {
+                        $resourceConfirmation = true;
+                        // Note on behalf of which resource this update is going to be sent out
+                        $event['_resource'] = $attendee['email'];
                     }
                 }
 
@@ -1254,8 +1261,9 @@ $("#rcmfd_new_category").keypress(function(event) {
                     $itip = $this->load_itip();
                     $itip->set_sender_email($reply_sender);
                     $event['thisandfuture'] = $event['_savemode'] == 'future';
+                    $bodytextprefix = $resourceConfirmation ? 'itipmailbodyresource' : 'itipmailbody';
 
-                    if ($organizer && $itip->send_itip_message($event, 'REPLY', $organizer, 'itipsubject' . $status, 'itipmailbody' . $status)) {
+                    if ($organizer && $itip->send_itip_message($event, 'REPLY', $organizer, 'itipsubject' . $status, $bodytextprefix . $status)) {
                         $mailto = !empty($organizer['name']) ? $organizer['name'] : $organizer['email'];
                         $msg    = $this->gettext(['name' => 'sentresponseto', 'vars' => ['mailto' => $mailto]]);
 
@@ -2006,10 +2014,12 @@ $("#rcmfd_new_category").keypress(function(event) {
             }
 
             $identity['emails'][] = $this->rc->user->get_username();
+            $identity['ownedResources'] = $this->owned_resources_emails($identity['emails']);
             $settings['identity'] = [
                 'name'   => $identity['name'],
                 'email'  => strtolower($identity['email']),
-                'emails' => ';' . strtolower(join(';', $identity['emails']))
+                'emails' => ';' . strtolower(join(';', $identity['emails'])),
+                'ownedResources' => ';' . strtolower(join(';', $identity['ownedResources']))
             ];
         }
 
@@ -2867,6 +2877,21 @@ $("#rcmfd_new_category").keypress(function(event) {
         echo $this->encode($events);
         exit;
     }
+
+    /**
+     * List email addressed of owned resources
+     */
+    private function owned_resources_emails($identities)
+    {
+        $results = [];
+        if ($directory = $this->resources_directory()) {
+            foreach ($directory->load_owned_resources($identities) as $rec) {
+                $results[] = $rec['email'];
+            }
+        }
+        return $results;
+    }
+
 
     /****  Event invitation plugin hooks ****/
 

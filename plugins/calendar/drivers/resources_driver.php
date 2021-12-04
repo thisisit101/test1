@@ -46,6 +46,19 @@ abstract class resources_driver
     abstract public function load_resources($query = null);
 
     /**
+     * Fetch resource objects filtered by owner email addresses
+     *
+     * @param array $emails List of email addresses of the owner
+     * @param int   $num    Max size of the result
+     *
+     * @return array List of resource records
+     */
+    public function load_owned_resources($emails, $num = 5000)
+    {
+        return [];
+    }
+
+    /**
      * Return properties of a single resource
      *
      * @param string $id Unique resource identifier

@@ -72,6 +72,41 @@ class resources_driver_ldap extends resources_driver
     }
 
     /**
+     * Fetch resource objects filtered by owner email addresses
+     *
+     * @param array $emails List of email addresses of the owner
+     * @param int   $num    Max size of the result
+     *
+     * @return array List of resource records
+     */
+    public function load_owned_resources($emails, $num = 5000)
+    {
+        if (!($ldap = $this->connect())) {
+            return [];
+        }
+
+        $ldap->set_pagesize($num);
+
+        $ownerDns = [];
+        $results = $ldap->search('email', $emails, 0, true, true);
+        if ($results instanceof ArrayAccess) {
+            foreach ($results as $i => $rec) {
+                $ownerDns[] = $rec['dn'];
+            }
+        }
+
+        $results = $ldap->search('owner', $ownerDns, 0, true, true);
+
+        if ($results instanceof ArrayAccess) {
+            foreach ($results as $i => $rec) {
+                $results[$i] = $this->decode_resource($rec);
+            }
+        }
+
+        return $results;
+    }
+
+    /**
      * Return properties of a single resource
      *
      * @param string $id Unique resource identifier

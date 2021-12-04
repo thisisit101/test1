@@ -219,6 +219,11 @@ class libcalendaring_itip
                 if ($attendee['role'] == 'ORGANIZER') {
                     $reply_attendees[] = $attendee;
                 }
+                // we accept on behalf of a resource
+                else if (strcasecmp($attendee['email'], $event['_resource']) == 0) {
+                    $replying_attendee = $attendee;
+                    $replying_attendee['sent-by'] = 'mailto:' . $from_utf;
+                }
                 else if (strcasecmp($attendee['email'], $from) == 0 || strcasecmp($attendee['email'], $from_utf) == 0) {
                     $replying_attendee = $attendee;
                     if ($attendee['status'] != 'DELEGATED') {

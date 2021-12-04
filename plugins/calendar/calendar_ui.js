@@ -460,7 +460,7 @@ function rcube_calendar_ui(settings)
         for (var j=0; j < num_attendees; j++) {
           data = event.attendees[j];
           if (data.email) {
-            if (data.role != 'ORGANIZER' && settings.identity.emails.indexOf(';'+data.email) >= 0) {
+            if (data.role != 'ORGANIZER' && is_this_me(data.email)) {
               mystatus = (data.status || 'UNKNOWN').toLowerCase();
               if (data.status == 'NEEDS-ACTION' || data.status == 'TENTATIVE' || data.rsvp)
                 rsvp = mystatus;
@@ -2380,6 +2380,14 @@ function rcube_calendar_ui(settings)
         add_attendee($.extend({ role:'REQ-PARTICIPANT', status:'NEEDS-ACTION', cutype:'RESOURCE' }, resource));
     }
 
+    var is_this_me = function(email)
+    {
+      if (settings.identity.emails.indexOf(';'+email) >= 0 || settings.identity.ownedResources.indexOf(';'+email) >= 0) {
+        return true;
+      }
+      return false;
+    };
+
     // when the user accepts or declines an event invitation
     var event_rsvp = function(response, delegate, replymode, event)
     {
@@ -2414,7 +2422,8 @@ function rcube_calendar_ui(settings)
         attendees = [];
         for (var data, i=0; i < me.selected_event.attendees.length; i++) {
           data = me.selected_event.attendees[i];
-          if (settings.identity.emails.indexOf(';'+String(data.email).toLowerCase()) >= 0) {
+          //FIXME this can only work if there is a single resource per invitation
+          if (is_this_me(String(data.email).toLowerCase())) {
             data.status = response.toUpperCase();
             data.rsvp = 0;  // unset RSVP flag
 
