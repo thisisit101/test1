@@ -3431,39 +3431,38 @@ $("#rcmfd_new_category").keypress(function(event) {
 
                     // only update attendee status
                     if ($event['_method'] == 'REPLY') {
-                        // try to identify the attendee using the email sender address
-                        $existing_attendee        = -1;
-                        $existing_attendee_emails = [];
-
-                        foreach ($existing['attendees'] as $i => $attendee) {
-                            $existing_attendee_emails[] = $attendee['email'];
-                            if ($this->itip->compare_email($attendee['email'], $event['_sender'], $event['_sender_utf'])) {
-                                $existing_attendee = $i;
-                            }
-                        }
+                        $existing_attendee_index  = -1;
 
                         $event_attendee   = null;
                         $update_attendees = [];
 
-                        foreach ($event['attendees'] as $attendee) {
-                            if ($this->itip->compare_email($attendee['email'], $event['_sender'], $event['_sender_utf'])) {
-                                $event_attendee       = $attendee;
-                                $update_attendees[]   = $attendee;
-                                $metadata['fallback'] = $attendee['status'];
-                                $metadata['attendee'] = $attendee['email'];
-                                $metadata['rsvp']     = !empty($attendee['rsvp']) || $attendee['role'] != 'NON-PARTICIPANT';
+                        if ($attendee = $this->itip->find_reply_attendee($event)) {
+                            $event_attendee       = $attendee;
+                            $update_attendees[]   = $attendee;
+                            $metadata['fallback'] = $attendee['status'];
+                            $metadata['attendee'] = $attendee['email'];
+                            $metadata['rsvp']     = !empty($attendee['rsvp']) || $attendee['role'] != 'NON-PARTICIPANT';
 
-                                if ($attendee['status'] != 'DELEGATED') {
-                                    break;
+                            $existing_attendee_emails = [];
+
+                            // Find the attendee to update
+                            foreach ($existing['attendees'] as $i => $existing_attendee) {
+                                $existing_attendee_emails[] = $existing_attendee['email'];
+                                if ($this->itip->compare_email($existing_attendee['email'], $attendee['email'])) {
+                                    $existing_attendee_index = $i;
                                 }
                             }
-                            // also copy delegate attendee
-                            else if (!empty($attendee['delegated-from'])
-                                && $this->itip->compare_email($attendee['delegated-from'], $event['_sender'], $event['_sender_utf'])
-                            ) {
-                                $update_attendees[] = $attendee;
-                                if (!in_array_nocase($attendee['email'], $existing_attendee_emails)) {
-                                    $existing['attendees'][] = $attendee;
+
+                            if ($attendee['status'] == 'DELEGATED') {
+                                //Also find and copy the delegatee
+                                $delegatee_email = $attendee['email'];
+                                $delegatees = array_filter($event['attendees'], function($attendee) use ($delegatee_email){ return $attendee['role'] != 'ORGANIZER' && $this->itip->compare_email($attendee['delegated-from'], $delegatee_email); });
+
+                                if ($delegatee = $this->itip->find_attendee_by_email($event['attendees'], 'delegated-from', $attendee['email'])) {
+                                    $update_attendees[] = $delegatee;
+                                    if (!in_array_nocase($delegatee['email'], $existing_attendee_emails)) {
+                                        $existing['attendees'][] = $delegated_attendee;
+                                    }
                                 }
                             }
                         }
@@ -3481,29 +3480,9 @@ $("#rcmfd_new_category").keypress(function(event) {
                             }
                         }
 
-                        // Accept sender as a new participant (different email in From: and the iTip)
-                        // Use ATTENDEE entry from the iTip with replaced email address
-                        if (!$event_attendee) {
-                            // remove the organizer
-                            $itip_attendees = array_filter(
-                                $event['attendees'],
-                                function($item) { return $item['role'] != 'ORGANIZER'; }
-                            );
-
-                            // there must be only one attendee
-                            if (is_array($itip_attendees) && count($itip_attendees) == 1) {
-                                $event_attendee          = $itip_attendees[key($itip_attendees)];
-                                $event_attendee['email'] = $event['_sender'];
-                                $update_attendees[]      = $event_attendee;
-                                $metadata['fallback']    = $event_attendee['status'];
-                                $metadata['attendee']    = $event_attendee['email'];
-                                $metadata['rsvp']        = !empty($event_attendee['rsvp']) || $event_attendee['role'] != 'NON-PARTICIPANT';
-                            }
-                        }
-
                         // found matching attendee entry in both existing and new events
-                        if ($existing_attendee >= 0 && $event_attendee) {
-                            $existing['attendees'][$existing_attendee] = $event_attendee;
+                        if ($existing_attendee_index >= 0 && $event_attendee) {
+                            $existing['attendees'][$existing_attendee_index] = $event_attendee;
                             $success = $this->driver->update_attendees($existing, $update_attendees);
                         }
                         // update the entire attendees block

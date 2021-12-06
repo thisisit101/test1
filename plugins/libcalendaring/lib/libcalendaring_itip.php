@@ -633,30 +633,13 @@ class libcalendaring_itip
         if ($method == 'REPLY') {
             $title = $this->gettext('itipreply');
 
-            foreach ($event['attendees'] as $attendee) {
-                if (!empty($attendee['email']) && $attendee['role'] != 'ORGANIZER') {
-                    if (empty($event['_sender']) || self::compare_email($attendee['email'], $event['_sender'], $event['_sender_utf'])) {
-                        $metadata['attendee'] = $attendee['email'];
-                        $rsvp_status = strtoupper($attendee['status']);
-                        if ($attendee['delegated-to']) {
-                            $metadata['delegated-to'] = $attendee['delegated-to'];
-                        }
-                        break;
-                    }
-                }
-            }
+            $attendee = self::find_reply_attendee($event);
 
-            // It may happen that sender's address is different in From: and the attached iTip
-            // In such case use the ATTENDEE entry with the address from From: header
-            if (empty($metadata['attendee']) && !empty($event['_sender'])) {
-                // remove the organizer
-                $itip_attendees = array_filter($event['attendees'], function($item) { return $item['role'] != 'ORGANIZER'; });
-
-                // there must be only one attendee
-                if (is_array($itip_attendees) && count($itip_attendees) == 1) {
-                    $event_attendee       = $itip_attendees[key($itip_attendees)];
-                    $metadata['attendee'] = $event['_sender'];
-                    $rsvp_status          = strtoupper($event_attendee['status']);
+            if ($attendee) {
+                $metadata['attendee'] = $attendee['email'];
+                $rsvp_status = strtoupper($attendee['status']);
+                if ($attendee['delegated-to']) {
+                    $metadata['delegated-to'] = $attendee['delegated-to'];
                 }
             }
 
@@ -1012,5 +995,51 @@ class libcalendaring_itip
         $v2 = !empty($email_utf) && strcasecmp($value, $email_utf) === 0;
 
         return $v1 || $v2;
+    }
+
+    /**
+     * Find an attendee that is not the organizer and has an email matching $email_field
+     */
+    public function find_attendee_by_email($attendees, $email_field, $email, $email_utf = null) {
+        foreach ($attendees as $_attendee) {
+            if ($attendee['role'] == 'ORGANIZER') {
+                continue;
+            }
+            if (!empty($attendee[$email_field]) && self::compare_email($attendee[$email_field], $email, $email_utf)) {
+                return $attendee;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find the replying attendee in a REPLY
+     */
+    public static function find_reply_attendee($event) {
+        // remove the organizer
+        $itip_attendees = array_filter($event['attendees'], function($item) { return $item['role'] != 'ORGANIZER' && !empty($item['email']); });
+        $attendee = null;
+
+        // According to rfc there should only be one attendee for a REPLY
+        if (count($itip_attendees) == 1) {
+            return array_pop($itip_attendees);
+        }
+
+        // If we don't have anything to match by, pick the first and hope for the best.
+        if (empty($event['_sender'])) {
+            return array_shift($itip_attendees);
+        }
+
+        // try to match by sent-by
+        if ($attendee = self::find_attendee_by_email($itip_attendees, 'sent-by', $event['_sender'], $event['_sender_utf'])) {
+            return $attendee;
+        }
+
+        // try to match by email
+        if ($attendee = self::find_attendee_by_email($itip_attendees, 'email', $event['_sender'], $event['_sender_utf'])) {
+            return $attendee;
+        }
+
+        return null;
     }
 }
