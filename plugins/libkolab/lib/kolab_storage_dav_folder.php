@@ -440,7 +440,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         if (!is_array($objects)) {
             rcube::raise_error([
                     'code' => 900,
-                    'message' => "Failed to fetch {$href}"
+                    'message' => "Failed to fetch {$this->href}"
                 ], true);
             return false;
         }

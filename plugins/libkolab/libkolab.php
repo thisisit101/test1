@@ -379,7 +379,7 @@ class libkolab extends rcube_plugin
             'reset-command' => 'non-existing-command',
         );
 
-        if ($attrib['label-domain'] && !strpos($attrib['buttontitle'], '.')) {
+        if (($attrib['label-domain'] ?? null) && !strpos($attrib['buttontitle'], '.')) {
             $attrib['buttontitle'] = $attrib['label-domain'] . '.' . $attrib['buttontitle'];
         }
 

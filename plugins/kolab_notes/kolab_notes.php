@@ -95,7 +95,7 @@ class kolab_notes extends rcube_plugin
             }
 
             // add 'Append note' item to message menu
-            if ($this->api->output->type == 'html' && $_REQUEST['_rel'] != 'note') {
+            if ($this->api->output->type == 'html' && ($_REQUEST['_rel'] ?? null) != 'note') {
                 $this->api->add_content(html::tag('li', array('role' => 'menuitem'),
                     $this->api->output->button(array(
                       'command'  => 'append-kolab-note',
@@ -112,7 +112,7 @@ class kolab_notes extends rcube_plugin
             }
         }
 
-        if (!$this->rc->output->ajax_call && !$this->rc->output->env['framed']) {
+        if (!$this->rc->output->ajax_call && !($this->rc->output->env['framed'] ?? null)) {
             $this->load_ui();
         }
 
