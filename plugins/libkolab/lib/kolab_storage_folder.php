@@ -36,6 +36,12 @@ class kolab_storage_folder extends kolab_storage_folder_api
      */
     public $valid = false;
 
+    /**
+     * Indicate virtual status
+     * @var boolean
+     */
+    public $virtual = false;
+
     protected $error = 0;
     protected $resource_uri;
 

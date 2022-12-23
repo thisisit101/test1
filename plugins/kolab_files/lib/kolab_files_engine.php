@@ -28,6 +28,7 @@ class kolab_files_engine
     private $rc;
     private $url;
     private $url_srv;
+    private $filetypes_style;
     private $timeout = 600;
     private $files_sort_cols    = array('name', 'mtime', 'size');
     private $sessions_sort_cols = array('name');
@@ -143,7 +144,7 @@ class kolab_files_engine
         $this->rc->output->set_env('files_api_version', $caps['VERSION'] ?: 3);
         $this->rc->output->set_env('files_user', $this->rc->get_user_name());
 
-        if ($caps['DOCEDIT']) {
+        if ($caps['DOCEDIT'] ?? false) {
             $this->plugin->add_label('declinednotice', 'invitednotice', 'acceptedownernotice',
                 'declinedownernotice', 'requestednotice', 'acceptednotice', 'declinednotice',
                 'more', 'accept', 'decline', 'join', 'status', 'when', 'file', 'comment',
@@ -727,7 +728,7 @@ class kolab_files_engine
     {
         $prefix    = 'kolab_' . $type . '_';
         $c_prefix  = 'kolab_files_' . ($type != 'files' ? $type : '') . '_';
-        $skin_path = $_SESSION['skin_path'];
+        $skin_path = $_SESSION['skin_path'] ?? null;
 
         // check to see if we have some settings for sorting
         $sort_col   = $_SESSION[$prefix . 'sort_col'];
@@ -787,7 +788,7 @@ class kolab_files_engine
                         'title'   => $this->plugin->gettext('sortby')
                     ), $col_name);
             }
-            else if ($col_name[0] != '<') {
+            else if (empty($col_name) || $col_name[0] != '<') {
                 $col_name = '<span class="' . $col .'">' . $col_name . '</span>';
             }
 
@@ -1057,7 +1058,7 @@ class kolab_files_engine
             }
         }
 
-        if ($_SESSION['kolab_files_caps']['MANTICORE'] || $_SESSION['kolab_files_caps']['WOPI']) {
+        if (($_SESSION['kolab_files_caps']['MANTICORE'] ?? false) || ($_SESSION['kolab_files_caps']['WOPI'] ?? false)) {
             $_SESSION['kolab_files_caps']['DOCEDIT'] = true;
             $_SESSION['kolab_files_caps']['DOCTYPE'] = $_SESSION['kolab_files_caps']['MANTICORE'] ? 'manticore' : 'wopi';
         }
@@ -1133,8 +1134,8 @@ class kolab_files_engine
             // Configure session
             $query = array(
                 'method'      => 'configure',
-                'timezone'    => $prefs['timezone'] ?: $this->rc->config->get('timezone'),
-                'date_format' => $prefs['date_long'] ?: $this->rc->config->get('date_long', 'Y-m-d H:i'),
+                'timezone'    => $prefs['timezone'] ?? $this->rc->config->get('timezone'),
+                'date_format' => $prefs['date_long'] ?? $this->rc->config->get('date_long', 'Y-m-d H:i'),
             );
 
             $request  = $this->get_request($query, $token);

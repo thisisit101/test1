@@ -225,7 +225,7 @@ abstract class kolab_storage_folder_api
     {
         // color is defined in folder METADATA
         $metadata = $this->get_metadata();
-        if (($color = $metadata[kolab_storage::COLOR_KEY_PRIVATE]) || ($color = $metadata[kolab_storage::COLOR_KEY_SHARED])) {
+        if (($color = $metadata[kolab_storage::COLOR_KEY_PRIVATE] ?? null) || ($color = $metadata[kolab_storage::COLOR_KEY_SHARED] ?? null)) {
             return $color;
         }
 

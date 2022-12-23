@@ -235,7 +235,7 @@ class libkolab extends rcube_plugin
 
         $key = md5(serialize($http_config));
 
-        if (!($request = self::$http_requests[$key])) {
+        if (!($request = self::$http_requests[$key] ?? null)) {
             // load HTTP_Request2 (support both composer-installed and system-installed package)
             if (!class_exists('HTTP_Request2')) {
                 require_once 'HTTP/Request2.php';
@@ -376,7 +376,7 @@ class libkolab extends rcube_plugin
             'reset-command' => 'non-existing-command',
         );
 
-        if ($attrib['label-domain'] && !strpos($attrib['buttontitle'], '.')) {
+        if (($attrib['label-domain'] ?? null) && !strpos($attrib['buttontitle'], '.')) {
             $attrib['buttontitle'] = $attrib['label-domain'] . '.' . $attrib['buttontitle'];
         }
 

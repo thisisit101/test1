@@ -609,7 +609,7 @@ class kolab_storage
                 }
             }
 
-            if ($data = $metadata[$folder]) {
+            if ($data = $metadata[$folder] ?? null) {
                 if (($name = $data[self::NAME_KEY_PRIVATE]) || ($name = $data[self::NAME_KEY_SHARED])) {
                     return $name;
                 }
@@ -634,6 +634,7 @@ class kolab_storage
 
         $found     = false;
         $namespace = self::$imap->get_namespace();
+        $prefix = null;
 
         if (!empty($namespace['shared'])) {
             foreach ($namespace['shared'] as $ns) {
@@ -895,7 +896,7 @@ class kolab_storage
 
         // Filter folders list
         foreach ($folders as $idx => $folder) {
-            $type = $folderdata[$folder];
+            $type = $folderdata[$folder] ?? null;
 
             if ($filter == 'mail' && empty($type)) {
                 continue;
@@ -949,7 +950,7 @@ class kolab_storage
         $folders = self::$imap->list_folders_subscribed($root, $mbox);
 
         // add temporarily subscribed folders
-        if ($filter != 'mail' && self::$with_tempsubs && is_array($_SESSION['kolab_subscribed_folders'])) {
+        if ($filter != 'mail' && self::$with_tempsubs && is_array($_SESSION['kolab_subscribed_folders'] ?? null)) {
             $folders = array_unique(array_merge($folders, $_SESSION['kolab_subscribed_folders']));
         }
 
@@ -1680,7 +1681,7 @@ class kolab_storage
         }
 
         $token = $folder_id;
-        if ($domain && strpos($find, '@') === false) {
+        if ($domain && strpos($token, '@') === false) {
             $token .= '@' . $domain;
         }
 
