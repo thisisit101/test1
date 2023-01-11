@@ -484,7 +484,7 @@ class kolab_tags_engine
         $result = array(
             'uid'   => $tag['uid'],
             'name'  => $tag['name'],
-            'color' => $tag['color'],
+            'color' => $tag['color'] ?? null,
         );
 
         if ($list) {

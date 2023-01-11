@@ -164,7 +164,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
 
         if ($metadata !== null) {
             foreach ($metakeys as $key) {
-                if ($uid = $metadata[$key]) {
+                if ($uid = ($metadata[$key] ?? null)) {
                     return $uid;
                 }
             }

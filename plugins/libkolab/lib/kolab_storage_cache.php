@@ -1082,7 +1082,7 @@ class kolab_storage_cache
             $object['uid'] = $sql_arr['uid'];
 
             foreach ($this->data_props as $prop) {
-                if (isset($object[$prop]) && is_array($object[$prop]) && $object[$prop]['cl'] == 'DateTime') {
+                if (isset($object[$prop]) && is_array($object[$prop]) && isset($object[$prop]['cl']) && $object[$prop]['cl'] == 'DateTime') {
                     $object[$prop] = new DateTime($object[$prop]['dt'], new DateTimeZone($object[$prop]['tz']));
                 }
                 else if (!isset($object[$prop]) && isset($sql_arr[$prop])) {

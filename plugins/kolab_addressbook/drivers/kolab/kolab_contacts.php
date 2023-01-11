@@ -166,7 +166,7 @@ class kolab_contacts extends rcube_addressbook
 
         // set localized labels for proprietary cols
         foreach ($this->coltypes as $col => $prop) {
-            if (is_string($prop['label'])) {
+            if (is_string($prop['label'] ?? null)) {
                 $this->coltypes[$col]['label'] = $rcube->gettext($prop['label']);
             }
         }
