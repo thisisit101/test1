@@ -402,7 +402,7 @@ class kolab_calendar extends kolab_storage_folder_api
                 foreach ($event['attendees'] as $attendee) {
                     if (
                         in_array($attendee['email'], $user_emails)
-                        && in_array($attendee['status'], $partstat_exclude)
+                        && in_array($attendee['status'] ?? null, $partstat_exclude)
                     ) {
                         return false;
                     }

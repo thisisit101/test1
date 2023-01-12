@@ -50,6 +50,7 @@ class kolab_storage_cache
     protected $error = 0;
     protected $server_timezone;
     protected $sync_start;
+    protected $cache_bypassed = 0;
 
 
     /**
@@ -1078,7 +1079,7 @@ class kolab_storage_cache
      */
     protected function _unserialize($sql_arr)
     {
-        if ($sql_arr['fast-mode'] && !empty($sql_arr['data']) && ($object = json_decode($sql_arr['data'], true))) {
+        if (($sql_arr['fast-mode'] ?? false) && !empty($sql_arr['data']) && ($object = json_decode($sql_arr['data'], true))) {
             $object['uid'] = $sql_arr['uid'];
 
             foreach ($this->data_props as $prop) {
@@ -1098,7 +1099,7 @@ class kolab_storage_cache
                 $object['changed'] = new DateTime($sql_arr['changed']);
             }
 
-            $object['_type']     = $sql_arr['type'] ?: $this->folder->type;
+            $object['_type']     = $sql_arr['type'] ?? $this->folder->type;
             $object['_msguid']   = $sql_arr['msguid'];
             $object['_mailbox']  = $this->folder->name;
         }

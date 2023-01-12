@@ -35,8 +35,8 @@ class kolab_storage_cache_task extends kolab_storage_cache
     {
         $sql_data = parent::_serialize($object);
 
-        $sql_data['dtstart'] = $this->_convert_datetime($object['start']);
-        $sql_data['dtend']   = $this->_convert_datetime($object['due']);
+        $sql_data['dtstart'] = $this->_convert_datetime($object['start'] ?? null);
+        $sql_data['dtend']   = $this->_convert_datetime($object['due'] ?? null);
 
         return $sql_data;
     }

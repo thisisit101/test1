@@ -676,7 +676,7 @@ class kolab_storage_config
 
             // assign links to objects
             foreach ((array) $relation['members'] as $member) {
-                if (($id = $ids[$member]) !== null) {
+                if (($id = ($ids[$member] ?? null)) !== null) {
                     foreach ($id as $i) {
                         $records[$i]['links'] = array_unique(array_merge($records[$i]['links'], $members));
                     }

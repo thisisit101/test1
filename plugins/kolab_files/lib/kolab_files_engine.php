@@ -32,6 +32,7 @@ class kolab_files_engine
     private $timeout = 600;
     private $files_sort_cols    = array('name', 'mtime', 'size');
     private $sessions_sort_cols = array('name');
+    private $mimetypes = null;
 
     const API_VERSION = 4;
 
@@ -56,6 +57,7 @@ class kolab_files_engine
         $this->plugin->add_texts('localization/');
 
         $templates = array();
+        $list_widget = false;
 
         // set templates of Files UI and widgets
         if ($this->rc->task == 'mail') {
@@ -922,7 +924,7 @@ class kolab_files_engine
      */
     public function quota_display($attrib)
     {
-        if (!$attrib['id']) {
+        if (!($attrib['id'] ?? false)) {
             $attrib['id'] = 'rcmquotadisplay';
         }
 
@@ -1077,7 +1079,7 @@ class kolab_files_engine
     {
         $url = $this->url_srv . '/api/';
 
-        if (!$this->request) {
+        if (!property_exists($this, "request") || !$this->request) {
             $config = array(
                 'store_body'       => true,
                 'follow_redirects' => true,
@@ -1177,8 +1179,8 @@ class kolab_files_engine
         $this->rc->output->set_env('file_mimetypes', $this->get_mimetypes());
         $this->rc->output->set_env('files_quota', $caps['QUOTA']);
         $this->rc->output->set_env('files_max_upload', $caps['MAX_UPLOAD']);
-        $this->rc->output->set_env('files_progress_name', $caps['PROGRESS_NAME']);
-        $this->rc->output->set_env('files_progress_time', $caps['PROGRESS_TIME']);
+        $this->rc->output->set_env('files_progress_name', $caps['PROGRESS_NAME'] ?? null);
+        $this->rc->output->set_env('files_progress_time', $caps['PROGRESS_TIME'] ?? null);
         $this->rc->output->send('kolab_files.files');
     }
 

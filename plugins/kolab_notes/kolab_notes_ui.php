@@ -77,12 +77,12 @@ class kolab_notes_ui
     {
         $attrib += array('id' => 'rcmkolabnotebooks');
 
-        if ($attrib['type'] == 'select') {
+        if (($attrib['type'] ?? null) == 'select') {
             $attrib['is_escaped'] = true;
             $select = new html_select($attrib);
         }
 
-        $tree = $attrib['type'] != 'select' ? true : null;
+        $tree = ($attrib['type'] ?? null) != 'select' ? true : null;
         $lists = $this->plugin->get_lists($tree);
         $jsenv = array();
 
@@ -115,7 +115,7 @@ class kolab_notes_ui
         $this->rc->output->set_env('kolab_notebooks', $jsenv);
         $this->rc->output->add_gui_object('notebooks', $attrib['id']);
 
-        return $attrib['type'] == 'select' ? $select->show() : html::tag('ul', $attrib, $html, html::$common_attrib);
+        return ($attrib['type'] ?? null) == 'select' ? $select->show() : html::tag('ul', $attrib, $html, html::$common_attrib);
     }
 
     /**
@@ -139,7 +139,7 @@ class kolab_notes_ui
             if (strlen($content)) {
                 $out .= html::tag('li', array(
                       'id' => 'rcmliknb' . rcube_utils::html_identifier($id),
-                      'class' => $prop['group'] . ($prop['virtual'] ? ' virtual' : ''),
+                      'class' => $prop['group'] . (($prop['virtual'] ?? false) ? ' virtual' : ''),
                     ),
                     $content);
             }
@@ -153,13 +153,13 @@ class kolab_notes_ui
      */
     public function folder_list_item($id, $prop, &$jsenv, $checkbox = false)
     {
-        if (!$prop['virtual']) {
+        if (!($prop['virtual'] ?? false)) {
             unset($prop['user_id']);
             $jsenv[$id] = $prop;
         }
 
         $classes = array('folder');
-        if ($prop['virtual']) {
+        if ($prop['virtual'] ?? false) {
             $classes[] = 'virtual';
         }
         else if (!$prop['editable']) {
@@ -172,14 +172,14 @@ class kolab_notes_ui
             $classes[] = $prop['class'];
         }
 
-        $title = $prop['title'] ?: ($prop['name'] != $prop['listname'] || strlen($prop['name']) > 25 ?
+        $title = $prop['title'] ?? ($prop['name'] != $prop['listname'] || strlen($prop['name']) > 25 ?
           html_entity_decode($prop['name'], ENT_COMPAT, RCUBE_CHARSET) : '');
 
         $label_id = 'nl:' . $id;
-        $attr = $prop['virtual'] ? array('tabindex' => '0') : array('href' => $this->rc->url(array('_list' => $id)));
+        $attr = ($prop['virtual'] ?? false) ? array('tabindex' => '0') : array('href' => $this->rc->url(array('_list' => $id)));
         return html::div(join(' ', $classes),
             html::a($attr + array('class' => 'listname', 'title' => $title, 'id' => $label_id), $prop['listname'] ?: $prop['name']) .
-            ($prop['virtual'] ? '' :
+            (($prop['virtual'] ?? false) ? '' :
                 ($checkbox ?
                     html::tag('input', array('type' => 'checkbox', 'name' => '_list[]', 'value' => $id, 'checked' => $prop['active'], 'aria-labelledby' => $label_id)) :
                     ''

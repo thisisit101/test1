@@ -547,7 +547,7 @@ abstract class kolab_format
         // set some automatic values if missing
         if (method_exists($this->obj, 'setCreated')) {
             // Always set created date to workaround libkolabxml (>1.1.4) bug
-            $created = $object['created'] ?: new DateTime('now');
+            $created = $object['created'] ?? new DateTime('now');
             $created->setTimezone(new DateTimeZone('UTC')); // must be UTC
             $this->obj->setCreated(self::get_datetime($created));
             $object['created'] = $created;
@@ -611,7 +611,7 @@ abstract class kolab_format
         if ($data) {
             foreach ($data as $idx => $value) {
                 if (is_array($value)) {
-                    $object[$idx] = array_merge((array)$object[$idx], $value);
+                    $object[$idx] = array_merge((array)($object[$idx] ?? []), $value);
                 }
                 else {
                     $object[$idx] = $value;
@@ -719,7 +719,7 @@ abstract class kolab_format
             }
         }
 
-        foreach ((array) $object['links'] as $link) {
+        foreach ((array)($object['links'] ?? []) as $link) {
             $attach = new Attachment;
             $attach->setUri($link, 'unknown');
             $vattach->push($attach);

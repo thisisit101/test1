@@ -653,11 +653,11 @@ class tasklist_kolab_driver extends tasklist_driver
             }
         }
 
-        if ($filter['since']) {
+        if ($filter['since'] ?? false) {
             $query[] = array('changed', '>=', $filter['since']);
         }
 
-        if ($filter['uid']) {
+        if ($filter['uid'] ?? false) {
             $query[] = array('uid', '=', (array) $filter['uid']);
         }
 
@@ -709,7 +709,7 @@ class tasklist_kolab_driver extends tasklist_driver
                 $folder = $this->folders[$list_id];
             if (is_numeric($list_id) || !$folder)
                 continue;
-            if (!$this->tasks[$id] && ($object = $folder->get_object($id))) {
+            if (!($this->tasks[$id] ?? false) && ($object = $folder->get_object($id))) {
                 $this->load_tags($object);
                 $this->tasks[$id] = $this->_to_rcube_task($object, $list_id);
                 break;
@@ -1258,20 +1258,20 @@ class tasklist_kolab_driver extends tasklist_driver
         $task = array(
             'id' => $id_prefix . $record['uid'],
             'uid' => $record['uid'],
-            'title' => $record['title'],
+            'title' => $record['title'] ?? null,
 //            'location' => $record['location'],
-            'description' => $record['description'],
-            'flagged' => $record['priority'] == 1,
-            'complete' => floatval($record['complete'] / 100),
-            'status' => $record['status'],
-            'parent_id' => $record['parent_id'] ? $id_prefix . $record['parent_id'] : null,
-            'recurrence' => $record['recurrence'],
-            'attendees' => $record['attendees'],
-            'organizer' => $record['organizer'],
-            'sequence' => $record['sequence'],
-            'tags' => $record['tags'],
+            'description' => $record['description'] ?? null,
+            'flagged' => ($record['priority'] ?? null) == 1,
+            'complete' => floatval(($record['complete'] ?? null) / 100),
+            'status' => $record['status'] ?? null,
+            'parent_id' => ($record['parent_id'] ?? null) ? $id_prefix . $record['parent_id'] : null,
+            'recurrence' => $record['recurrence'] ?? null,
+            'attendees' => $record['attendees'] ?? null,
+            'organizer' => $record['organizer'] ?? null,
+            'sequence' => $record['sequence'] ?? null,
+            'tags' => $record['tags'] ?? null,
             'list' => $list_id,
-            'links' => $record['links'],
+            'links' => $record['links'] ?? null,
         );
 
         // we can sometimes skip this expensive operation
@@ -1288,7 +1288,7 @@ class tasklist_kolab_driver extends tasklist_driver
             }
         }
         // convert from DateTime to internal date format
-        if ($record['start'] instanceof DateTimeInterface) {
+        if (($record['start'] ?? null) instanceof DateTimeInterface) {
             $start = $this->plugin->lib->adjust_timezone($record['start']);
             $task['startdate'] = $start->format('Y-m-d');
             if (empty($record['start']->_dateonly)) {
@@ -1302,10 +1302,10 @@ class tasklist_kolab_driver extends tasklist_driver
             $task['created'] = $record['created'];
         }
 
-        if ($record['valarms']) {
+        if ($record['valarms'] ?? false) {
             $task['valarms'] = $record['valarms'];
         }
-        else if ($record['alarms']) {
+        else if ($record['alarms'] ?? false) {
             $task['alarms'] = $record['alarms'];
         }
 
@@ -1320,7 +1320,7 @@ class tasklist_kolab_driver extends tasklist_driver
             }
         }
 
-        if (!empty($record['_attachments'])) {
+        if (!empty($record['_attachments'] ?? [])) {
             foreach ($record['_attachments'] as $key => $attachment) {
                 if ($attachment !== false) {
                     if (empty($attachment['name'])) {
@@ -1448,12 +1448,12 @@ class tasklist_kolab_driver extends tasklist_driver
         }
 
         // email links and tags are stored separately
-        $links = $task['links'];
-        $tags  = $task['tags'];
+        $links = $task['links'] ?? null;
+        $tags  = $task['tags'] ?? null;
         unset($task['tags'], $task['links']);
 
         // moved from another folder
-        if ($task['_fromlist'] && ($fromfolder = $this->get_folder($task['_fromlist']))) {
+        if (($task['_fromlist'] ?? false) && ($fromfolder = $this->get_folder($task['_fromlist']))) {
             if (!$fromfolder->move($task['uid'], $folder))
                 return false;
 

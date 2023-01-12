@@ -62,8 +62,8 @@ class kolab_format_task extends kolab_format_xcal
             $status = $this->status_map[$object['status']];
         $this->obj->setStatus($status);
 
-        $this->obj->setStart(self::get_datetime($object['start'], null, $object['start']->_dateonly));
-        $this->obj->setDue(self::get_datetime($object['due'], null, $object['due']->_dateonly));
+        $this->obj->setStart(self::get_datetime($object['start'] ?? null, null, ($object['start'] ?? null) ? $object['start']->_dateonly : null));
+        $this->obj->setDue(self::get_datetime($object['due'] ?? null, null, ($object['due'] ?? null) ? $object['due']->_dateonly : null));
 
         $related = new vectors;
         if (!empty($object['parent_id']))

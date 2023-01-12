@@ -42,6 +42,7 @@ class kolab_folders extends rcube_plugin
     private $rc;
     private static $instance;
     private $expire_annotation = '/shared/vendor/cmu/cyrus-imapd/expire';
+    private $is_processing = false;
 
 
     /**
@@ -158,7 +159,7 @@ class kolab_folders extends rcube_plugin
 
         // Add type-based style for table rows
         // See kolab_folders::folder_class_name()
-        if ($table = $args['table']) {
+        if ($table = ($args['table'] ?? null)) {
             for ($i=1, $cnt=$table->size(); $i<=$cnt; $i++) {
                 $attrib = $table->get_row_attribs($i);
                 $folder = $attrib['foldername']; // UTF7-IMAP
@@ -175,10 +176,10 @@ class kolab_folders extends rcube_plugin
         }
 
         // Add type-based class for list items
-        if (is_array($args['list'])) {
+        if (is_array($args['list'] ?? null)) {
             foreach ((array)$args['list'] as $k => $item) {
                 $folder = $item['folder_imap']; // UTF7-IMAP
-                $type   = $folderdata[$folder];
+                $type   = $folderdata[$folder] ?? null;
 
                 if (!$type) {
                     $type = 'mail';
@@ -286,7 +287,7 @@ class kolab_folders extends rcube_plugin
             $sub_types[$ftype] = array_combine($subtypes, array_map(array($this, 'gettext'), $subtypes));
 
             // fill options for the current folder type
-            if ($ftype == $ctype || $ftype == $new_ctype) {
+            if ($ftype == $ctype || (isset($new_ctype) && $ftype == $new_ctype)) {
                 $sub_select->add(array_values($sub_types[$ftype]), $subtypes);
             }
         }
@@ -596,7 +597,7 @@ class kolab_folders extends rcube_plugin
      */
     static function folder_class_name($type)
     {
-        list($ctype, $subtype) = explode('.', $type);
+        list($ctype, $subtype) = array_pad(explode('.', $type), 2, null);
 
         $class[] = 'type-' . ($ctype ? $ctype : 'mail');
 
@@ -744,7 +745,7 @@ class kolab_folders extends rcube_plugin
         $value = $storage->get_metadata($folder, $this->expire_annotation);
 
         if (is_array($value)) {
-            return $value[$folder] ? intval($value[$folder][$this->expire_annotation]) : 0;
+            return ($value[$folder] ?? false) ? intval($value[$folder][$this->expire_annotation]) : 0;
         }
 
         return false;

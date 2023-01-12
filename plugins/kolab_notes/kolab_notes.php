@@ -540,7 +540,7 @@ class kolab_notes extends rcube_plugin
 
         // deliver from in-memory cache
         $key = $list_id . ':' . $uid;
-        if ($this->cache[$key]) {
+        if ($this->cache[$key] ?? false) {
             return $this->cache[$key];
         }
 

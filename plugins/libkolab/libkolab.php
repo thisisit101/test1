@@ -67,7 +67,7 @@ class libkolab extends rcube_plugin
         }
 
         // embed scripts and templates for email message audit trail
-        if ($rcmail->task == 'mail' && self::get_bonnie_api()) {
+        if (property_exists($rcmail, 'task') && $rcmail->task == 'mail' && self::get_bonnie_api()) {
             if ($rcmail->output->type == 'html') {
                 $this->add_hook('render_page', array($this, 'bonnie_render_page'));
                 $this->include_script('libkolab.js');

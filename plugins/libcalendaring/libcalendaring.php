@@ -146,7 +146,7 @@ class libcalendaring extends rcube_plugin
             );
         }
 
-        if ($args['task'] == 'mail') {
+        if (($args['task'] ?? null) == 'mail') {
             if ($args['action'] == 'show' || $args['action'] == 'preview') {
                 $this->add_hook('message_load', array($this, 'mail_message_load'));
             }

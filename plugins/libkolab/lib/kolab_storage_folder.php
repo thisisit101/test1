@@ -506,6 +506,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
         $attachments = array();
 
         // get XML part
+        $xml = null;
         foreach ((array)$message->attachments as $part) {
             if (!$xml && ($part->mimetype == $content_type || preg_match('!application/([a-z.]+\+)?xml!i', $part->mimetype))) {
                 $xml = $message->get_part_body($part->mime_id, true);
@@ -613,7 +614,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
             $type = $this->type;
 
         // copy attachments from old message
-        $copyfrom = $object['_copyfrom'] ?: $object['_msguid'];
+        $copyfrom = $object['_copyfrom'] ?? $object['_msguid'];
         if (!empty($copyfrom) && ($old = $this->cache->get($copyfrom, $type, $object['_mailbox']))) {
             foreach ((array)$old['_attachments'] as $key => $att) {
                 if (!isset($object['_attachments'][$key])) {
@@ -1000,6 +1001,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
             RCUBE_CHARSET           // charset
         );
         $part_id++;
+
+        $is_file = false;
 
         // save object attachments as separate parts
         foreach ((array)$object['_attachments'] as $key => $att) {

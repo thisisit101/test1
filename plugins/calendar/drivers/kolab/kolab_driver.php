@@ -180,7 +180,7 @@ class kolab_driver extends calendar_driver
 
             $parents[] = $cal->id;
 
-            if ($cal->virtual) {
+            if (property_exists($cal, "virtual") && $cal->virtual) {
                 $calendars[$cal->id] = [
                     'id'       => $cal->id,
                     'name'     => $cal->get_name(),
