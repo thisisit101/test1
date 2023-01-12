@@ -294,7 +294,7 @@ class tasklist_ui
             }
             $actions .= html::a(['href' => '#', 'class' => 'quickview', 'title' => $this->plugin->gettext('focusview'), 'role' => 'checkbox', 'aria-checked' => 'false'], ' ');
             if (isset($prop['subscribed'])) {
-                $action .= html::a(['href' => '#', 'class' => 'subscribed', 'title' => $this->plugin->gettext('tasklistsubscribe'), 'role' => 'checkbox', 'aria-checked' => $prop['subscribed'] ? 'true' : 'false'], ' ');
+                $actions .= html::a(['href' => '#', 'class' => 'subscribed', 'title' => $this->plugin->gettext('tasklistsubscribe'), 'role' => 'checkbox', 'aria-checked' => $prop['subscribed'] ? 'true' : 'false'], ' ');
             }
 
             return html::div(join(' ', $classes),
