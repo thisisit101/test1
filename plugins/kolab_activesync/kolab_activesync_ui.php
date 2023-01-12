@@ -125,23 +125,23 @@ class kolab_activesync_ui
         }
 
         $devicetype = strtolower($this->device['TYPE']);
-        $device_force_subscriptions = $this->force_subscriptions[$devicetype];
+        $device_force_subscriptions = $this->force_subscriptions[$devicetype] ?? null;
 
         foreach ($this->plugin->list_folders() as $folder) {
-            if ($folder_types[$folder]) {
+            if ($folder_types[$folder] ?? null) {
                 list($type, ) = explode('.', $folder_types[$folder]);
             }
             else {
                 $type = 'mail';
             }
 
-            if (is_array($folder_groups[$type])) {
+            if (is_array($folder_groups[$type] ?? null)) {
                 $folder_groups[$type][] = $folder;
 
                 if ($device_force_subscriptions && array_key_exists($folder, $device_force_subscriptions)) {
-                    $subscribed[$folder] = intval($device_force_subscriptions[$folder]);
-                } else if (!empty($folder_meta) && ($meta = $folder_meta[$folder])
-                    && $meta['FOLDER'] && $meta['FOLDER'][$imei]['S']
+                    $subscribed[$folder] = intval($device_force_subscriptions[$folder] ?? null);
+                } else if (!empty($folder_meta) && ($meta = ($folder_meta[$folder] ?? null))
+                    && ($meta['FOLDER'] ?? false) && $meta['FOLDER'][$imei]['S']
                 ) {
                     $subscribed[$folder] = intval($meta['FOLDER'][$imei]['S']);
                 }
@@ -149,6 +149,7 @@ class kolab_activesync_ui
         }
 
         // build block for every folder type
+        $html = null;
         foreach ($folder_groups as $type => $group) {
             if (empty($group)) {
                 continue;
@@ -181,7 +182,7 @@ class kolab_activesync_ui
                 'title'    => $this->plugin->gettext('synchronize'),
                 'tabindex' => 0
             ),
-            $attrib['syncicon'] ? html::img(array('src' => $this->skin_path . $attrib['syncicon'])) :
+            ($attrib['syncicon'] ?? false) ? html::img(array('src' => $this->skin_path . $attrib['syncicon'])) :
                 $this->plugin->gettext('synchronize')
         );
 
@@ -191,7 +192,7 @@ class kolab_activesync_ui
                     'title'    => $this->plugin->gettext('withalarms'),
                     'tabindex' => 0
                 ),
-                $attrib['alarmicon'] ? html::img(array('src' => $this->skin_path . $attrib['alarmicon'])) :
+                ($attrib['alarmicon'] ?? null) ? html::img(array('src' => $this->skin_path . $attrib['alarmicon'])) :
                     $this->plugin->gettext('withalarms')
             );
         }
@@ -237,7 +238,7 @@ class kolab_activesync_ui
 
             if ($alarms) {
                 $table->add('alarm checkbox-cell', $checkbox_alarm->show(
-                    intval($subscribed[$folder]) > 1 ? $folder : null,
+                    intval($subscribed[$folder] ?? 0) > 1 ? $folder : null,
                     array('value' => $folder, 'id' => $folder_id.'_alarm', 'disabled' => $disabled)));
             }
 
