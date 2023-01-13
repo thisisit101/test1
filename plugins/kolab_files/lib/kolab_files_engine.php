@@ -143,7 +143,7 @@ class kolab_files_engine
         $this->rc->output->set_env('files_url', $this->url . '/api/');
         $this->rc->output->set_env('files_token', $this->get_api_token());
         $this->rc->output->set_env('files_caps', $caps);
-        $this->rc->output->set_env('files_api_version', $caps['VERSION'] ?: 3);
+        $this->rc->output->set_env('files_api_version', $caps['VERSION'] ?? 3);
         $this->rc->output->set_env('files_user', $this->rc->get_user_name());
 
         if ($caps['DOCEDIT'] ?? false) {

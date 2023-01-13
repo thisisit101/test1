@@ -140,13 +140,13 @@ class kolab_format_task extends kolab_format_xcal
         $tags = parent::get_tags($obj);
         $object = $obj ?: $this->data;
 
-        if ($object['status'] == 'COMPLETED' || ($object['complete'] == 100 && empty($object['status'])))
+        if (($object['status'] ?? null) == 'COMPLETED' || (($object['complete'] ?? null) == 100 && empty($object['status'] ?? null)))
             $tags[] = 'x-complete';
 
-        if ($object['priority'] == 1)
+        if (($object['priority'] ?? 0) == 1)
             $tags[] = 'x-flagged';
 
-        if ($object['parent_id'])
+        if ($object['parent_id'] ?? false)
             $tags[] = 'x-parent:' . $object['parent_id'];
 
         return array_unique($tags);

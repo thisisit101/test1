@@ -203,7 +203,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     {
         $fdata = $this->get_imap_data();
         $this->check_error();
-        return sprintf('%d-%d-%d', $fdata['UIDVALIDITY'], $fdata['HIGHESTMODSEQ'], $fdata['UIDNEXT']);
+        return sprintf('%d-%d-%d', $fdata['UIDVALIDITY'] ?? null, $fdata['HIGHESTMODSEQ'] ?? null, $fdata['UIDNEXT'] ?? null);
     }
 
     /**
@@ -614,7 +614,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
             $type = $this->type;
 
         // copy attachments from old message
-        $copyfrom = $object['_copyfrom'] ?? $object['_msguid'];
+        $copyfrom = $object['_copyfrom'] ?? ($object['_msguid'] ?? null);
         if (!empty($copyfrom) && ($old = $this->cache->get($copyfrom, $type, $object['_mailbox']))) {
             foreach ((array)$old['_attachments'] as $key => $att) {
                 if (!isset($object['_attachments'][$key])) {
@@ -643,7 +643,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
         }
 
         // process attachments
-        if (is_array($object['_attachments'])) {
+        if (is_array($object['_attachments'] ?? null)) {
             $numatt = count($object['_attachments']);
             foreach ($object['_attachments'] as $key => $attachment) {
                 // FIXME: kolab_storage and Roundcube attachment hooks use different fields!
@@ -708,7 +708,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
 
             // update cache with new UID
             if ($result) {
-                $old_uid = $object['_msguid'];
+                $old_uid = $object['_msguid'] ?? null;
 
                 $object['_msguid'] = $result;
                 $object['_mailbox'] = $this->name;
@@ -925,10 +925,11 @@ class kolab_storage_folder extends kolab_storage_folder_api
     private function build_message(&$object, $type, $binary, &$body_file)
     {
         // load old object to preserve data we don't understand/process
-        if (is_object($object['_formatobj']))
+        $format = null;
+        if (is_object($object['_formatobj'] ?? null))
             $format = $object['_formatobj'];
-        else if ($object['_msguid'] && ($old = $this->cache->get($object['_msguid'], $type, $object['_mailbox'])))
-            $format = $old['_formatobj'];
+        else if ($object['_msguid'] ?? null && ($old = $this->cache->get($object['_msguid'], $type, $object['_mailbox'] ?? null)))
+            $format = $old['_formatobj'] ?? null;
 
         // create new kolab_format instance
         if (!$format)
@@ -1005,7 +1006,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
         $is_file = false;
 
         // save object attachments as separate parts
-        foreach ((array)$object['_attachments'] as $key => $att) {
+        foreach ((array)($object['_attachments'] ?? []) as $key => $att) {
             if (empty($att['content']) && !empty($att['id'])) {
                 // @TODO: use IMAP CATENATE to skip attachment fetch+push operation
                 $msguid = $object['_copyfrom'] ?: ($object['_msguid'] ?: $object['uid']);

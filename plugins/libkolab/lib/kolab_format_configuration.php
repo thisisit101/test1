@@ -80,19 +80,19 @@ class kolab_format_configuration extends kolab_format
         case 'relation':
             $relation = new Relation(strval($object['name']), strval($object['category']));
 
-            if ($object['color']) {
+            if ($object['color'] ?? false) {
                 $relation->setColor($object['color']);
             }
-            if ($object['parent']) {
+            if ($object['parent'] ?? false) {
                 $relation->setParent($object['parent']);
             }
-            if ($object['iconName']) {
+            if ($object['iconName'] ?? false) {
                 $relation->setIconName($object['iconName']);
             }
-            if ($object['priority'] > 0) {
+            if (($object['priority'] ?? 0) > 0) {
                 $relation->setPriority((int) $object['priority']);
             }
-            if (!empty($object['members'])) {
+            if (!empty($object['members'] ?? null)) {
                 $relation->setMembers(self::array2vector($object['members']));
             }
 
@@ -103,10 +103,10 @@ class kolab_format_configuration extends kolab_format
             $collection = new SnippetCollection($object['name']);
             $snippets   = new vectorsnippets;
 
-            foreach ((array) $object['snippets'] as $item) {
+            foreach ((array)($object['snippets'] ?? []) as $item) {
                 $snippet = new snippet($item['name'], $item['text']);
                 $snippet->setTextType(strtolower($item['type']) == 'html' ? Snippet::HTML : Snippet::Plain);
-                if ($item['shortcut']) {
+                if ($item['shortcut'] ?? false) {
                     $snippet->setShortCut($item['shortcut']);
                 }
 

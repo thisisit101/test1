@@ -70,8 +70,8 @@ class kolab_ldap extends rcube_ldap_generic
                 continue;
             }
 
-            $bind_pass      = $this->config['bind_pass'];
-            $bind_user      = $this->config['bind_user'];
+            $bind_pass      = $this->config['bind_pass'] ?? null;
+            $bind_user      = $this->config['bind_user'] ?? null;
             $bind_dn        = $this->config['bind_dn'];
             $base_dn        = $this->config['base_dn'];
             $groups_base_dn = $this->config['groups']['base_dn'] ?: $base_dn;
@@ -85,12 +85,13 @@ class kolab_ldap extends rcube_ldap_generic
                     $bind_pass = $rcube->get_user_password();
                 }
 
+                $u = null;
                 // Get the pieces needed for variable replacement.
-                if ($fu = ($rcube->get_user_email() ?: $this->config['username'])) {
+                if ($fu = ($rcube->get_user_email() ?: ($this->config['username'] ?? null))) {
                     list($u, $d) = explode('@', $fu);
                 }
                 else {
-                    $d = $this->config['mail_domain'];
+                    $d = $this->config['mail_domain'] ?? null;
                 }
 
                 $dc = 'dc=' . strtr($d, array('.' => ',dc=')); // hierarchal domain string
@@ -513,6 +514,7 @@ class kolab_ldap extends rcube_ldap_generic
             $user = $_SESSION['username'];
         }
 
+        $dc = null;
         if (isset($this->icache[$user])) {
             list($user, $dc) = $this->icache[$user];
         }

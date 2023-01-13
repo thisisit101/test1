@@ -41,14 +41,14 @@ class kolab_format_file extends kolab_format
         // set common object properties
         parent::set($object);
 
-        $this->obj->setCategories(self::array2vector($object['categories']));
+        $this->obj->setCategories(self::array2vector($object['categories'] ?? null));
 
         if (isset($object['notes'])) {
             $this->obj->setNote($object['notes']);
         }
 
         // Add file attachment
-        if (!empty($object['_attachments'])) {
+        if (!empty($object['_attachments'] ?? null)) {
             $cid         = key($object['_attachments']);
             $attach_attr = $object['_attachments'][$cid];
             $attach      = new Attachment;
@@ -126,17 +126,17 @@ class kolab_format_file extends kolab_format
     {
         $tags = array();
 
-        foreach ((array)$this->data['categories'] as $cat) {
+        foreach ((array)($this->data['categories'] ?? null) as $cat) {
             $tags[] = rcube_utils::normalize_string($cat);
         }
 
         // Add file mimetype to tags
-        if (!empty($this->data['_attachments'])) {
+        if (!empty($this->data['_attachments'] ?? null)) {
             reset($this->data['_attachments']);
             $key        = key($this->data['_attachments']);
             $attachment = $this->data['_attachments'][$key];
 
-            if ($attachment['mimetype']) {
+            if ($attachment['mimetype'] ?? false) {
                 $tags[] = $attachment['mimetype'];
             }
         }

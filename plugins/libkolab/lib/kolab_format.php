@@ -417,7 +417,7 @@ abstract class kolab_format
     protected function update_uid()
     {
         // get generated UID
-        if (!$this->data['uid']) {
+        if (!($this->data['uid'] ?? null)) {
             if ($this->xmlobject) {
                 $this->data['uid'] = $this->xmlobject->getSerializedUID();
             }
@@ -698,7 +698,7 @@ abstract class kolab_format
     {
         // save attachments
         $vattach = new vectorattachment;
-        foreach ((array) $object['_attachments'] as $cid => $attr) {
+        foreach ((array)($object['_attachments'] ?? []) as $cid => $attr) {
             if (empty($attr))
                 continue;
             $attach = new Attachment;

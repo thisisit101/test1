@@ -381,7 +381,7 @@ class kolab_storage_cache
         $mbox_data = $this->imap->folder_data($this->folder->name);
 
         // Removed vanished messages from the database
-        $vanished = (array) rcube_imap_generic::uncompressMessageSet($mbox_data['VANISHED']);
+        $vanished = (array) rcube_imap_generic::uncompressMessageSet($mbox_data['VANISHED'] ?? null);
 
         // Remove redundant entries from IMAP and DB
         $vanished = array_merge($removed, array_intersect($vanished, $existing));
@@ -413,7 +413,7 @@ class kolab_storage_cache
                 // Deduplication: remove older objects with the same UID
                 // Here we do not resolve conflicts, we just make sure
                 // the most recent version of the object will be used
-                if ($old_msguid = $old_index[$object['uid']]) {
+                if ($old_msguid = ($old_index[$object['uid']] ?? null)) {
                     if ($old_msguid < $msguid) {
                         $del_index[] = $old_msguid;
                     }

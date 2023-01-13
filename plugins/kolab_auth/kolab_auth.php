@@ -61,7 +61,7 @@ class kolab_auth extends rcube_plugin
 
         // Hook to modify logging directory
         $this->add_hook('write_log', array($this, 'write_log'));
-        $this->username = $_SESSION['username'];
+        $this->username = $_SESSION['username'] ?? null;
 
         // Enable debug logs (per-user), when logged as another user
         if (!empty($_SESSION['kolab_auth_admin']) && $rcmail->config->get('kolab_auth_auditlog')) {
@@ -666,7 +666,7 @@ class kolab_auth extends rcube_plugin
         foreach ((array)$email_attr as $field) {
             $email = is_array($record[$field]) ? array_filter($record[$field]) : $record[$field];
             if (!empty($email)) {
-                $this->data['user_email'] = array_merge((array)$this->data['user_email'], (array)$email);
+                $this->data['user_email'] = array_merge((array)($this->data['user_email'] ?? null), (array)$email);
             }
         }
         // Organization name for identity (first log in)

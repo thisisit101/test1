@@ -1320,10 +1320,10 @@ class kolab_contacts extends rcube_addressbook
      */
     private function _from_rcube_contact($contact, $old = array())
     {
-        if (!$contact['uid'] && $contact['ID']) {
+        if (!($contact['uid'] ?? null) && ($contact['ID'] ?? null)) {
             $contact['uid'] = $this->id2uid($contact['ID']);
         }
-        else if (!$contact['uid'] && $old['uid']) {
+        else if (!($contact['uid'] ?? null) && ($old['uid'] ?? null)) {
             $contact['uid'] = $old['uid'];
         }
 
@@ -1368,7 +1368,7 @@ class kolab_contacts extends rcube_addressbook
         $contact['address'] = $addresses;
 
         // categories are not supported in the web client but should be preserved (#2608)
-        $contact['categories'] = $old['categories'];
+        $contact['categories'] = $old['categories'] ?? null;
 
         // copy meta data (starting with _) from old object
         foreach ((array)$old as $key => $val) {
@@ -1380,7 +1380,7 @@ class kolab_contacts extends rcube_addressbook
         // convert one-item-array elements into string element
         // this is needed e.g. to properly import birthday field
         foreach ($this->coltypes as $type => $col_def) {
-            if ($col_def['limit'] == 1 && is_array($contact[$type])) {
+            if (($col_def['limit'] ?? null) == 1 && is_array($contact[$type] ?? null)) {
                 $contact[$type] = array_shift(array_filter($contact[$type]));
             }
         }

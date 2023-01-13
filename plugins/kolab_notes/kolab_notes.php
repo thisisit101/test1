@@ -732,7 +732,7 @@ class kolab_notes extends rcube_plugin
             return false;
 
         // moved from another folder
-        if ($note['_fromlist'] && ($fromfolder = $this->get_folder($note['_fromlist']))) {
+        if (($note['_fromlist'] ?? false) && ($fromfolder = $this->get_folder($note['_fromlist']))) {
             if (!$fromfolder->move($note['uid'], $folder->name))
                 return false;
 
@@ -740,6 +740,7 @@ class kolab_notes extends rcube_plugin
         }
 
         // load previous version of this record to merge
+        $old = null;
         if ($note['uid']) {
             $old = $folder->get_object($note['uid']);
             if (!$old || PEAR::isError($old))
@@ -754,8 +755,8 @@ class kolab_notes extends rcube_plugin
         $object = $this->_write_preprocess($note, $old);
 
         // email links and tags are handled separately
-        $links = $object['links'];
-        $tags  = $object['tags'];
+        $links = $object['links'] ?? null;
+        $tags  = $object['tags'] ?? null;
 
         unset($object['links']);
         unset($object['tags']);
@@ -1372,7 +1373,9 @@ class kolab_notes extends rcube_plugin
             $object['links'] = array_map(function($link){ return is_array($link) ? $link['uri'] : strval($link); }, $note['links']);
         }
         else {
-            $object['links'] = $old['links'];
+            if ($old) {
+                $object['links'] = $old['links'] ?? null;
+            }
         }
 
         // clean up HTML content
@@ -1404,7 +1407,7 @@ class kolab_notes extends rcube_plugin
         }
 
         // make list of categories unique
-        if (is_array($object['tags'])) {
+        if (is_array($object['tags'] ?? null)) {
             $object['tags'] = array_unique(array_filter($object['tags']));
         }
 

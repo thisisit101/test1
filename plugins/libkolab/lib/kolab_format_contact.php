@@ -96,14 +96,14 @@ class kolab_format_contact extends kolab_format
 
         // do the hard work of setting object values
         $nc = new NameComponents;
-        $nc->setSurnames(self::array2vector($object['surname']));
-        $nc->setGiven(self::array2vector($object['firstname']));
-        $nc->setAdditional(self::array2vector($object['middlename']));
-        $nc->setPrefixes(self::array2vector($object['prefix']));
-        $nc->setSuffixes(self::array2vector($object['suffix']));
+        $nc->setSurnames(self::array2vector($object['surname'] ?? null));
+        $nc->setGiven(self::array2vector($object['firstname'] ?? null));
+        $nc->setAdditional(self::array2vector($object['middlename'] ?? null));
+        $nc->setPrefixes(self::array2vector($object['prefix'] ?? null));
+        $nc->setSuffixes(self::array2vector($object['suffix'] ?? null));
         $this->obj->setNameComponents($nc);
-        $this->obj->setName($object['name']);
-        $this->obj->setCategories(self::array2vector($object['categories']));
+        $this->obj->setName($object['name'] ?? null);
+        $this->obj->setCategories(self::array2vector($object['categories'] ?? null));
 
         if (isset($object['nickname']))
             $this->obj->setNickNames(self::array2vector($object['nickname']));
@@ -113,16 +113,16 @@ class kolab_format_contact extends kolab_format
         // organisation related properties (affiliation)
         $org = new Affiliation;
         $offices = new vectoraddress;
-        if ($object['organization'])
+        if ($object['organization'] ?? null)
             $org->setOrganisation($object['organization']);
-        if ($object['department'])
+        if ($object['department'] ?? null)
             $org->setOrganisationalUnits(self::array2vector($object['department']));
-        if ($object['profession'])
+        if ($object['profession'] ?? null)
             $org->setRoles(self::array2vector($object['profession']));
 
         $rels = new vectorrelated;
         foreach (array('manager','assistant') as $field) {
-            if (!empty($object[$field])) {
+            if (!empty($object[$field] ?? null)) {
                 $reltype = $this->relatedmap[$field];
                 foreach ((array)$object[$field] as $value) {
                     $rels->push(new Related(Related::Text, $value, $reltype));
@@ -132,11 +132,11 @@ class kolab_format_contact extends kolab_format
         $org->setRelateds($rels);
 
         // im, email, url
-        $this->obj->setIMaddresses(self::array2vector($object['im']));
+        $this->obj->setIMaddresses(self::array2vector($object['im'] ?? null));
 
         if (class_exists('vectoremail')) {
             $vemails = new vectoremail;
-            foreach ((array)$object['email'] as $email) {
+            foreach ((array)($object['email'] ?? []) as $email) {
                 $type = $this->emailtypes[$email['type']];
                 $vemails->push(new Email($email['address'], intval($type)));
             }
@@ -147,7 +147,7 @@ class kolab_format_contact extends kolab_format
         $this->obj->setEmailAddresses($vemails);
 
         $vurls = new vectorurl;
-        foreach ((array)$object['website'] as $url) {
+        foreach ((array)($object['website'] ?? []) as $url) {
             $type = $url['type'] == 'blog' ? Url::Blog : Url::NoType;
             $vurls->push(new Url($url['url'], $type));
         }
@@ -155,25 +155,25 @@ class kolab_format_contact extends kolab_format
 
         // addresses
         $adrs = new vectoraddress;
-        foreach ((array)$object['address'] as $address) {
+        foreach ((array)($object['address'] ?? [])as $address) {
             $adr = new Address;
             $type = $this->addresstypes[$address['type']];
             if (isset($type))
                 $adr->setTypes($type);
-            else if ($address['type'])
+            else if ($address['type'] ?? null)
                 $adr->setLabel($address['type']);
-            if ($address['street'])
+            if ($address['street'] ?? null)
                 $adr->setStreet($address['street']);
-            if ($address['locality'])
+            if ($address['locality'] ?? null)
                 $adr->setLocality($address['locality']);
-            if ($address['code'])
+            if ($address['code'] ?? null)
                 $adr->setCode($address['code']);
-            if ($address['region'])
+            if ($address['region'] ?? null)
                 $adr->setRegion($address['region']);
-            if ($address['country'])
+            if ($address['country'] ?? null)
                 $adr->setCountry($address['country']);
 
-            if ($address['type'] == 'office')
+            if (($address['type'] ?? null) == 'office')
                 $offices->push($adr);
             else
                 $adrs->push($adr);
@@ -188,11 +188,11 @@ class kolab_format_contact extends kolab_format
 
         // telephones
         $tels = new vectortelephone;
-        foreach ((array)$object['phone'] as $phone) {
+        foreach ((array)($object['phone'] ?? []) as $phone) {
             $tel = new Telephone;
-            if (isset($this->phonetypes[$phone['type']]))
+            if (isset($this->phonetypes[$phone['type'] ?? null]))
                 $tel->setTypes($this->phonetypes[$phone['type']]);
-            $tel->setNumber($phone['number']);
+            $tel->setNumber($phone['number'] ?? null);
             $tels->push($tel);
         }
         $this->obj->setTelephones($tels);
@@ -210,7 +210,7 @@ class kolab_format_contact extends kolab_format
         if (isset($object['anniversary']))
             $this->obj->setAnniversary(self::get_datetime($object['anniversary'], false, true));
 
-        if (!empty($object['photo'])) {
+        if (!empty($object['photo'] ?? null)) {
             if ($type = rcube_mime::image_content_type($object['photo']))
                 $this->obj->setPhoto($object['photo'], $type);
         }
@@ -230,7 +230,7 @@ class kolab_format_contact extends kolab_format
             }
         }
         // add other relateds
-        if (is_array($object['related'])) {
+        if (is_array($object['related'] ?? null)) {
             foreach ($object['related'] as $value) {
                 $rels->push(new Related(Related::Text, $value));
             }
@@ -248,8 +248,8 @@ class kolab_format_contact extends kolab_format
                 $pkcs7_index = $i;
         }
 
-        $pgpkey   = $object['pgppublickey']   ? new Key($object['pgppublickey'], Key::PGP) : new Key();
-        $pkcs7key = $object['pkcs7publickey'] ? new Key($object['pkcs7publickey'], Key::PKCS7_MIME) : new Key();
+        $pgpkey   = ($object['pgppublickey'] ?? false)   ? new Key($object['pgppublickey'], Key::PGP) : new Key();
+        $pkcs7key = ($object['pkcs7publickey'] ?? false) ? new Key($object['pkcs7publickey'], Key::PKCS7_MIME) : new Key();
 
         if ($pgp_index >= 0)
             $keys->set($pgp_index, $pgpkey);
@@ -397,16 +397,16 @@ class kolab_format_contact extends kolab_format
     {
         $data = '';
         foreach (self::$fulltext_cols as $colname) {
-            list($col, $field) = explode(':', $colname);
+            list($col, $field) = array_pad(explode(':', $colname), 2, null);
 
             if ($field) {
                 $a = array();
-                foreach ((array)$this->data[$col] as $attr)
+                foreach ((array)($this->data[$col] ?? []) as $attr)
                     $a[] = $attr[$field];
                 $val = join(' ', $a);
             }
             else {
-                $val = is_array($this->data[$col]) ? join(' ', $this->data[$col]) : $this->data[$col];
+                $val = is_array($this->data[$col] ?? null) ? join(' ', $this->data[$col] ?? null) : ($this->data[$col] ?? null);
             }
 
             if (strlen($val))

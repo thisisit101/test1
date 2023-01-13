@@ -44,8 +44,8 @@ class kolab_format_note extends kolab_format
         parent::set($object);
 
         $this->obj->setSummary($object['title']);
-        $this->obj->setDescription($object['description']);
-        $this->obj->setCategories(self::array2vector($object['categories']));
+        $this->obj->setDescription($object['description'] ?? null);
+        $this->obj->setCategories(self::array2vector($object['categories'] ?? null));
 
         $this->set_attachments($object);
 
@@ -99,12 +99,12 @@ class kolab_format_note extends kolab_format
     {
         $tags = array();
 
-        foreach ((array)$this->data['categories'] as $cat) {
+        foreach ((array)($this->data['categories'] ?? null) as $cat) {
             $tags[] = rcube_utils::normalize_string($cat);
         }
 
         // add tag for message references
-        foreach ((array)$this->data['links'] as $link) {
+        foreach ((array)($this->data['links'] ?? []) as $link) {
             $url = parse_url($link);
             if ($url['scheme'] == 'imap') {
                 parse_str($url['query'], $param);
@@ -126,11 +126,11 @@ class kolab_format_note extends kolab_format
         foreach (self::$fulltext_cols as $col) {
             // convert HTML content to plain text
             if ($col == 'description' && preg_match('/<(html|body)(\s[a-z]|>)/', $this->data[$col], $m) && strpos($this->data[$col], '</'.$m[1].'>')) {
-                $converter = new rcube_html2text($this->data[$col], false, false, 0);
+                $converter = new rcube_html2text($this->data[$col] ?? null, false, false, 0);
                 $val = $converter->get_text();
             }
             else {
-                $val = is_array($this->data[$col]) ? join(' ', $this->data[$col]) : $this->data[$col];
+                $val = is_array($this->data[$col] ?? null) ? join(' ', $this->data[$col] ?? null) : ($this->data[$col] ?? null);
             }
 
             if (strlen($val))

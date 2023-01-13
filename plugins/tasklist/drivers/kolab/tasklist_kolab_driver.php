@@ -1280,7 +1280,7 @@ class tasklist_kolab_driver extends tasklist_driver
         }
 
         // convert from DateTime to internal date format
-        if ($record['due'] instanceof DateTimeInterface) {
+        if (($record['due'] ?? null) instanceof DateTimeInterface) {
             $due = $this->plugin->lib->adjust_timezone($record['due']);
             $task['date'] = $due->format('Y-m-d');
             if (empty($record['due']->_dateonly)) {
@@ -1295,10 +1295,10 @@ class tasklist_kolab_driver extends tasklist_driver
                 $task['starttime'] = $start->format('H:i');
             }
         }
-        if ($record['changed'] instanceof DateTimeInterface) {
+        if (($record['changed'] ?? null) instanceof DateTimeInterface) {
             $task['changed'] = $record['changed'];
         }
-        if ($record['created'] instanceof DateTimeInterface) {
+        if (($record['created'] ?? null) instanceof DateTimeInterface) {
             $task['created'] = $record['created'];
         }
 
@@ -1381,10 +1381,10 @@ class tasklist_kolab_driver extends tasklist_driver
         if ($task['complete'] == 1.0 && empty($task['complete']))
             $object['status'] = 'COMPLETED';
 
-        if ($task['flagged'])
+        if ($task['flagged'] ?? false)
             $object['priority'] = 1;
         else
-            $object['priority'] = $old['priority'] > 1 ? $old['priority'] : 0;
+            $object['priority'] = ($old['priority'] ?? 0) > 1 ? $old['priority'] : 0;
 
         // remove list: prefix from parent_id
         if (!empty($task['parent_id']) && strpos($task['parent_id'], $id_prefix) === 0) {
@@ -1461,7 +1461,8 @@ class tasklist_kolab_driver extends tasklist_driver
         }
 
         // load previous version of this task to merge
-        if ($task['id']) {
+        $old = null;
+        if ($task['id'] ?? null) {
             $old = $folder->get_object($task['uid']);
             if (!$old || PEAR::isError($old))
                 return false;

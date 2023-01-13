@@ -155,7 +155,7 @@ class kolab_storage_dataset implements Iterator, ArrayAccess, Countable
             return $this->data[$offset];
         }
 
-        if ($uid = $this->index[$offset]) {
+        if ($uid = ($this->index[$offset] ?? null)) {
             return $this->cache->get($uid);
         }
 

@@ -674,12 +674,12 @@ abstract class kolab_format_xcal extends kolab_format
         $tags = array();
         $object = $obj ?: $this->data;
 
-        if (!empty($object['valarms'])) {
+        if (!empty($object['valarms'] ?? null)) {
             $tags[] = 'x-has-alarms';
         }
 
         // create tags reflecting participant status
-        if (is_array($object['attendees'])) {
+        if (is_array($object['attendees'] ?? null)) {
             foreach ($object['attendees'] as $attendee) {
                 if (!empty($attendee['email']) && !empty($attendee['status']))
                     $tags[] = 'x-partstat:' . $attendee['email'] . ':' . strtolower($attendee['status']);
@@ -687,7 +687,7 @@ abstract class kolab_format_xcal extends kolab_format
         }
 
         // collect tags from recurrence exceptions
-        if (is_array($object['exceptions'])) {
+        if (is_array($object['exceptions'] ?? null)) {
             foreach ($object['exceptions'] as $exception) {
                 $tags = array_merge($tags, $this->get_tags($exception));
             }
@@ -717,7 +717,7 @@ abstract class kolab_format_xcal extends kolab_format
         }
 
         foreach ($this->_scheduling_properties ?: self::$scheduling_properties as $prop) {
-            $a = $old[$prop];
+            $a = $old[$prop] ?? null;
             $b = $object[$prop] ?? null;
 
             if (($object['allday'] ?? false)
