@@ -270,7 +270,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
      *
      * @param string $uid Object UID
      *
-     * @return array The Kolab object represented as hash array
+     * @return array|false|null The Kolab object represented as hash array, False on error
      */
     public function get_object($uid)
     {

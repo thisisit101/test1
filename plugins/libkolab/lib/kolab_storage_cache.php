@@ -541,7 +541,7 @@ class kolab_storage_cache
      *
      * @param string $uid Object UID
      *
-     * @return array The Kolab object represented as hash array
+     * @return array|null The Kolab object represented as hash array
      */
     public function get_by_uid($uid)
     {

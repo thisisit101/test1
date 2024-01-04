@@ -204,8 +204,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
      */
     public function get_uid()
     {
-        // TODO ???
-        return '';
+        return $this->id;
     }
 
     /**
@@ -378,6 +377,17 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         }
         else {
             $object['changed'] = new DateTime('now');
+        }
+
+        // Make sure UID exists
+        if (empty($object['uid'])) {
+            if ($uid) {
+                $object['uid'] = $uid;
+            }
+            else {
+                $username = rcube::get_instance()->user->get_username();
+                $object['uid'] = strtoupper(md5(time() . uniqid(rand())) . '-' . substr(md5($username), 0, 16));
+            }
         }
 
         // generate and save object message
