@@ -870,9 +870,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Move a Kolab object message to another IMAP folder
      *
-     * @param string Object UID
-     * @param string IMAP folder to move object to
-     * @return boolean True on success, false on failure
+     * @param string                      Object UID
+     * @param string|kolab_storage_folder IMAP folder to move object to
+     *
+     * @return bool True on success, false on failure
      */
     public function move($uid, $target_folder)
     {
@@ -880,8 +881,9 @@ class kolab_storage_folder extends kolab_storage_folder_api
             return false;
         }
 
-        if (is_string($target_folder))
+        if (is_string($target_folder)) {
             $target_folder = kolab_storage::get_folder($target_folder);
+        }
 
         if ($msguid = $this->cache->uid2msguid($uid)) {
             $this->cache->imap_mode(true);
@@ -897,7 +899,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
                 rcube::raise_error(array(
                     'code' => 600, 'type' => 'php',
                     'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Failed to move message $msguid to $target_folder: " . $this->imap->get_error_str(),
+                    'message' => "Failed to move message $msguid to {$target_folder->name}: " . $this->imap->get_error_str(),
                 ), true);
             }
         }
