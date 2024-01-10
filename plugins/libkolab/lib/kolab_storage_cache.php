@@ -205,13 +205,13 @@ class kolab_storage_cache
                 // lock synchronization for this folder or wait if locked
                 $this->_sync_lock();
 
-                // Run a full-sync (initial sync or continue the aborted sync)
                 if (empty($this->metadata['changed']) || empty($this->metadata['ctag'])) {
+                    // Run a full-sync (initial sync or continue the aborted sync)
                     $result = $this->synchronize_full();
                 }
-                // Synchronize only the changes since last sync
                 else {
-                    $result = $this->synchronize_update($ctag);
+                    // Synchronize only the changes since last sync
+                    $result = $this->synchronize_update();
                 }
 
                 // update ctag value (will be written to database in _sync_unlock())
@@ -253,10 +253,8 @@ class kolab_storage_cache
         $this->imap_mode(false);
 
         if ($imap_index->is_error()) {
-            rcube::raise_error(array(
-                    'code' => 900,
-                    'message' => "Failed to sync the kolab cache (SEARCH failed)"
-                ), true);
+            $error = "Failed to sync the kolab cache (SEARCH failed)";
+            rcube::raise_error(['code' => 900, 'message' => $error], true);
             return false;
         }
 
@@ -285,10 +283,8 @@ class kolab_storage_cache
     protected function synchronize_update()
     {
         if (!$this->imap->get_capability('QRESYNC')) {
-            rcube::raise_error(array(
-                    'code' => 900,
-                    'message' => "Failed to sync the kolab cache (no QRESYNC capability)"
-                ), true);
+            $error = "Failed to sync the kolab cache (no QRESYNC capability)";
+            rcube::raise_error(['code' => 900, 'message' => $error], true);
 
             return $this->synchronize_full();
         }
@@ -297,32 +293,24 @@ class kolab_storage_cache
         list($uidvalidity, $highestmodseq, $uidnext) = explode('-', $this->metadata['ctag']);
 
         if (empty($uidvalidity) || empty($highestmodseq)) {
-            rcube::raise_error(array(
-                    'code' => 900,
-                    'message' => "Failed to sync the kolab cache (Invalid old ctag)"
-                ), true);
+            $error = "Failed to sync the kolab cache (Invalid old ctag)";
+            rcube::raise_error(['code' => 900, 'message' => $error], true);
             return false;
         }
 
         // Enable QRESYNC
         $res = $this->imap->conn->enable('QRESYNC');
         if ($res === false) {
-            rcube::raise_error(array(
-                    'code' => 900,
-                    'message' => "Failed to sync the kolab cache (failed to enable QRESYNC/CONDSTORE)"
-                ), true);
-
+            $error = "Failed to sync the kolab cache (failed to enable QRESYNC/CONDSTORE)";
+            rcube::raise_error(['code' => 900, 'message' => $error], true);
             return false;
         }
 
         $mbox_data = $this->imap->folder_data($this->folder->name);
         if (empty($mbox_data)) {
-            rcube::raise_error(array(
-                    'code' => 900,
-                    'message' => "Failed to sync the kolab cache (failed to get folder state)"
-                ), true);
-
-             return false;
+            $error = "Failed to sync the kolab cache (failed to get folder state)";
+            rcube::raise_error(['code' => 900, 'message' => $error], true);
+            return false;
         }
 
         // Check UIDVALIDITY
@@ -332,12 +320,9 @@ class kolab_storage_cache
 
         // QRESYNC not supported on specified mailbox
         if (!empty($mbox_data['NOMODSEQ']) || empty($mbox_data['HIGHESTMODSEQ'])) {
-            rcube::raise_error(array(
-                    'code' => 900,
-                    'message' => "Failed to sync the kolab cache (QRESYNC not supported on the folder)"
-                ), true);
-
-             return $this->synchronize_full();
+            $error = "Failed to sync the kolab cache (QRESYNC not supported on the folder)";
+            rcube::raise_error(['code' => 900, 'message' => $error], true);
+            return $this->synchronize_full();
         }
 
         // Get modified flags and vanished messages
@@ -346,23 +331,27 @@ class kolab_storage_cache
             $this->folder->name, '1:*', true, array('FLAGS'), $highestmodseq, true
         );
 
+        if ($result === false) {
+            $error = "Failed to sync the kolab cache (FETCH failed)";
+            rcube::raise_error(['code' => 900, 'message' => $error], true);
+            return false;
+        }
+
         $removed  = array();
         $modified = array();
         $existing = $this->current_index($removed);
 
-        if (!empty($result)) {
-            foreach ($result as $msg) {
-                $uid = $msg->uid;
+        foreach ($result as $msg) {
+            $uid = $msg->uid;
 
-                // Message marked as deleted
-                if (!empty($msg->flags['DELETED'])) {
-                    $removed[] = $uid;
-                    continue;
-                }
-
-                // Flags changed or new
-                $modified[] = $uid;
+            // Message marked as deleted
+            if (!empty($msg->flags['DELETED'])) {
+                $removed[] = $uid;
+                continue;
             }
+
+            // Flags changed or new
+            $modified[] = $uid;
         }
 
         $new    = array_diff($modified, $existing, $removed);
