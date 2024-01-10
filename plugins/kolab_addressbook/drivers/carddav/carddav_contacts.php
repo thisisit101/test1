@@ -235,7 +235,7 @@ class carddav_contacts extends rcube_addressbook
      *
      * @param mixed Search params to use in listing method, obtained by get_search_set()
      */
-    public function set_search_set($filter)
+    public function set_search_set($filter): void
     {
         $this->filter = $filter;
     }
@@ -253,7 +253,7 @@ class carddav_contacts extends rcube_addressbook
     /**
      * Reset saved results and search parameters
      */
-    public function reset()
+    public function reset(): void
     {
         $this->result = null;
         $this->filter = null;
