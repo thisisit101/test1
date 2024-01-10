@@ -1279,14 +1279,19 @@ class kolab_storage_cache
         if (!$this->ready || !$this->synclock)
             return;
 
+        $this->synclock = false;
+
+        if (empty($this->metadata['ctag']) || empty($this->metadata['changed'])) {
+            $this->db->query("UPDATE `{$this->folders_table}` SET `synclock` = 0 WHERE `folder_id` = ?", $this->folder_id);
+            return;
+        }
+
         $this->db->query(
             "UPDATE `{$this->folders_table}` SET `synclock` = 0, `ctag` = ?, `changed` = ? WHERE `folder_id` = ?",
             $this->metadata['ctag'],
             $this->metadata['changed'],
             $this->folder_id
         );
-
-        $this->synclock = false;
     }
 
     protected function _max_sync_lock_time()
