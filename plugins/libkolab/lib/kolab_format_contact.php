@@ -350,7 +350,7 @@ class kolab_format_contact extends kolab_format
         $teltypes = array_flip($this->phonetypes);
         for ($i=0; $i < $tels->size(); $i++) {
             $tel = $tels->get($i);
-            $object['phone'][] = array('number' => $tel->number(), 'type' => $teltypes[$tel->types()]);
+            $object['phone'][] = ['number' => $tel->number(), 'type' => $teltypes[$tel->types()] ?? null];
         }
 
         $object['notes'] = $this->obj->note();

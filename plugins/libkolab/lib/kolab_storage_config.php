@@ -552,7 +552,7 @@ class kolab_storage_config
                     $tag['members'] = array_merge($tag['members'], $members);
 
                     // add UIDs into the result
-                    $result[$folder] = array_unique(array_merge((array)$result[$folder], $uids));
+                    $result[$folder] = array_unique(array_merge((array) ($result[$folder] ?? []), $uids));
                 }
             }
 

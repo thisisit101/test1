@@ -227,7 +227,7 @@ class kolab_driver extends calendar_driver
                 }
             }
 
-            if ($cal->subscriptions) {
+            if (!empty($cal->subscriptions)) {
                 $calendars[$cal->id]['subscribed'] = $cal->is_subscribed();
             }
         }

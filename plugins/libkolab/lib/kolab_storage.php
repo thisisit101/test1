@@ -516,8 +516,8 @@ class kolab_storage
         self::setup();
 
         $folder    = rcube_charset::convert($prop['name'], RCUBE_CHARSET, 'UTF7-IMAP');
-        $oldfolder = $prop['oldname']; // UTF7
-        $parent    = $prop['parent']; // UTF7
+        $oldfolder = $prop['oldname'] ?? ''; // UTF7
+        $parent    = $prop['parent'] ?? ''; // UTF7
         $delimiter = self::$imap->get_hierarchy_delimiter();
 
         if (strlen($oldfolder)) {
@@ -1083,7 +1083,7 @@ class kolab_storage
                     array_pop($path);
                     $parent_parent = join($delim, $path);
 
-                    if (!$refs[$parent]) {
+                    if (empty($refs[$parent])) {
                         if ($folder->type && self::folder_type($parent) == $folder->type) {
                             $refs[$parent] = new kolab_storage_folder($parent, $folder->type, $folder->type);
                             $refs[$parent]->parent = $parent_parent;
@@ -1095,6 +1095,7 @@ class kolab_storage
                             $name = kolab_storage::object_name($parent);
                             $refs[$parent] = new kolab_storage_folder_virtual($parent, $name, $folder->get_namespace(), $parent_parent);
                         }
+
                         $parents[] = $refs[$parent];
                     }
                 }
@@ -1259,7 +1260,7 @@ class kolab_storage
         }
 
         return in_array($folder, self::$subscriptions) ||
-            ($temp && in_array($folder, (array)$_SESSION['kolab_subscribed_folders']));
+            ($temp && in_array($folder, $_SESSION['kolab_subscribed_folders'] ?? []));
     }
 
     /**
@@ -1727,7 +1728,7 @@ class kolab_storage
         }
 
         if (empty($user) && ($ldap = self::ldap())) {
-            $user = $ldap->get_user_record($token, $_SESSION['imap_host']);
+            $user = $ldap->get_user_record($token, $_SESSION['imap_host'] ?? '');
 
             if (!empty($user)) {
                 $keys = array('displayname', 'name', 'mail'); // supported keys

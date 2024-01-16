@@ -617,6 +617,7 @@ class libcalendaring_itip
 
         $rsvp_status  = 'unknown';
         $rsvp_buttons = '';
+        $title = '';
 
         // pass some metadata about the event and trigger the asynchronous status check
         $changed = !empty($event['changed']) && is_object($event['changed']) ? $event['changed'] : $message_date;

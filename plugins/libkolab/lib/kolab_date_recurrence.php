@@ -199,7 +199,7 @@ class kolab_date_recurrence
 
         $event['start'] = $start;
         $event['recurrence']['INTERVAL'] = $interval;
-        if ($event['recurrence']['COUNT']) {
+        if (!empty($event['recurrence']['COUNT'])) {
             // Increase count so we do not stop the loop to early
             $event['recurrence']['COUNT'] += 100;
         }

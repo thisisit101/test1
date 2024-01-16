@@ -109,14 +109,14 @@ class kolab_activesync_ui
 
     public function folder_subscriptions($attrib = [])
     {
-        if (!$attrib['id']) {
+        if (empty($attrib['id'])) {
             $attrib['id'] = 'foldersubscriptions';
         }
 
         // group folders by type (show only known types)
         $folder_groups = ['mail' => [], 'contact' => [], 'event' => [], 'task' => [], 'note' => []];
         $folder_types  = kolab_storage::folders_typedata();
-        $use_fieldsets = rcube_utils::get_boolean($attrib['use-fieldsets']);
+        $use_fieldsets = rcube_utils::get_boolean($attrib['use-fieldsets'] ?? '');
         $imei          = $this->device['_id'];
         $subscribed    = [];
 

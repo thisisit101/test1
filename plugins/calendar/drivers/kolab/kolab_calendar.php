@@ -945,7 +945,7 @@ class kolab_calendar extends kolab_storage_folder_api
         $out = '';
         if (is_array($prop)) {
             foreach ($prop as $key => $val) {
-                if (is_numeric($key)) {
+                if (is_numeric($key) || is_array($val)) {
                     $out .= self::_complex2string($val);
                 }
                 else if (!in_array($key, $ignorekeys)) {

@@ -53,7 +53,9 @@ class kolab_format_task extends kolab_format_xcal
         // set common xcal properties
         parent::set($object);
 
-        $this->obj->setPercentComplete(intval($object['complete']));
+        $object['complete'] = (int) ($object['complete'] ?? 0);
+
+        $this->obj->setPercentComplete($object['complete']);
 
         $status = kolabformat::StatusUndefined;
         if ($object['complete'] == 100 && !array_key_exists('status', $object))

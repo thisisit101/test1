@@ -37,7 +37,7 @@ class kolab_storage_cache_contact extends kolab_storage_cache
         $sql_data = parent::_serialize($object);
         $sql_data['type'] = $object['_type'];
 
-        $email = is_array($object['email'] ?? null) ? $object['email'][0] : ($object['email'] ?? '');
+        $email = is_array($object['email'] ?? null) ? ($object['email'][0] ?? '') : ($object['email'] ?? '');
 
         // columns for sorting
         $sql_data['name']      = rcube_charset::clean(($object['name'] ?? '') . ($object['prefix'] ?? ''));
