@@ -32,7 +32,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
 
     /**
      * Indicate validity status
-     * @var boolean
+     * @var bool
      */
     public $valid = false;
 
@@ -180,7 +180,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * Helper method to set an UID value to the given IMAP folder instance
      *
      * @param string Folder's UID
-     * @return boolean True on succes, False on failure
+     *
+     * @return bool True on succes, False on failure
      */
     public function set_uid($uid)
     {
@@ -203,7 +204,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Check activation status of this folder
      *
-     * @return boolean True if enabled, false if not
+     * @return bool True if enabled, false if not
      */
     public function is_active()
     {
@@ -213,7 +214,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Change activation status of this folder
      *
-     * @param boolean The desired subscription status: true = active, false = not active
+     * @param bool The desired subscription status: true = active, false = not active
      *
      * @return True on success, false on error
      */
@@ -225,7 +226,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Check subscription status of this folder
      *
-     * @return boolean True if subscribed, false if not
+     * @return bool True if subscribed, false if not
      */
     public function is_subscribed()
     {
@@ -235,7 +236,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Change subscription status of this folder
      *
-     * @param boolean The desired subscription status: true = subscribed, false = not subscribed
+     * @param bool The desired subscription status: true = subscribed, false = not subscribed
      *
      * @return True on success, false on error
      */
@@ -250,7 +251,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * @param mixed Pseudo-SQL query as list of filter parameter triplets
      *    or string with object type (e.g. contact, event, todo, journal, note, configuration)
      *
-     * @return integer The number of objects of the given type
+     * @return int|null The number of objects of the given type, Null on error
      * @see self::select()
      */
     public function count($query = null)
@@ -301,12 +302,12 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Select Kolab objects matching the given query
      *
-     * @param mixed   Pseudo-SQL query as list of filter parameter triplets
-     *                or string with object type (e.g. contact, event, todo, journal, note, configuration)
-     * @param boolean Use fast mode to fetch only minimal set of information
-     *                (no xml fetching and parsing, etc.)
+     * @param mixed Pseudo-SQL query as list of filter parameter triplets
+     *              or string with object type (e.g. contact, event, todo, journal, note, configuration)
+     * @param bool  Use fast mode to fetch only minimal set of information
+     *              (no xml fetching and parsing, etc.)
      *
-     * @return array List of Kolab data objects (each represented as hash array)
+     * @return null|array|kolab_storage_dataset List of Kolab data objects (each represented as hash array)
      */
     public function select($query = array(), $fast = false)
     {
@@ -394,9 +395,9 @@ class kolab_storage_folder extends kolab_storage_folder_api
      *                 If set, that also implies that the given UID is an IMAP UID
      * @param bool     True to print the part content
      * @param resource File pointer to save the message part
-     * @param boolean  Disables charset conversion
+     * @param bool     Disables charset conversion
      *
-     * @return mixed  The attachment content as binary string
+     * @return mixed The attachment content as binary string
      */
     public function get_attachment($uid, $part, $mailbox = null, $print = false, $fp = null, $skip_charset_conv = false)
     {
@@ -793,10 +794,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Delete the specified object from this folder.
      *
-     * @param  mixed   $object  The Kolab object to delete or object UID
-     * @param  boolean $expunge Should the folder be expunged?
+     * @param mixed $object  The Kolab object to delete or object UID
+     * @param bool  $expunge Should the folder be expunged?
      *
-     * @return boolean True if successful, false on error
+     * @return bool True if successful, false on error
      */
     public function delete($object, $expunge = true)
     {
@@ -1095,7 +1096,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * folder. This is currently only required for handling free/busy
      * information with Kolab.
      *
-     * @return boolean|PEAR_Error True if successfull.
+     * @return bool|PEAR_Error True if successfull.
      */
     public function trigger()
     {
@@ -1137,7 +1138,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * @param string $url          The URL to be triggered.
      * @param string $auth_user    Username to authenticate with
      * @param string $auth_passwd  Password for basic auth
-     * @return boolean|PEAR_Error  True if successfull.
+     *
+     * @return bool|PEAR_Error  True if successfull.
      */
     private function trigger_url($url, $auth_user = null, $auth_passwd = null)
     {

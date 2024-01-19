@@ -852,7 +852,8 @@ class kolab_storage_cache
      * Get number of objects mathing the given query
      *
      * @param array  $query Pseudo-SQL query as list of filter parameter triplets
-     * @return integer The number of objects of the given type
+     *
+     * @return int|null The number of objects of the given type, Null on error
      */
     public function count($query = array())
     {
