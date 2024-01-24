@@ -28,6 +28,7 @@ class wap_client extends rcube_plugin
     public $noajax = true;
 
     protected $rc;
+    protected $uri;
     protected $wap;
     protected $userinfo;
     protected $token;
@@ -38,7 +39,7 @@ class wap_client extends rcube_plugin
      */
     function init()
     {
-        $this->rc = rcmail::get_instance();
+        $this->rc = rcube::get_instance();
 
         $this->add_hook('preferences_list', array($this, 'prefs_table'));
         $this->add_hook('preferences_save', array($this, 'save_prefs'));
@@ -62,6 +63,8 @@ class wap_client extends rcube_plugin
         if (empty($accounts)) {
             return;
         }
+
+        $account_type = null;
 
         $this->add_texts('localization');
 
@@ -145,10 +148,10 @@ class wap_client extends rcube_plugin
 
         foreach ($accounts as $name => $account) {
             foreach ((array) $account['nsroledn'] as $role) {
-                $value = str_replace('$base_dn', $base_dn, $value);
-                $value = str_replace('$root_dn', $root_dn, $value);
+                $role = str_replace('$base_dn', $base_dn, $role);
+                $role = str_replace('$root_dn', $root_dn, $role);
 
-                if (!in_array($value, $roles)) {
+                if (!in_array($role, $roles)) {
                     continue 2;
                 }
             }

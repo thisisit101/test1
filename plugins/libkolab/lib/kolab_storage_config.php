@@ -146,12 +146,12 @@ class kolab_storage_config
      * @param string $uid     Object UID
      * @param bool   $default Enable to get objects only from default folder
      *
-     * @return array Object data
+     * @return array|null Object data
      */
     public function get_object($uid, $default = false)
     {
         if (!$this->is_enabled()) {
-            return;
+            return null;
         }
 
         foreach ($this->folders as $folder) {
@@ -164,6 +164,8 @@ class kolab_storage_config
                 return $object;
             }
         }
+
+        return null;
     }
 
     /**
@@ -252,22 +254,22 @@ class kolab_storage_config
     public function find_folder($object = array())
     {
         if (!$this->is_enabled()) {
-            return;
+            return null;
         }
 
         // find folder object
         if (!empty($object['_mailbox'])) {
             foreach ($this->folders as $folder) {
                 if ($folder->name == $object['_mailbox']) {
-                    break;
+                    return $folder;
                 }
             }
         }
         else {
-            $folder = $this->default;
+            return $this->default;
         }
 
-        return $folder;
+        return null;
     }
 
     /**

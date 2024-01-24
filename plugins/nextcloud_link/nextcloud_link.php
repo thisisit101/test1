@@ -25,6 +25,7 @@ class nextcloud_link extends rcube_plugin
 {
     public $task = '?(?!login|logout).*';
 
+    private $rc;
 
     /**
      * Plugin initialization.

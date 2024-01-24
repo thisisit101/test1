@@ -30,7 +30,9 @@ class kolab_files_engine
     private $url_srv;
     private $filetypes_style;
     private $timeout = 600;
+    private $file_data;
     private $files_sort_cols    = array('name', 'mtime', 'size');
+    private $request;
     private $sessions_sort_cols = array('name');
     private $mimetypes = null;
 
@@ -875,12 +877,10 @@ class kolab_files_engine
             return $frame;
         }
 
-        if ($href = $this->file_data['viewer']['href']) {
+        if ($href = ($this->file_data['viewer']['href'] ?? null)) {
             // file href attribute must be an absolute URL (Bug #2063)
-            if (!empty($href)) {
-                if (!preg_match('|^https?://|', $href)) {
-                    $href = $this->url . '/api/' . $href;
-                }
+            if (!preg_match('|^https?://|', $href)) {
+                $href = $this->url . '/api/' . $href;
             }
         }
         else {
@@ -1192,7 +1192,8 @@ class kolab_files_engine
     protected function action_reset()
     {
         $this->rc->session->remove('kolab_files_caps');
-        if (($caps = $this->capabilities()) && !empty($caps)) {
+        $caps = $this->capabilities();
+        if (!empty($caps)) {
             $this->rc->output->set_env('files_caps', $caps);
         }
     }
@@ -1305,7 +1306,7 @@ class kolab_files_engine
 
         foreach ($message->attachments as $attach_prop) {
             if (empty($id) || $id == $attach_prop->mime_id) {
-                $filename = strlen($name) ? $name : rcmail_attachment_name($attach_prop, true);
+                $filename = strlen($name) ? $name : rcmail_action_mail_index::attachment_name($attach_prop, true);
                 $attachments[$filename] = $attach_prop;
             }
         }
@@ -1505,10 +1506,10 @@ class kolab_files_engine
             // for uploads in events/tasks we'll use its standard upload handler,
             // for this we have to fake $_FILES and some other POST args
             foreach ($attachments as $attach) {
-                $_FILES['_attachments']['tmp_name'][] = $attachment['path'];
-                $_FILES['_attachments']['name'][]     = $attachment['name'];
-                $_FILES['_attachments']['size'][]     = $attachment['size'];
-                $_FILES['_attachments']['type'][]     = $attachment['mimetype'];
+                $_FILES['_attachments']['tmp_name'][] = $attach['path'];
+                $_FILES['_attachments']['name'][]     = $attach['name'];
+                $_FILES['_attachments']['size'][]     = $attach['size'];
+                $_FILES['_attachments']['type'][]     = $attach['mimetype'];
                 $_FILES['_attachments']['error'][]    = null;
             }
 
@@ -1535,6 +1536,10 @@ class kolab_files_engine
 
     protected function compose_attach_success($attachment, $COMPOSE, $COMPOSE_ID, $uploadid)
     {
+        if (empty($attachment['id'])) {
+            return;
+        }
+
         $id = $attachment['id'];
 
         // store new attachment in session

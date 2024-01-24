@@ -35,7 +35,7 @@ class kolab_attachments_handler
 
     public static function ui()
     {
-        $rcmail = rcmail::get_instance();
+        $rcmail = rcube::get_instance();
         $self   = new self;
 
         $rcmail->output->add_handler('plugin.attachments_form', [$self, 'files_form']);
@@ -154,7 +154,7 @@ class kolab_attachments_handler
                     }
                 }
 
-                if (!$err && $attachment['status'] && !$attachment['abort']) {
+                if (!$err && !empty($attachment['status']) && empty($attachment['abort'])) {
                     $id = $attachment['id'];
 
                     unset($attachment['status'], $attachment['abort']);
@@ -359,7 +359,7 @@ class kolab_attachments_handler
      */
     public function attachment_header($attrib = [])
     {
-        $rcmail  = rcmail::get_instance();
+        $rcmail  = rcube::get_instance();
         $dl_link = strtolower($attrib['downloadlink'] ?? '') == 'true';
         $dl_url  = $this->rc->url(['_frame' => null, '_download' => 1] + $_GET);
         $table   = new html_table(['cols' => $dl_link ? 3 : 2]);

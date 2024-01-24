@@ -26,6 +26,7 @@ class kolab_tags_engine
     private $backend;
     private $plugin;
     private $rc;
+    private $taglist;
 
     /**
      * Class constructor
@@ -202,7 +203,7 @@ class kolab_tags_engine
             $tags[] = $tag['uid'];
         }
 
-        if ($error) {
+        if (!empty($error)) {
             if ($_POST['_from'] != 'show') {
                 $this->rc->output->show_message($this->plugin->gettext('untaggingerror'), 'error');
                 $this->rc->output->command('list_mailbox');
@@ -263,7 +264,7 @@ class kolab_tags_engine
             }
         }
 
-        if ($error) {
+        if (!empty($error)) {
             $this->rc->output->show_message($this->plugin->gettext('taggingerror'), 'error');
 
             if ($_POST['_from'] != 'show') {
@@ -324,6 +325,7 @@ class kolab_tags_engine
         $taglist = $this->backend->list_tags();
 
         // get message UIDs
+        $message_tags = [];
         foreach ($args['messages'] as $msg) {
             $message_tags[$msg->uid . '-' . $msg->folder] = null;
         }

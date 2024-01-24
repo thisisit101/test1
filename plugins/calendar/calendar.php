@@ -45,6 +45,8 @@ class calendar extends rcube_plugin
     public $gmt_offset;
     public $dst_active;
     public $ui;
+    public $event;
+    public $invitestatus;
 
     public $defaults = [
         'calendar_default_view' => "agendaWeek",
@@ -63,6 +65,8 @@ class calendar extends rcube_plugin
         'calendar_itip_after_action'   => 0,
     ];
 
+    private $token;
+
     // These are implemented with __get()
     //  private $ical;
     //  private $itip;
@@ -76,7 +80,7 @@ class calendar extends rcube_plugin
     {
         $this->rc = rcube::get_instance();
 
-        $this->register_task('calendar', 'calendar');
+        $this->register_task('calendar');
 
         // load calendar configuration
         $this->load_config();
@@ -475,9 +479,9 @@ class calendar extends rcube_plugin
                 return $p;
             }
 
-            $first_hour  = $this->rc->config->get('calendar_first_hour', $this->defaults['calendar_first_hour']);
             $time_format = $this->rc->config->get('calendar_time_format', $this->defaults['calendar_time_format']);
             $time_format = $this->rc->config->get('time_format', libcalendaring::to_php_date_format($time_format));
+            $first_hour  = $this->rc->config->get('calendar_first_hour', $this->defaults['calendar_first_hour']);
             $field_id    = 'rcmfd_firsthour';
 
             $select_hours = new html_select(['name' => '_first_hour', 'id' => $field_id]);
@@ -500,11 +504,18 @@ class calendar extends rcube_plugin
             $field_id   = 'rcmfd_workstart';
             $work_start = $this->rc->config->get('calendar_work_start', $this->defaults['calendar_work_start']);
             $work_end   = $this->rc->config->get('calendar_work_end', $this->defaults['calendar_work_end']);
+            $time_format = $this->rc->config->get('calendar_time_format', $this->defaults['calendar_time_format']);
+            $time_format = $this->rc->config->get('time_format', libcalendaring::to_php_date_format($time_format));
+
+            $select_hours = new html_select(['name' => '_work_start', 'id' => $field_id]);
+            for ($h = 0; $h < 24; $h++) {
+                $select_hours->add(date($time_format, mktime($h, 0, 0)), $h);
+            }
 
             $p['blocks']['view']['options']['workinghours'] = [
                 'title'   => html::label($field_id, rcube::Q($this->gettext('workinghours'))),
                 'content' => html::div('input-group',
-                    $select_hours->show($work_start, ['name' => '_work_start', 'id' => $field_id])
+                    $select_hours->show($work_start)
                     . html::span('input-group-append input-group-prepend', html::span('input-group-text',' &mdash; '))
                     . $select_hours->show($work_end, ['name' => '_work_end', 'id' => $field_id])
                 )
@@ -542,9 +553,9 @@ class calendar extends rcube_plugin
             }
 
             $alarm_type = $alarm_offset = '';
+            $field_id    = 'rcmfd_alarm';
 
             if (!isset($no_override['calendar_default_alarm_type'])) {
-                $field_id    = 'rcmfd_alarm';
                 $select_type = new html_select(['name' => '_alarm_type', 'id' => $field_id]);
                 $select_type->add($this->gettext('none'), '');
 
@@ -556,7 +567,6 @@ class calendar extends rcube_plugin
             }
 
             if (!isset($no_override['calendar_default_alarm_offset'])) {
-                $field_id      = 'rcmfd_alarm';
                 $input_value   = new html_inputfield(['name' => '_alarm_value', 'id' => $field_id . 'value', 'size' => 3]);
                 $select_offset = new html_select(['name' => '_alarm_offset', 'id' => $field_id . 'offset']);
 
@@ -703,7 +713,7 @@ class calendar extends rcube_plugin
                     . html::div('input-group', $category_name->show($name) . $category_color->show($color) . $category_remove);
             }
 
-            $p['blocks']['categories']['options']['category_' . $name] = [
+            $p['blocks']['categories']['options']['categoriesdefault'] = [
                 'content' => html::div(['id' => 'calendarcategories'], $categories_list),
             ];
 
@@ -942,6 +952,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         $cal     = rcube_utils::get_input_value('c', rcube_utils::INPUT_GPC);
         $success = false;
         $reload  = false;
+        $jsenv = [];
 
         if (isset($cal['showalarms'])) {
             $cal['showalarms'] = intval($cal['showalarms']);
@@ -1176,6 +1187,7 @@ $("#rcmfd_new_category").keypress(function(event) {
             if ($success && !empty($event['_decline'])) {
                 $emails    = $this->get_user_emails();
                 $organizer = null;
+                $reply_sender = null;
 
                 foreach ($old['attendees'] as $i => $attendee) {
                     if ($attendee['role'] == 'ORGANIZER') {
@@ -1265,6 +1277,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                 $ownedResourceEmails = $this->owned_resources_emails();
                 $organizer = null;
                 $resourceConfirmation = false;
+                $reply_sender = null;
 
                 foreach ($event['attendees'] as $i => $attendee) {
                     if ($attendee['role'] == 'ORGANIZER') {
@@ -1350,7 +1363,7 @@ $("#rcmfd_new_category").keypress(function(event) {
             if (is_array($data)) {
                 // convert some properties, similar to self::_client_event()
                 $lib = $this->lib;
-                array_walk($data['changes'], function(&$change, $i) use ($event, $lib) {
+                array_walk($data['changes'], function(&$change, $i) use ($lib) {
                     // convert date cols
                     foreach (['start', 'end', 'created', 'changed'] as $col) {
                         if ($change['property'] == $col) {
@@ -1805,12 +1818,13 @@ $("#rcmfd_new_category").keypress(function(event) {
                 $this->rc->output->command('display_message', $this->gettext(['name' => 'importsuccess', 'vars' => ['nr' => $count]]), 'confirmation');
                 $this->rc->output->command('plugin.import_success', ['source' => $calendar, 'refetch' => true]);
             }
-            else if (!$errors) {
+            else if (empty($errors)) {
                 $this->rc->output->command('display_message', $this->gettext('importnone'), 'notice');
                 $this->rc->output->command('plugin.import_success', ['source' => $calendar]);
             }
             else {
-                $this->rc->output->command('plugin.import_error', ['message' => $this->gettext('importerror') . ($msg ? ': ' . $msg : '')]);
+                $this->rc->output->command('plugin.import_error', ['message' => $this->gettext('importerror')
+                    . (!empty($msg) ? ': ' . $msg : '')]);
             }
         }
         else {
@@ -2633,6 +2647,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         }
 
         // build a list from $start till $end with blocks representing the fb-status
+        $t_end = 0;
         for ($s = 0, $t = $start; $t <= $end; $s++) {
             $t_end = $t + $interval * 60;
             $dt = new DateTime('@'.$t);
@@ -2863,7 +2878,7 @@ $("#rcmfd_new_category").keypress(function(event) {
             $data = $directory->get_resource_owner($id);
         }
 
-        $this->rc->output->command('plugin.resource_owner', $data);
+        $this->rc->output->command('plugin.resource_owner', $data ?? null);
         $this->rc->output->send();
     }
 
@@ -2938,6 +2953,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         $is_shared = $mode & calendar_driver::FILTER_SHARED;
         $itip      = $this->load_itip();
         $response  = $itip->get_itip_status($data, $existing);
+        $calendars = null;
 
         // get a list of writeable calendars to save new events to
         if (
@@ -3334,6 +3350,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         $success   = false;
         $deleted   = false;
         $dontsave  = false;
+        $existing = null;
 
         if ($status == 'delegated') {
             $to = rcube_utils::get_input_value('_to', rcube_utils::INPUT_POST, true);
@@ -3484,7 +3501,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                                 if ($delegatee = $this->itip->find_attendee_by_email($event['attendees'], 'delegated-from', $attendee['email'])) {
                                     $update_attendees[] = $delegatee;
                                     if (!in_array_nocase($delegatee['email'], $existing_attendee_emails)) {
-                                        $existing['attendees'][] = $delegated_attendee;
+                                        $existing['attendees'][] = $delegatee['email'];
                                     }
                                 }
                             }
@@ -3637,7 +3654,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                 $message = $deleted ? 'successremoval' : ($existing ? 'updatedsuccessfully' : 'importedsuccessfully');
             }
 
-            $msg = $this->gettext(['name' => $message, 'vars' => ['calendar' => $calendar['name']]]);
+            $msg = $this->gettext(['name' => $message, 'vars' => ['calendar' => $calendar['name'] ?? '']]);
             $this->rc->output->command('display_message', $msg, 'confirmation');
         }
 
@@ -3656,7 +3673,7 @@ $("#rcmfd_new_category").keypress(function(event) {
 
         // send iTip reply
         if ($event['_method'] == 'REQUEST' && !empty($organizer) && !$noreply && !$error_msg && !empty($reply_sender)
-            && !in_array(strtolower($organizer['email']), $emails)
+            && !in_array(strtolower($organizer['email']), $emails ?? [])
         ) {
             $event['comment'] = $comment;
             $itip = $this->load_itip();
@@ -3698,8 +3715,8 @@ $("#rcmfd_new_category").keypress(function(event) {
 
             $itip = $this->load_itip();
 
-            if ($itip->send_itip_message($event, 'CANCEL', $attendee, 'itipsubjectcancel', 'itipmailbodycancel')) {
-                $mailto = !empty($attendee['name']) ? $attendee['name'] : $attendee['email'];
+            if ($itip->send_itip_message($event, 'CANCEL', $attendee ?? null, 'itipsubjectcancel', 'itipmailbodycancel')) {
+                $mailto = !empty($attendee['name']) ? $attendee['name'] : ($attendee['email'] ?? '');
                 $msg    = $this->gettext(['name' => 'sentresponseto', 'vars' => ['mailto' => $mailto]]);
                 $this->rc->output->command('display_message', $msg, 'confirmation');
             }

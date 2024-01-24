@@ -592,7 +592,7 @@ class libcalendaring_vcalendar implements Iterator
                             'X-SIZE' => 'size'
                     ]);
 
-                    $attachment['data'] = $value ?? null;
+                    $attachment['data'] = $value;
                     $attachment['size'] = $attachment['size'] ?? strlen($value);
                     $attachment['id']   = md5(($attachment['mimetype'] ?? 'application/octet-stream') . ($attachment['name'] ?? 'noname'));
 
@@ -918,33 +918,45 @@ class libcalendaring_vcalendar implements Iterator
         }
 
         // force return value to array if requested
-        if ($as_array && !is_array($dt)) {
-            $dt = empty($dt) ? [] : [$dt];
+        if ($as_array) {
+            if (empty($dt)) {
+                return [];
+            }
+
+            return is_array($dt) ? $dt : [$dt];
         }
 
-        return $dt;
+        return $dt ?? null;
     }
 
 
     /**
      * Create a Sabre\VObject\Property instance from a PHP DateTime object
      *
-     * @param object  VObject\Document parent node to create property for
-     * @param string  Property name
-     * @param object  DateTime
-     * @param boolean Set as UTC date
-     * @param boolean Set as VALUE=DATE property
+     * @param object   VObject\Document parent node to create property for
+     * @param string   Property name
+     * @param DateTime Date time object
+     * @param bool     Set as UTC date
+     * @param bool     Set as VALUE=DATE property
+     *
+     * @return Sabre\VObject\Property
      */
     public function datetime_prop($cal, $name, $dt, $utc = false, $dateonly = null, $set_type = false)
     {
-        if ($utc) {
-            $dt->setTimeZone(new \DateTimeZone('UTC'));
-            $is_utc = true;
+        $tz = null;
+        $is_utc = false;
+
+        if ($dt) {
+            if ($utc) {
+                $dt->setTimeZone(new \DateTimeZone('UTC'));
+                $is_utc = true;
+            }
+            else {
+                $is_utc = ($tz = $dt->getTimezone()) && in_array($tz->getName(), array('UTC','GMT','Z'));
+            }
         }
-        else {
-            $is_utc = ($tz = $dt->getTimezone()) && in_array($tz->getName(), array('UTC','GMT','Z'));
-        }
-        $is_dateonly = $dateonly === null ? !empty($dt->_dateonly) : (bool) $dateonly;
+
+        $is_dateonly = $dateonly === null && $dt ? !empty($dt->_dateonly) : (bool) $dateonly;
         $vdt = $cal->createProperty($name, $dt, null, $is_dateonly ? 'DATE' : 'DATE-TIME');
 
         if ($is_dateonly) {
@@ -1460,6 +1472,7 @@ class libcalendaring_vcalendar implements Iterator
         $vt->TZID = $tz->getName();
 
         $std = null; $dst = null;
+        $t_dst = $t_std = 0;
         foreach ($transitions as $i => $trans) {
             $cmp = null;
 

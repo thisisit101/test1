@@ -174,6 +174,7 @@ class libcalendaring_itip
 
         // finally send the message
         $this->itip_send = true;
+        $smtp_error = null;
         $sent = $this->rc->deliver_message($message, $headers['X-Sender'], $mailto, $smtp_error);
         $this->itip_send = false;
 
@@ -877,8 +878,11 @@ class libcalendaring_itip
         if ($itip_sending === 0) {
             return '';
         }
+
+        $rsvp_additions = '';
+
         // add checkbox to suppress itip reply message
-        else if ($itip_sending >= 2) {
+        if ($itip_sending >= 2) {
             $toggle_attrib = array(
                 'type'     => 'checkbox',
                 'id'       => 'noreply-'.$dom_id,
@@ -887,7 +891,7 @@ class libcalendaring_itip
                 'checked'  => ($itip_sending & 1) == 0,
                 'class'    => 'pretty-checkbox',
             );
-            $rsvp_additions = html::label(array('class' => 'noreply-toggle'),
+            $rsvp_additions .= html::label(array('class' => 'noreply-toggle'),
                 html::tag('input', $toggle_attrib) . ' ' . $this->gettext('itipsuppressreply')
             );
         }
@@ -1011,9 +1015,9 @@ class libcalendaring_itip
     /**
      * Find an attendee that is not the organizer and has an email matching $email_field
      */
-    public function find_attendee_by_email($attendees, $email_field, $email, $email_utf = null)
+    public static function find_attendee_by_email($attendees, $email_field, $email, $email_utf = null)
     {
-        foreach ($attendees as $_attendee) {
+        foreach ($attendees as $attendee) {
             if (!empty($attendee['role']) && $attendee['role'] == 'ORGANIZER') {
                 continue;
             }

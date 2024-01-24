@@ -31,7 +31,7 @@ class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
 
     public static function setUpBeforeClass(): void
     {
-        $rcube = rcmail::get_instance();
+        $rcube = rcube::get_instance();
         $rcube->plugins->load_plugin('libkolab', true, true);
 
         if (!kolab_format::supports(3)) {
@@ -39,7 +39,7 @@ class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
         }
 
         // Unset mock'ed storage from the Roundcube core tests
-        $rcmail->storage = null;
+        $rcube->storage = null;
 
         if ($rcube->config->get('tests_username')) {
             $authenticated = $rcube->login(

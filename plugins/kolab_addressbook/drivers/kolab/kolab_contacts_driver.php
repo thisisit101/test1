@@ -200,6 +200,7 @@ class kolab_contacts_driver
         ];
 
         $result = $error = false;
+        $folder = null;
         $type = strlen($prop['oldname']) ? 'update' : 'create';
         $prop = $this->rc->plugins->exec_hook('addressbook_'.$type, $prop);
 
@@ -217,7 +218,7 @@ class kolab_contacts_driver
             $folder = $prop['name'];
         }
 
-        if ($result) {
+        if ($result && $folder) {
             $kolab_folder = kolab_storage::get_folder($folder);
 
             // get folder/addressbook properties
@@ -230,7 +231,7 @@ class kolab_contacts_driver
         }
         else {
             if (!$error) {
-                $error = $plugin['message'] ? $plugin['message'] : 'kolab_addressbook.book'.$type.'error';
+                $error = !empty($prop['message']) ? $prop['message'] : 'kolab_addressbook.book'.$type.'error';
             }
 
             $this->rc->output->show_message($error, 'error');
@@ -242,7 +243,7 @@ class kolab_contacts_driver
      */
     public function abook_prop($id, $abook)
     {
-        if (!empty($abook->virtual)) {
+        if ($abook instanceof kolab_storage_folder_virtual) {
             return [
                 'id'       => $id,
                 'name'     => $abook->get_name(),

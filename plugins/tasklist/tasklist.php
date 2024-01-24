@@ -68,6 +68,7 @@ class tasklist extends rcube_plugin
     private $collapsed_tasks = array();
     private $message_tasks   = array();
     private $task_titles     = array();
+    private $task_tree       = array();
 
 
     /**
@@ -85,7 +86,7 @@ class tasklist extends rcube_plugin
         $this->lib      = libcalendaring::get_instance();
         $this->timezone = $this->lib->timezone;
 
-        $this->register_task('tasks', 'tasklist');
+        $this->register_task('tasks');
 
         $this->add_hook('startup', array($this, 'startup'));
         $this->add_hook('user_delete', array($this, 'user_delete'));
@@ -427,7 +428,7 @@ class tasklist extends rcube_plugin
                 $lib = $this->lib;
                 $date_format = $this->rc->config->get('date_format', 'Y-m-d');
                 $time_format = $this->rc->config->get('time_format', 'H:i');
-                array_walk($data['changes'], function(&$change, $i) use ($lib, $date_format, $time_format) {
+                array_walk($data['changes'], function(&$change, $i) use ($lib, $date_format, $time_format, $rec) {
                     // convert date cols
                     if (in_array($change['property'], array('date','start','created','changed'))) {
                         if (!empty($change['old'])) {
@@ -538,7 +539,7 @@ class tasklist extends rcube_plugin
 
         if ($success && !empty($rec['_reportpartstat']) && $rec['_reportpartstat'] != 'NEEDS-ACTION') {
             // get the full record after update
-            if (!$task) {
+            if (empty($task)) {
                 $task = $this->driver->get_task($rec);
             }
 
@@ -646,8 +647,9 @@ class tasklist extends rcube_plugin
             // yes, raw input matched a (valid) date
             if (strlen($date_str) && strtotime($date_str) && ($date = new DateTime($date_str, $this->timezone))) {
                 $rec['date'] = $date->format('Y-m-d');
-                if ($has_time)
+                if (!empty($has_time)) {
                     $rec['time'] = $date->format('H:i');
+                }
                 $rec['title'] = $raw;
             }
             else
@@ -872,6 +874,7 @@ class tasklist extends rcube_plugin
      */
     private function notify_attendees($task, $old, $action = 'edit', $comment = null)
     {
+        $is_cancelled = false;
         if ($action == 'delete' || ($task['status'] == 'CANCELLED' && $old['status'] != $task['status'])) {
             $task['cancelled'] = true;
             $is_cancelled      = true;
@@ -983,6 +986,7 @@ class tasklist extends rcube_plugin
         $action  = rcube_utils::get_input_value('action', rcube_utils::INPUT_GPC);
         $list    = rcube_utils::get_input_value('l', rcube_utils::INPUT_GPC, true);
         $success = false;
+        $jsenv = [];
 
         unset($list['_token']);
 
@@ -1076,12 +1080,14 @@ class tasklist extends rcube_plugin
             $lists = rcube_utils::get_input_value('lists', rcube_utils::INPUT_GPC);
         }
         else {
+            $lists = [];
             foreach ($this->driver->get_lists() as $list) {
                 if (!empty($list['active'])) {
                     $lists[] = $list['id'];
                 }
             }
         }
+
         $counts = $this->driver->count_tasks($lists);
         $this->rc->output->command('plugin.update_counts', $counts);
     }
@@ -1554,6 +1560,7 @@ class tasklist extends rcube_plugin
             $lists  = $this->driver->get_lists();
             $list   = $lists[$source] ?: $this->get_default_tasklist();
             $source = $list['id'];
+            $errors = 0;
 
             // extract zip file
             if ($_FILES['_data']['type'] == 'application/zip') {
@@ -1604,7 +1611,8 @@ class tasklist extends rcube_plugin
                 $this->rc->output->command('plugin.import_success', array('source' => $source));
             }
             else {
-                $this->rc->output->command('plugin.import_error', array('message' => $this->gettext('importerror') . ($msg ? ': ' . $msg : '')));
+                $this->rc->output->command('plugin.import_error', array('message' => $this->gettext('importerror')
+                    . (!empty($msg) ? ': ' . $msg : '')));
             }
         }
         else {
@@ -1672,7 +1680,7 @@ class tasklist extends rcube_plugin
 
         // get message UIDs for filter
         if ($source && ($list = $lists[$source])) {
-            $filename = html_entity_decode($list['name']) ?: $sorce;
+            $filename = html_entity_decode($list['name']) ?: $source;
             $filter   = array($source => true);
         }
         else if ($task_id) {
@@ -1695,6 +1703,7 @@ class tasklist extends rcube_plugin
         }
 
         // Set file name
+        $filename = 'tasks';
         if ($source && count($tasks) == 1) {
             $filename = $tasks[0]['title'] ?: 'task';
         }
@@ -1962,6 +1971,7 @@ class tasklist extends rcube_plugin
         }
 
         $list = null;
+        $first = null;
 
         foreach ($lists as $l) {
             if ($l['default']) {
@@ -2055,7 +2065,14 @@ class tasklist extends rcube_plugin
         $noreply = intval(rcube_utils::get_input_value('_noreply', rcube_utils::INPUT_POST)) || $status == 'needs-action';
 
         $error_msg = $this->gettext('errorimportingtask');
-        $success   = false;
+        $success = false;
+        $reply_sender = null;
+        $organizer = null;
+        $delegate = null;
+        $existing = null;
+        $deleted = null;
+        $dontsave = false;
+        $metadata = [];
 
         if ($status == 'delegated') {
             $delegates = rcube_mime::decode_address_list(rcube_utils::get_input_value('_to', rcube_utils::INPUT_POST, true), 1, false);
@@ -2095,8 +2112,8 @@ class tasklist extends rcube_plugin
             // find writeable list to store the task
             $list_id = !empty($_REQUEST['_folder']) ? rcube_utils::get_input_value('_folder', rcube_utils::INPUT_POST) : null;
             $lists   = $this->driver->get_lists($mode);
-            $list    = $lists[$list_id];
-            $dontsave = ($_REQUEST['_folder'] === '' && $task['_method'] == 'REQUEST');
+            $list    = $lists[$list_id] ?? null;
+            $dontsave = $_REQUEST['_folder'] === '' && $task['_method'] == 'REQUEST';
 
             // select default list except user explicitly selected 'none'
             if (!$list && !$dontsave) {
@@ -2271,10 +2288,10 @@ class tasklist extends rcube_plugin
         if ($success || $dontsave) {
             if ($success) {
                 $message = $task['_method'] == 'REPLY' ? 'attendeupdateesuccess' : ($deleted ? 'successremoval' : ($existing ? 'updatedsuccessfully' : 'importedsuccessfully'));
-                $this->rc->output->command('display_message', $this->gettext(array('name' => $message, 'vars' => array('list' => $list['name']))), 'confirmation');
+                $this->rc->output->command('display_message', $this->gettext(array('name' => $message, 'vars' => array('list' => $list['name'] ?? ''))), 'confirmation');
             }
 
-            $metadata['rsvp']         = intval($metadata['rsvp']);
+            $metadata['rsvp']         = !empty($metadata['rsvp']) ? 1 : 0;
             $metadata['after_action'] = $this->rc->config->get('calendar_itip_after_action', 0);
 
             $this->rc->output->command('plugin.itip_message_processed', $metadata);
@@ -2285,7 +2302,9 @@ class tasklist extends rcube_plugin
         }
 
         // send iTip reply
-        if ($task['_method'] == 'REQUEST' && $organizer && !$noreply && !in_array(strtolower($organizer['email']), $emails) && !$error_msg) {
+        if ($task['_method'] == 'REQUEST' && $organizer && !$noreply && !$error_msg
+            && (empty($emails) || !in_array(strtolower($organizer['email']), $emails))
+        ) {
             $task['comment'] = $comment;
             $itip = $this->load_itip();
             $itip->set_sender_email($reply_sender);
@@ -2358,9 +2377,7 @@ class tasklist extends rcube_plugin
                     $select->add($list['name'], $list['id']);
                 }
             }
-        }
 
-        if ($select) {
             $default_list = $this->get_default_tasklist($lists);
             $response['select'] = html::span('folder-select', $this->gettext('saveintasklist') . '&nbsp;' .
                 $select->show($is_shared ? $existing['list'] : $default_list['id']));

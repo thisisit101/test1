@@ -136,7 +136,7 @@ class database_driver extends calendar_driver
             $hidden = array_filter(explode(',', $this->rc->config->get('hidden_calendars', '')));
             $id     = self::BIRTHDAY_CALENDAR_ID;
 
-            if (empty($active) || !in_array($id, $hidden)) {
+            if (!in_array($id, $hidden)) {
                 $calendars[$id] = array(
                     'id'         => $id,
                     'name'       => $this->cal->gettext('birthdays'),
@@ -502,7 +502,7 @@ class database_driver extends calendar_driver
 
             $success = $this->_update_event($event, $update_recurring);
 
-            if ($success && $update_master) {
+            if ($success && $update_master && !empty($master)) {
                 $this->_update_event($master, true);
             }
 
@@ -552,7 +552,7 @@ class database_driver extends calendar_driver
      */
     public function update_attendees(&$event, $attendees)
     {
-        $success = $this->edit_event($event, true);
+        $success = $this->edit_event($event);
 
         // apply attendee updates to recurrence exceptions too
         if ($success && $event['_savemode'] == 'all'
@@ -1404,6 +1404,8 @@ class database_driver extends calendar_driver
                 return $arr;
             }
         }
+
+        return false;
     }
 
     /**
@@ -1425,6 +1427,8 @@ class database_driver extends calendar_driver
                 return base64_decode($arr['data']);
             }
         }
+
+        return '';
     }
 
     /**
@@ -1497,7 +1501,7 @@ class database_driver extends calendar_driver
             }
         }
 
-        return $valarms;
+        return $valarms ?? [];
     }
 
     /**

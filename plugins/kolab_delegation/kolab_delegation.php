@@ -29,6 +29,7 @@ class kolab_delegation extends rcube_plugin
 
     private $rc;
     private $engine;
+    private $skin_path;
 
 
     /**
@@ -525,10 +526,6 @@ class kolab_delegation extends rcube_plugin
 
         // build block for every folder type
         foreach ($folder_groups as $type => $group) {
-            if (empty($group)) {
-                continue;
-            }
-
             $attrib['type'] = $type;
             $table = $this->delegate_folders_block($group, $attrib, $rights);
             $label = $this->gettext($type);

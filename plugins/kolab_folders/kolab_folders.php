@@ -673,6 +673,7 @@ class kolab_folders extends rcube_plugin
             $activate = in_array($type1, $this->act_types);
             $exists   = false;
             $result   = false;
+            $subscribed = false;
 
             // check if folder exists
             if (!empty($folderdata[$foldername]) || $foldername == 'INBOX') {
@@ -705,7 +706,7 @@ class kolab_folders extends rcube_plugin
 
                     // activate folder
                     if ($activate) {
-                        kolab_storage::folder_activate($foldername, true);
+                        kolab_storage::folder_activate($foldername);
                     }
                 }
             }

@@ -785,6 +785,7 @@ class kolab_storage
         $delim = self::$imap->get_hierarchy_delimiter();
         $names = array();
         $len   = strlen($current);
+        $parent = '';
         $p_len = 0;
 
         if ($len && ($rpos = strrpos($current, $delim))) {
@@ -1027,6 +1028,7 @@ class kolab_storage
         $pad     = '  ';
         $out     = array();
         $nsnames = array('personal' => array(), 'shared' => array(), 'other' => array());
+        $_folders = array();
 
         foreach ($folders as $folder) {
             $_folders[$folder->name] = $folder;
@@ -1447,7 +1449,7 @@ class kolab_storage
             }
         }
 
-        if (!$folder) {
+        if (empty($folder)) {
             if (!$default_name) {
                 $default_name = self::$default_folders[$type];
             }
@@ -1655,7 +1657,7 @@ class kolab_storage
      */
     public static function delete_user_folders($args)
     {
-        $db = rcmail::get_instance()->get_dbh();
+        $db = rcube::get_instance()->get_dbh();
         $prefix = 'imap://' . urlencode($args['username']) . '@' . $args['host'] . '/%';
         $db->query("DELETE FROM " . $db->table_name('kolab_folders', true) . " WHERE `resource` LIKE ?", $prefix);
 
@@ -1692,7 +1694,7 @@ class kolab_storage
      * @param string $folder_id Folder name w/o path (imap user identifier)
      * @param bool   $as_string Return configured display name attribute value
      *
-     * @return array User attributes
+     * @return array|string|null User attributes
      * @see self::ldap()
      */
     public static function folder_id2user($folder_id, $as_string = false)
@@ -1753,7 +1755,7 @@ class kolab_storage
                     }
                 }
 
-                if (!$display) {
+                if (empty($display)) {
                     $display = $user['displayname'] ?: $user['name'];
                 }
 
@@ -1766,6 +1768,8 @@ class kolab_storage
 
             return $user;
         }
+
+        return null;
     }
 
     /**

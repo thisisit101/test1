@@ -284,13 +284,16 @@ abstract class tasklist_driver
      *       list: List identifier
      *        rev: Revision (optional)
      *
-     * @return array Hash array with attachment properties:
+     * @return array|null Hash array with attachment properties:
      *         id: Attachment identifier
      *       name: Attachment name
      *   mimetype: MIME content type of the attachment
      *       size: Attachment size
      */
-    public function get_attachment($id, $task) { }
+    public function get_attachment($id, $task)
+    {
+        return null;
+    }
 
     /**
      * Get attachment body
@@ -301,9 +304,12 @@ abstract class tasklist_driver
      *       list: List identifier
      *        rev: Revision (optional)
      *
-     * @return string Attachment body
+     * @return string|false Attachment body
      */
-    public function get_attachment_body($id, $task) { }
+    public function get_attachment_body($id, $task)
+    {
+        return false;
+    }
 
     /**
      * Build a struct representing the given message reference
@@ -429,10 +435,11 @@ abstract class tasklist_driver
      */
     public function tasklist_edit_form($action, $list, $formfields)
     {
+        $rcmail = rcube::get_instance();
         $table = new html_table(['cols' => 2, 'class' => 'propform']);
 
         foreach ($formfields as $col => $colprop) {
-            $label = !empty($colprop['label']) ? $colprop['label'] : $rcmail->gettext("$domain.$col");
+            $label = !empty($colprop['label']) ? $colprop['label'] : $rcmail->gettext("tasklist.{$col}");
 
             $table->add('title', html::label($colprop['id'], rcube::Q($label)));
             $table->add(null, $colprop['value']);

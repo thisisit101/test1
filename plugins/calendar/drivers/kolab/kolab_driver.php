@@ -44,6 +44,7 @@ class kolab_driver extends calendar_driver
     protected $has_writeable    = false;
     protected $freebusy_trigger = false;
     protected $bonnie_api       = false;
+    protected $search_more_results = false;
 
     /**
      * Default constructor
@@ -180,7 +181,7 @@ class kolab_driver extends calendar_driver
 
             $parents[] = $cal->id;
 
-            if (!empty($cal->virtual)) {
+            if ($cal instanceof kolab_storage_folder_virtual) {
                 $calendars[$cal->id] = [
                     'id'       => $cal->id,
                     'name'     => $cal->get_name(),
@@ -561,6 +562,7 @@ class kolab_driver extends calendar_driver
         else if ($source == 'users') {
             // we have slightly more space, so display twice the number
             $limit = $this->rc->config->get('autocomplete_max', 15) * 2;
+            $count = 0;
 
             foreach ($this->storage->search_users($query, 0, [], $limit, $count) as $user) {
                 $calendar = new kolab_user_calendar($user, $this->cal);
@@ -1894,6 +1896,8 @@ class kolab_driver extends calendar_driver
                 }
             }
         }
+
+        return false;
     }
 
     /**
@@ -2348,8 +2352,8 @@ class kolab_driver extends calendar_driver
                 }
                 // translate free_busy values
                 if ($change['property'] == 'free_busy') {
-                    $change['old'] = !empty($old['old']) ? 'free' : 'busy';
-                    $change['new'] = !empty($old['new']) ? 'free' : 'busy';
+                    $change['old'] = !empty($change['old']) ? 'free' : 'busy';
+                    $change['new'] = !empty($change['new']) ? 'free' : 'busy';
                 }
 
                 // map alarms trigger value
@@ -2667,5 +2671,7 @@ class kolab_driver extends calendar_driver
             $db->query("DELETE FROM " . $this->rc->db->table_name($table, true)
                 . " WHERE `user_id` = ?", $args['user']->ID);
         }
+
+        return $args;
     }
 }

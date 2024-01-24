@@ -388,7 +388,10 @@ abstract class calendar_driver
      *   mimetype: MIME content type of the attachment
      *       size: Attachment size
      */
-    public function list_attachments($event) { }
+    public function list_attachments($event)
+    {
+        return [];
+    }
 
     /**
      * Get attachment properties
@@ -398,13 +401,16 @@ abstract class calendar_driver
      *         id: Event identifier
      *   calendar: Calendar identifier
      *
-     * @return array Hash array with attachment properties:
+     * @return array|false Hash array with attachment properties:
      *         id: Attachment identifier
      *       name: Attachment name
      *   mimetype: MIME content type of the attachment
      *       size: Attachment size
      */
-    public function get_attachment($id, $event) { }
+    public function get_attachment($id, $event)
+    {
+        return false;
+    }
 
     /**
      * Get attachment body
@@ -416,7 +422,10 @@ abstract class calendar_driver
      *
      * @return string Attachment body
      */
-    public function get_attachment_body($id, $event) { }
+    public function get_attachment_body($id, $event)
+    {
+        return '';
+    }
 
     /**
      * Build a struct representing the given message reference
@@ -607,10 +616,11 @@ abstract class calendar_driver
      */
     public function calendar_form($action, $calendar, $formfields)
     {
+        $rcmail = rcmail::get_instance();
         $table = new html_table(['cols' => 2, 'class' => 'propform']);
 
         foreach ($formfields as $col => $colprop) {
-            $label = !empty($colprop['label']) ? $colprop['label'] : $rcmail->gettext("$domain.$col");
+            $label = !empty($colprop['label']) ? $colprop['label'] : $rcmail->gettext("calendar.$col");
 
             $table->add('title', html::label($colprop['id'], rcube::Q($label)));
             $table->add(null, $colprop['value']);

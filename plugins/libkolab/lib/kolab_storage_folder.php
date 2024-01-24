@@ -581,7 +581,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
                 'type' => 'php',
                 'file' => __FILE__,
                 'line' => __LINE__,
-                'message' => "Could not parse Kolab object data in message $msguid ($this->name)." . $msgadd,
+                'message' => "Could not parse Kolab object data in message $msguid ($this->name)." . ($msgadd ?? ''),
             ), true);
 
             self::save_user_xml("$msguid.xml", $xml);
@@ -690,6 +690,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
         // allow configuration to workaround bug in Cyrus < 2.4.17
         $rcmail = rcube::get_instance();
         $binary = $type == 'file' && !$rcmail->config->get('kolab_binary_disable') && $this->imap->get_capability('BINARY');
+        $result = false;
 
         // generate and save object message
         if ($raw_msg = $this->build_message($object, $type, $binary, $body_file)) {
@@ -950,6 +951,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
         $files    = array();
         $part_id  = 1;
         $encoding = $binary ? 'binary' : 'base64';
+        $temp_dir = unslashify($rcmail->config->get('temp_dir'));
+        $marker   = null;
 
         if ($user_email = $rcmail->get_user_email()) {
             $headers['From'] = $user_email;
@@ -973,9 +976,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
 
             // 1.33 is for base64, we need at least 4x more memory than the message size
             if ($memory * ($binary ? 1 : 1.33) * 4 > $mem_limit) {
-                $marker   = '%%%~~~' . md5(microtime(true) . $memory) . '~~~%%%';
-                $is_file  = true;
-                $temp_dir = unslashify($rcmail->config->get('temp_dir'));
+                $marker  = '%%%~~~' . md5(microtime(true) . $memory) . '~~~%%%';
+                $is_file = true;
                 $mime->setParam('delay_file_io', true);
             }
         }
@@ -1000,7 +1002,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
         );
         $part_id++;
 
-        $is_file = false;
+        $is_file = false; // FIXME: ???
 
         // save object attachments as separate parts
         foreach ((array)($object['_attachments'] ?? []) as $key => $att) {
@@ -1054,12 +1056,14 @@ class kolab_storage_folder extends kolab_storage_folder_api
             $object['_attachments'][$key]['id'] = ++$part_id;
         }
 
+        // @phpstan-ignore-next-line
         if (!$is_file || !empty($files)) {
             $message = $mime->getMessage();
         }
 
         // parse message and build message array with
         // attachment file pointers in place of file markers
+        // @phpstan-ignore-next-line
         if (!empty($files)) {
             $message = explode($marker, $message);
             $tmp     = array();

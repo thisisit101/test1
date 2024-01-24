@@ -25,7 +25,7 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
 {
     function setUp(): void
     {
-        $rcube = rcmail::get_instance();
+        $rcube = rcube::get_instance();
         $rcube->plugins->load_plugin('libkolab', true, true);
         $rcube->plugins->load_plugin('libcalendaring', true, true);
     }

@@ -1,0 +1,29 @@
+{
+    "name": "kolab/plugins",
+    "description": "For CI of Kolab plugins",
+    "license": "AGPL-3.0+",
+    "require": {
+        "php": ">=7.2.0",
+        "caxy/php-htmldiff": "~0.1.7",
+        "pear/pear-core-minimal": "~1.10.1",
+        "pear/net_socket": "~1.2.1",
+        "pear/auth_sasl": "~1.1.0",
+        "pear/net_idna2": "~0.2.0",
+        "pear/mail_mime": "~1.10.0",
+        "pear/net_smtp": "~1.7.1",
+        "pear/net_ldap2": "~2.2.0",
+        "pear/net_sieve": "~1.4.0",
+        "pear/http_request2": "~2.5.0",
+        "roundcube/rtf-html-php": "~2.1",
+        "sabre/vobject": "~4.5.1",
+        "kolab/net_ldap3": "dev-master",
+        "spomky-labs/otphp": "~10.0.3",
+        "endroid/qr-code": "~1.6.5",
+        "enygma/yubikey": "~3.2"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "phpstan/phpstan": "^1.2",
+        "phpunit/phpunit": "^7 || ^9"
+    }
+}

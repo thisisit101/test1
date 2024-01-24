@@ -35,7 +35,9 @@ class kolab_notes extends rcube_plugin
     private $folders;
     private $cache = array();
     private $message_notes = array();
+    private $note;
     private $bonnie_api = false;
+    private $search_more_results = false;
 
     /**
      * Required startup method of a Roundcube plugin
@@ -218,10 +220,10 @@ class kolab_notes extends rcube_plugin
               array_pop($imap_path);
               $parent_id = kolab_storage::folder_id(join($delim, $imap_path));
             }
-            while (count($imap_path) > 1 && !$this->folders[$parent_id]);
+            while (count($imap_path) > 1 && empty($this->folders[$parent_id]));
 
             // restore "real" parent ID
-            if ($parent_id && !$this->folders[$parent_id]) {
+            if ($parent_id && empty($this->folders[$parent_id])) {
                 $parent_id = kolab_storage::folder_id($folder->get_parent());
             }
 
@@ -243,7 +245,7 @@ class kolab_notes extends rcube_plugin
                     'parent'   => $parent_id,
                 );
             }
-            else if (!empty($folder->virtual)) {
+            else if ($folder instanceof kolab_storage_folder_virtual) {
                 $lists[$list_id] = array(
                     'id'       => $list_id,
                     'name'     => $fullname,
@@ -301,6 +303,7 @@ class kolab_notes extends rcube_plugin
                     $folders[] = new kolab_storage_folder($foldername, 'note');
                 }
 
+                $count = 0;
                 if (count($folders)) {
                     $userfolder = new kolab_storage_folder_user($user['kolabtargetfolder'], '', $user);
                     $this->folders[$userfolder->id] = $userfolder;
@@ -345,7 +348,7 @@ class kolab_notes extends rcube_plugin
                     $editable = strpos($rights, 'i');
             }
             $info = $folder->get_folder_info();
-            $norename = $readonly || $info['norename'] || $info['protected'];
+            $norename = !$editable || $info['norename'] || $info['protected'];
         }
 
         $list_id = $folder->id;
@@ -374,7 +377,7 @@ class kolab_notes extends rcube_plugin
     public function get_folder($id)
     {
         // create list and folder instance if necesary
-        if (!$this->lists[$id]) {
+        if (empty($this->lists[$id])) {
             $folder = kolab_storage::get_folder(kolab_storage::id_decode($id));
             if ($folder->type) {
                 $this->folders[$id] = $folder;
@@ -538,15 +541,14 @@ class kolab_notes extends rcube_plugin
         }
 
         // deliver from in-memory cache
-        $key = $list_id . ':' . $uid;
-        if (!empty($this->cache[$key])) {
-            return $this->cache[$key];
+        if (!empty($list_id) && !empty($this->cache["$list_id:$uid"])) {
+            return $this->cache["$list_id:$uid"];
         }
 
         $result = false;
 
         $this->_read_lists();
-        if ($list_id) {
+        if (!empty($list_id)) {
             if ($folder = $this->get_folder($list_id)) {
                 $result = $folder->get_object($uid);
             }
@@ -650,7 +652,7 @@ class kolab_notes extends rcube_plugin
                 if (is_array($data) && !empty($data)) {
                     $rcmail = $this->rc;
                     $dtformat = $rcmail->config->get('date_format') . ' ' . $this->rc->config->get('time_format');
-                    array_walk($data, function(&$change) use ($lib, $rcmail, $dtformat) {
+                    array_walk($data, function(&$change) use ($rcmail, $dtformat) {
                       if ($change['date']) {
                           $dt = rcube_utils::anytodatetime($change['date']);
                           if ($dt instanceof DateTime) {
@@ -1071,6 +1073,7 @@ class kolab_notes extends rcube_plugin
         $action  = rcube_utils::get_input_value('_do', rcube_utils::INPUT_GPC);
         $list    = rcube_utils::get_input_value('_list', rcube_utils::INPUT_GPC, true);
         $success = $update_cmd = false;
+        $jsenv = [];
 
         if (empty($action)) {
             $action = rcube_utils::get_input_value('action', rcube_utils::INPUT_GPC);
@@ -1150,7 +1153,7 @@ class kolab_notes extends rcube_plugin
                     $results[] = $prop;
                 }
                 // report more results available
-                if ($this->driver->search_more_results) {
+                if ($this->search_more_results) {
                     $this->rc->output->show_message('autocompletemore', 'notice');
                 }
 
@@ -1188,7 +1191,7 @@ class kolab_notes extends rcube_plugin
             }
         }
         else {
-            $error_msg = $this->gettext('errorsaving') . ($save_error ? ': ' . $save_error :'');
+            $error_msg = $this->gettext('errorsaving') . (!empty($save_error) ? ': ' . $save_error : '');
             $this->rc->output->show_message($error_msg, 'error');
         }
     }

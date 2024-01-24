@@ -148,6 +148,7 @@ class kolab_dav_client
         }
 
         $elements = $response->getElementsByTagName('response');
+        $principal_href = '';
 
         foreach ($elements as $element) {
             foreach ($element->getElementsByTagName('current-user-principal') as $prop) {

@@ -100,7 +100,7 @@ class libcalendaring_recurrence
             // do nothing
         }
 
-        return $current ? $this->toDateTime($current) : false;
+        return !empty($current) ? $this->toDateTime($current) : false;
     }
 
     /**

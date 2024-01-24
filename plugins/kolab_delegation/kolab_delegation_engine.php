@@ -99,8 +99,6 @@ class kolab_delegation_engine
      * @param string $uid    Delegate authentication identifier
      * @param array  $acl    List of folder->right map
      * @param bool   $update Update (remove) old rights
-     *
-     * @return string On error returns an error label, on success returns null
      */
     public function delegate_acl_update($uid, $acl, $update = false)
     {
@@ -220,6 +218,8 @@ class kolab_delegation_engine
 
             return $this->parse_ldap_record($user, $dn);
         }
+
+        return [];
     }
 
     /**
@@ -480,6 +480,7 @@ class kolab_delegation_engine
     {
         $email = array();
         $uid   = $data[$this->ldap_login_field];
+        $name  = '';
 
         if (is_array($uid)) {
             $uid = array_filter($uid);

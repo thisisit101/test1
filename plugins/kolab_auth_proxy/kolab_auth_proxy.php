@@ -23,6 +23,8 @@
  */
 class kolab_auth_proxy extends rcube_plugin
 {
+    private $rc;
+
     /**
      * Plugin initialization
      */

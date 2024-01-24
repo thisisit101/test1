@@ -167,6 +167,7 @@ abstract class kolab_format_xcal extends kolab_format
             }
         }
 
+        $start_tz = null;
         if ($object['start'] instanceof DateTimeInterface) {
             $start_tz = $object['start']->getTimezone();
         }
@@ -420,6 +421,7 @@ abstract class kolab_format_xcal extends kolab_format
             $this->obj->setOrganizer($organizer);
         }
 
+        $start_tz = null;
         if (($object['start'] ?? null) instanceof DateTimeInterface) {
             $start_tz = $object['start']->getTimezone();
         }
@@ -788,7 +790,8 @@ abstract class kolab_format_xcal extends kolab_format
         if (class_exists('kolabcalendaring')) {
             return new EventCal($this->obj);
         }
-        else if (!$error_logged) {
+
+        if (!$error_logged) {
             $error_logged = true;
             rcube::raise_error(array(
                 'code'    => 900,

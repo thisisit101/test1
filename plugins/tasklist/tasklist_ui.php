@@ -21,12 +21,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#[AllowDynamicProperties]
 class tasklist_ui
 {
     private $rc;
     private $plugin;
     private $ready = false;
+    private $action;
+    private $list;
     private $gui_objects = [];
 
     function __construct($plugin)

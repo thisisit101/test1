@@ -160,7 +160,7 @@ class caldav_driver extends kolab_driver
 
             $parents[] = $cal->id;
 
-            if ($cal->virtual) {
+            if ($cal instanceof kolab_storage_folder_virtual) {
                 $calendars[$cal->id] = [
                     'id'       => $cal->id,
                     'name'     => $cal->get_name(),
@@ -178,7 +178,7 @@ class caldav_driver extends kolab_driver
                 $cal = $this->_to_calendar($cal);
                 $this->calendars[$cal->id] = $cal;
 
-                $is_user = ($cal instanceof caldav_user_calendar);
+                $is_user = false; // ($cal instanceof caldav_user_calendar);
 
                 $calendars[$cal->id] = [
                     'id'        => $cal->id,

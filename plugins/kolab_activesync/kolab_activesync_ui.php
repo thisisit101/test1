@@ -25,10 +25,12 @@
 
 class kolab_activesync_ui
 {
+    public  $device = [];
+
     private $rc;
     private $plugin;
     private $force_subscriptions = [];
-    public  $device = [];
+    private $skin_path;
 
     const SETUP_URL = 'https://kb.kolabenterprise.com/documentation/setting-up-an-activesync-client';
 

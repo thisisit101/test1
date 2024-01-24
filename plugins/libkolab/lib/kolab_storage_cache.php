@@ -44,6 +44,7 @@ class kolab_storage_cache
     protected $max_sync_lock_time = 600;
     protected $extra_cols = array();
     protected $data_props = array();
+    protected $imap_options = [];
     protected $order_by = null;
     protected $limit = null;
     protected $error = 0;
@@ -1269,7 +1270,7 @@ class kolab_storage_cache
             $this->metadata = $this->db->fetch_assoc($this->db->query($read_query, $this->folder_id));
         }
 
-        $this->synclock = $affected > 0;
+        $this->synclock = !empty($affected);
     }
 
     /**

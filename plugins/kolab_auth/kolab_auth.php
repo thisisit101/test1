@@ -529,6 +529,7 @@ class kolab_auth extends rcube_plugin
 
             $isadmin = false;
             $admin_rights = $rcmail->config->get('kolab_auth_admin_rights', array());
+            $allowed_tasks = [];
 
             // @deprecated: fall-back to the old check if the original user has/belongs to administrative role/group
             if (empty($admin_rights)) {
@@ -584,8 +585,9 @@ class kolab_auth extends rcube_plugin
                                 if ($type == 'entry' && in_array($req, $effective_rights[$type])) {
                                     $allowed_tasks[] = $task;
                                 }
-                                else if ($type == 'attrib' && array_key_exists($attrib, $effective_rights[$type]) &&
-                                        in_array($req, $effective_rights[$type][$attrib])) {
+                                else if ($type == 'attrib' && array_key_exists($attrib, $effective_rights[$type])
+                                    && in_array($req, $effective_rights[$type][$attrib])
+                                ) {
                                     $allowed_tasks[] = $task;
                                 }
                             }

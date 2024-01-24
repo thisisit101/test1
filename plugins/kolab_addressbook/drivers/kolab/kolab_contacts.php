@@ -515,7 +515,8 @@ class kolab_contacts extends rcube_addressbook
             if ($required) {
                 foreach ($required as $f) {
                     // required field might be 'email', but contact might contain 'email:home'
-                    if (!($v = rcube_addressbook::get_col_values($f, $contact, true)) || empty($v)) {
+                    $v = rcube_addressbook::get_col_values($f, $contact, true);
+                    if (count($v) === 0) {
                         continue 2;
                     }
                 }
@@ -905,7 +906,7 @@ class kolab_contacts extends rcube_addressbook
             $deleted = $this->storagefolder->delete($list['uid']);
         }
 
-        if (!$deleted) {
+        if (empty($deleted)) {
             rcube::raise_error(array(
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
                     'message' => "Error deleting distribution-list object from the Kolab server"
@@ -939,7 +940,7 @@ class kolab_contacts extends rcube_addressbook
             $saved = $this->storagefolder->save($list, 'distribution-list', $list['uid']);
         }
 
-        if (!$saved) {
+        if (empty($saved)) {
             rcube::raise_error(array(
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
                     'message' => "Error saving distribution-list object to Kolab server"

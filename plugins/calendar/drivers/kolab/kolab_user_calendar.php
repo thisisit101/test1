@@ -62,9 +62,9 @@ class kolab_user_calendar extends kolab_calendar
         if ($this->ready) {
             // ID is derrived from the user's kolabtargetfolder attribute
             $this->id          = kolab_storage::folder_id($this->userdata['kolabtargetfolder'], true);
-            $this->imap_folder = $this->userdata['kolabtargetfolder'];
             $this->name        = $this->storage->name;
             $this->parent      = '';  // user calendars are top level
+            // $this->imap_folder = $this->userdata['kolabtargetfolder'];
 
             // user-specific alarms settings win
             $prefs = $this->cal->rc->config->get('kolab_calendars', []);

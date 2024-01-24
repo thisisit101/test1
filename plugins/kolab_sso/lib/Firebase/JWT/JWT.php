@@ -190,7 +190,9 @@ class JWT
         if (empty(static::$supported_algs[$alg])) {
             throw new DomainException('Algorithm not supported');
         }
+
         list($function, $algorithm) = static::$supported_algs[$alg];
+
         switch($function) {
             case 'hash_hmac':
                 return hash_hmac($algorithm, $msg, $key, true);
@@ -203,6 +205,8 @@ class JWT
                     return $signature;
                 }
         }
+
+        throw new DomainException("Invalid algorithm");
     }
 
     /**

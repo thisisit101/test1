@@ -54,7 +54,7 @@ class logon_page extends rcube_plugin
             $html = trim(str_replace('<!-- Put HTML content here -->', '', $html));
         }
 
-        if ($html) {
+        if (!empty($html)) {
             $rcmail = rcube::get_instance();
 
             // Parse content with templates engine, so we can use e.g. localization

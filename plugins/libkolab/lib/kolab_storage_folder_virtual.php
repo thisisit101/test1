@@ -32,7 +32,6 @@ class kolab_storage_folder_virtual extends kolab_storage_folder_api
         $this->namespace = $ns;
         $this->parent    = $parent;
         $this->displayname = $dispname;
-        $this->virtual = true;
     }
 
     /**

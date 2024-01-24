@@ -26,7 +26,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
     public static function setUpBeforeClass(): void
     {
         // load libkolab plugin
-        $rcmail = rcmail::get_instance();
+        $rcmail = rcube::get_instance();
         $rcmail->plugins->load_plugin('libkolab', true, true);
 
         if (!kolab_format::supports(3)) {
@@ -95,7 +95,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
             $this->markTestSkipped('No Kolab support');
         }
 
-        $rcmail = rcmail::get_instance();
+        $rcmail = rcube::get_instance();
         $folder = new kolab_storage_folder('Calendar', 'event', 'event');
         $this->assertEquals($folder->get_owner(), $rcmail->config->get('tests_username'));
 
@@ -116,7 +116,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
             $this->markTestSkipped('No Kolab support');
         }
 
-        $rcmail     = rcmail::get_instance();
+        $rcmail     = rcube::get_instance();
         $foldername = 'Calendar';
         $uri        = parse_url($rcmail->config->get('default_host'));
         $hostname   = $uri['host'];
@@ -135,7 +135,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
             $this->markTestSkipped('No Kolab support');
         }
 
-        $rcmail = rcmail::get_instance();
+        $rcmail = rcube::get_instance();
         $folder = new kolab_storage_folder('Doesnt-Exist', 'event', 'event');
 
         // generate UID from folder name if IMAP operations fail
@@ -218,7 +218,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
             $this->markTestSkipped('No Kolab support');
         }
 
-        $rcmail = rcmail::get_instance();
+        $rcmail = rcube::get_instance();
         $imap   = $rcmail->get_storage();
         $db     = $rcmail->get_dbh();
 

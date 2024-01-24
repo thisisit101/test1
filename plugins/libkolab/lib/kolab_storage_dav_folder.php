@@ -456,6 +456,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
             return [];
         }
 
+        $hrefs = [];
         foreach ($uids as $uid) {
             $hrefs[] = $this->object_location($uid);
         }

@@ -461,7 +461,8 @@ class carddav_contacts extends rcube_addressbook
             if ($required) {
                 foreach ($required as $f) {
                     // required field might be 'email', but contact might contain 'email:home'
-                    if (!($v = rcube_addressbook::get_col_values($f, $contact, true)) || empty($v)) {
+                    $v = rcube_addressbook::get_col_values($f, $contact, true);
+                    if (count($v) === 0) {
                         continue 2;
                     }
                 }

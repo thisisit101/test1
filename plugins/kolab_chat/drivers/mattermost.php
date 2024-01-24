@@ -152,7 +152,7 @@ class kolab_chat_mattermost
      * Returns the Mattermost session token
      * Note: This works only if the user/pass is the same in Kolab and Mattermost
      *
-     * @return string Session token
+     * @return string|null Session token
      */
     protected function get_token()
     {
@@ -215,24 +215,28 @@ class kolab_chat_mattermost
             }
         }
 
-        if ($user_id && $token) {
+        if (!empty($user_id) && !empty($token)) {
             $this->token_valid = true;
             $_SESSION['mattermost'] = array($user_id, $token);
             return $token;
         }
+
+        return null;
     }
 
     /**
      * Returns the Mattermost user ID
      * Note: This works only if the user/pass is the same in Kolab and Mattermost
      *
-     * @return string User ID
+     * @return string|null User ID
      */
     protected function get_user_id()
     {
         if ($token = $this->get_token()) {
             return $_SESSION['mattermost'][0];
         }
+
+        return null;
     }
 
     /**

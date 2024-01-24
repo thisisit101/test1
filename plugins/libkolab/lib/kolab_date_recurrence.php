@@ -27,13 +27,26 @@
 
 class kolab_date_recurrence
 {
-    private /* EventCal */ $engine;
-    private /* kolab_format_xcal */ $object;
-    private /* DateTime */ $start;
-    private /* DateTime */ $next;
-    private /* cDateTime */ $cnext;
-    private /* DateInterval */ $duration;
-    private /* bool */ $allday;
+    /** @var EventCal */
+    private $engine;
+
+    /* @var kolab_format_xcal */
+    private $object;
+
+    /** @var DateTime */
+    private $start;
+
+    /** @var DateTime */ 
+    private $next;
+
+    /** @var cDateTime */
+    private $cnext;
+
+    /** @var DateInterval */
+    private $duration;
+
+    /** @var bool */
+    private $allday;
 
 
     /**

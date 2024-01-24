@@ -210,7 +210,7 @@ class kolab_calendar extends kolab_storage_folder_api
                 $master = $this->_to_driver_event($record);
             }
 
-            if ($master) {
+            if (!empty($master)) {
                 // check for match in top-level exceptions (aka loose single occurrences)
                 if (!empty($master['_formatobj']) && ($instance = $master['_formatobj']->get_instance($instance_id))) {
                     $this->events[$id] = $this->_to_driver_event($instance, false, true, $master);
@@ -670,6 +670,7 @@ class kolab_calendar extends kolab_storage_folder_api
         $exdata = [];
         $futuredata = [];
         $recurrence_id_format = libcalendaring::recurrence_id_format($event);
+        $recurrence_rule = null;
 
         if (!empty($event['recurrence'])) {
             // copy the recurrence rule from the master event (to be used in the UI)

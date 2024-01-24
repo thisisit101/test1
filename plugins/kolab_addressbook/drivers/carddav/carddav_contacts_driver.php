@@ -179,7 +179,7 @@ class carddav_contacts_driver
     public function abook_prop($id, $abook)
     {
 /*
-        if ($abook->virtual) {
+        if ($abook instanceof kolab_storage_folder_virtual) {
             return [
                 'id'       => $id,
                 'name'     => $abook->get_name(),

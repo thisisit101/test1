@@ -126,7 +126,7 @@ class tasklist_kolab_driver extends tasklist_driver
                     $editable = strpos($rights, 'i') !== false;
             }
             $info = $folder->get_folder_info();
-            $norename = $readonly || $info['norename'] || $info['protected'];
+            $norename = !$editable || !empty($info['norename']) || !empty($info['protected']);
         }
 
         $list_id = $folder->id; #kolab_storage::folder_id($folder->name);
@@ -150,7 +150,7 @@ class tasklist_kolab_driver extends tasklist_driver
             'owner' => $folder->get_owner(),
             'parentfolder' => $folder->get_parent(),
             'default' => $folder->default,
-            'virtual' => !empty($folder->virtual),
+            'virtual' => $folder instanceof kolab_storage_folder_virtual,
             'children' => true,  // TODO: determine if that folder indeed has child folders
             'subscribed' => (bool)$folder->is_subscribed(),
             'removable' => !$folder->default,
@@ -224,7 +224,7 @@ class tasklist_kolab_driver extends tasklist_driver
                     'parent'   => $parent_id,
                 );
             }
-            else if (!empty($folder->virtual)) {
+            else if ($folder instanceof kolab_storage_folder_virtual) {
                 $lists[$list_id] = array(
                     'id'       => $list_id,
                     'name'     => $fullname,
@@ -523,6 +523,7 @@ class tasklist_kolab_driver extends tasklist_driver
                     $folders[] = new kolab_storage_folder($foldername, 'task');
                 }
 
+                $count = 0;
                 if (count($folders)) {
                     $userfolder = new kolab_storage_folder_user($user['kolabtargetfolder'], '', $user);
                     $this->folders[$userfolder->id] = $userfolder;
@@ -882,7 +883,7 @@ class tasklist_kolab_driver extends tasklist_driver
         list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($prop);
 
         // call Bonnie API
-        $result = $this->bonnie_api->diff('task', $uid, $rev1, $rev2, $mailbox, $msguid, $instance_id);
+        $result = $this->bonnie_api->diff('task', $uid, $rev1, $rev2, $mailbox, $msguid);
         if (is_array($result) && $result['uid'] == $uid) {
             $result['rev1'] = $rev1;
             $result['rev2'] = $rev2;
@@ -1037,6 +1038,7 @@ class tasklist_kolab_driver extends tasklist_driver
 
         $time = $slot + $interval;
 
+        $dbdata     = array();
         $candidates = array();
         $query      = array(
             array('tags', '=', 'x-has-alarms'),
@@ -1091,11 +1093,11 @@ class tasklist_kolab_driver extends tasklist_driver
         $alarms = array();
         foreach ($candidates as $id => $task) {
           // skip dismissed
-          if ($dbdata[$id]['dismissed'])
+          if (!empty($dbdata[$id]['dismissed']))
               continue;
 
           // snooze function may have shifted alarm time
-          $notifyat = $dbdata[$id]['notifyat'] ? strtotime($dbdata[$id]['notifyat']) : $task['notifyat'];
+          $notifyat = !empty($dbdata[$id]['notifyat']) ? strtotime($dbdata[$id]['notifyat']) : $task['notifyat'];
           if ($notifyat <= $time)
               $alarms[] = $task;
         }
@@ -1321,6 +1323,7 @@ class tasklist_kolab_driver extends tasklist_driver
         }
 
         if (!empty($record['_attachments'])) {
+            $attachments = [];
             foreach ($record['_attachments'] as $key => $attachment) {
                 if ($attachment !== false) {
                     if (empty($attachment['name'])) {
@@ -1569,7 +1572,7 @@ class tasklist_kolab_driver extends tasklist_driver
      *       list: List identifier
      *        rev: Revision (optional)
      *
-     * @return array Hash array with attachment properties:
+     * @return array|null Hash array with attachment properties:
      *         id: Attachment identifier
      *       name: Attachment name
      *   mimetype: MIME content type of the attachment
@@ -1604,7 +1607,7 @@ class tasklist_kolab_driver extends tasklist_driver
      *       list: List identifier
      *        rev: Revision (optional)
      *
-     * @return string Attachment body
+     * @return string|false Attachment body
      */
     public function get_attachment_body($id, $task)
     {
@@ -1693,6 +1696,7 @@ class tasklist_kolab_driver extends tasklist_driver
         $storage = $this->rc->get_storage();
         $delim   = $storage->get_hierarchy_delimiter();
         $form    = array();
+        $options = [];
 
         if (strlen($folder_name)) {
             $path_imap = explode($delim, $folder_name);
@@ -1709,10 +1713,11 @@ class tasklist_kolab_driver extends tasklist_driver
 
         // folder name (default field)
         $input_name = new html_inputfield(array('name' => 'name', 'id' => 'taskedit-tasklistname', 'size' => 20));
-        $fieldprop['name']['value'] = $input_name->show($list['editname'], array('disabled' => ($options['norename'] || $options['protected'])));
+        $disabled = !empty($options['norename']) || !empty($options['protected']);
+        $fieldprop['name']['value'] = $input_name->show($list['editname'], array('disabled' => $disabled));
 
         // prevent user from moving folder
-        if (!empty($options) && ($options['norename'] || $options['protected'])) {
+        if ($disabled) {
             $hidden_fields[] = array('name' => 'parent', 'value' => $path_imap);
         }
         else {

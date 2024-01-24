@@ -162,7 +162,7 @@ class kolab_activesync extends rcube_plugin
                 $success = $this->device_delete($id);
             }
 
-            if ($success) {
+            if (!empty($success)) {
                 $this->rc->output->show_message($this->gettext('successfullydeleted'), 'confirmation');
                 $this->rc->output->command('plugin.activesync_save_complete', array(
                         'success' => true,
@@ -497,7 +497,7 @@ class kolab_activesync extends rcube_plugin
      *
      * @param string $id  Device ID
      *
-     * @return array Device data
+     * @return array|null Device data
      */
     public function device_info($id)
     {
@@ -516,6 +516,8 @@ class kolab_activesync extends rcube_plugin
                 return $sql_arr;
             }
         }
+
+        return null;
     }
 
     /**

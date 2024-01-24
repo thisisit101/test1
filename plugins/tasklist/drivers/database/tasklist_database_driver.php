@@ -690,15 +690,19 @@ class tasklist_database_driver extends tasklist_driver
      */
     public function delete_task($prop, $force = true)
     {
+        if (empty($prop['id'])) {
+            return false;
+        }
+
         $task_id = $prop['id'];
 
-        if ($task_id && $force) {
+        if ($force) {
             $result = $this->rc->db->query("DELETE FROM " . $this->db_tasks
                 . " WHERE `task_id` = ? AND `tasklist_id` IN (" . $this->list_ids . ")",
                 $task_id
             );
         }
-        else if ($task_id) {
+        else {
             $result = $this->rc->db->query("UPDATE " . $this->db_tasks
                 . " SET `changed` = " . $this->rc->db->now() . ", `del` = 1"
                 . " WHERE `task_id` = ? AND `tasklist_id` IN (" . $this->list_ids . ")",
@@ -706,7 +710,7 @@ class tasklist_database_driver extends tasklist_driver
             );
         }
 
-        return $this->rc->db->affected_rows($result);
+        return $this->rc->db->affected_rows($result) > 0;
     }
 
     /**
@@ -783,7 +787,7 @@ class tasklist_database_driver extends tasklist_driver
             }
         }
 
-        return $valarms;
+        return $valarms ?? null;
     }
 
     /**
@@ -844,5 +848,7 @@ class tasklist_database_driver extends tasklist_driver
                 $db->query(sprintf("DELETE FROM $table WHERE `tasklist_id` IN (%s)", join(',', $list_ids)));
             }
         }
+
+        return $args;
     }
 }

@@ -34,6 +34,7 @@ class kolab_invitation_calendar
     public $categories    = [];
     public $name          = 'Invitations';
 
+    protected $cal;
 
     /**
      * Default constructor

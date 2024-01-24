@@ -26,9 +26,12 @@
  */
 class kolab_ldap extends rcube_ldap_generic
 {
-    private $conf     = array();
+    private $conf = array();
+    private $debug = false;
     private $fieldmap = array();
+    private $parse_replaces = [];
     private $rcache;
+    private $ready = false;
 
 
     function __construct($p)
@@ -48,6 +51,8 @@ class kolab_ldap extends rcube_ldap_generic
             $cache_ttl   = $rcmail->config->get('ldap_cache_ttl', '10m');
             $this->cache = $rcmail->get_cache('LDAP.kolab_cache', $cache_type, $cache_ttl);
         }
+
+        $this->debug = $p['debug'];
 
         // Connect to the server (with bind)
         parent::__construct($p);
@@ -226,7 +231,7 @@ class kolab_ldap extends rcube_ldap_generic
         if (!is_resource($this->conn)) {
             rcube::raise_error(array('code' => 100, 'type' => 'ldap',
                 'file' => __FILE__, 'line' => __LINE__,
-                'message' => "Could not connect to any LDAP server, last tried $host"), true);
+                'message' => "Could not connect to any LDAP server"), true);
 
             $this->ready = false;
         }
@@ -520,6 +525,7 @@ class kolab_ldap extends rcube_ldap_generic
         }
         else {
             $orig_user = $user;
+            $domain = null;
             $rcmail = rcube::get_instance();
 
             // get default domain

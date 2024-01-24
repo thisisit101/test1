@@ -487,7 +487,7 @@ abstract class kolab_format
      * Load Kolab object data from the given XML block
      *
      * @param string XML data
-     * @return boolean True on success, False on failure
+     * @return void
      */
     public function load($xml)
     {

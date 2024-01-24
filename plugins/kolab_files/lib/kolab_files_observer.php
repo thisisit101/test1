@@ -13,7 +13,7 @@ class kolab_files_observer implements SplObserver
         $this->file = $file;
     }
 
-    public function update(SplSubject $subject)
+    public function update(SplSubject $subject): void
     {
         $event = $subject->getLastEvent();
 

@@ -2,8 +2,11 @@
 
 class kolab_notes_ui
 {
+    private $action;
+    private $folder;
     private $rc;
     private $plugin;
+    private $list;
     private $ready = false;
 
     function __construct($plugin)

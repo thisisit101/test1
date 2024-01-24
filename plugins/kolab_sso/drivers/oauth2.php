@@ -23,6 +23,7 @@
  */
 class kolab_sso_oauth2
 {
+    protected $error;
     protected $plugin;
     protected $id       = 'oauth2';
     protected $config   = array();

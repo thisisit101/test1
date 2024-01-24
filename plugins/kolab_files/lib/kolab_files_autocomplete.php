@@ -24,6 +24,7 @@
 
 class kolab_files_autocomplete
 {
+    private $ldap;
     private $plugin;
     private $rc;
 

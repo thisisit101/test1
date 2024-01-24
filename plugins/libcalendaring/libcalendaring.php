@@ -491,11 +491,15 @@ class libcalendaring extends rcube_plugin
         if ($val[0] == '@') {
             return array(new DateTime($val));
         }
-        else if (preg_match('/([+-]?)P?(T?\d+[HMSDW])+/', $val, $m) && preg_match_all('/T?(\d+)([HMSDW])/', $val, $m2, PREG_SET_ORDER)) {
+
+        if (preg_match('/([+-]?)P?(T?\d+[HMSDW])+/', $val, $m) && preg_match_all('/T?(\d+)([HMSDW])/', $val, $m2, PREG_SET_ORDER)) {
             if ($m[1] == '')
                 $m[1] = '+';
+
+            $prefix = '';
             foreach ($m2 as $seg) {
                 $prefix = $seg[2] == 'D' || $seg[2] == 'W' ? 'P' : 'PT';
+
                 if ($seg[1] > 0) {  // ignore zero values
                     // convert seconds to minutes
                     if ($seg[2] == 'S') {
@@ -503,12 +507,17 @@ class libcalendaring extends rcube_plugin
                         $seg[1] = max(1, round($seg[1]/60));
                     }
 
-                    return array($seg[1], $m[1].$seg[2], $m[1].$seg[1].$seg[2], $m[1].$prefix.$seg[1].$seg[2]);
+                    return array($seg[1], $m[1] . $seg[2], $m[1] . $seg[1] . $seg[2], $m[1] . $prefix . $seg[1] . $seg[2]);
                 }
             }
 
             // return zero value nevertheless
-            return array($seg[1], $m[1].$seg[2], $m[1].$seg[1].$seg[2], $m[1].$prefix.$seg[1].$seg[2]);
+            return array(
+                $seg[1] ?? null,
+                $m[1] . ($seg[2] ?? ''),
+                $m[1] . ($seg[1] ?? '') . ($seg[2] ?? ''),
+                $m[1] . $prefix . ($seg[1] ?? '') . ($seg[2] ?? '')
+            );
         }
 
         return false;
@@ -900,6 +909,7 @@ class libcalendaring extends rcube_plugin
      */
     public function recurrence_form($attrib = array())
     {
+        $html = '';
         switch ($attrib['part']) {
             // frequency selector
             case 'frequency':
@@ -1240,7 +1250,10 @@ class libcalendaring extends rcube_plugin
         }
 
         // successfully parsed events/tasks?
-        if (!empty($objects) && ($object = $objects[$index]) && (!$type || $object['_type'] == $type)) {
+        if (!empty($headers) && !empty($objects) && !empty($parser) && !empty($index)
+            && ($object = $objects[$index])
+            && (!$type || $object['_type'] == $type)
+        ) {
             if ($parser->method)
                 $object['_method'] = $parser->method;
 

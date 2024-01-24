@@ -589,6 +589,7 @@ class caldav_calendar extends kolab_storage_dav_folder
         $exdata = [];
         $futuredata = [];
         $recurrence_id_format = libcalendaring::recurrence_id_format($event);
+        $recurrence_rule = null;
 
         if (!empty($event['recurrence'])) {
             // copy the recurrence rule from the master event (to be used in the UI)

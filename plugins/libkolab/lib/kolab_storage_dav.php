@@ -28,6 +28,8 @@ class kolab_storage_dav
     const ERROR_NO_PERMISSION  = 3;
     const ERROR_INVALID_FOLDER = 4;
 
+    public static $last_error;
+
     protected $dav;
     protected $url;
 
@@ -77,11 +79,12 @@ class kolab_storage_dav
      *
      * @param string Data type to list folders for (contact,event,task,note)
      *
-     * @return object kolab_storage_dav_folder The folder object
+     * @return kolab_storage_dav_folder|null The folder object
      */
     public function get_default_folder($type)
     {
         // TODO: Not used
+        return null;
     }
 
     /**
@@ -204,6 +207,7 @@ class kolab_storage_dav
     public function folder_create($name, $type = null, $subscribed = false, $active = false)
     {
         // TODO
+        return false;
     }
 
     /**
@@ -216,7 +220,8 @@ class kolab_storage_dav
      */
     public function folder_rename($oldname, $newname)
     {
-        // TODO ??
+        // TODO
+        return false;
     }
 
     /**
@@ -306,6 +311,7 @@ class kolab_storage_dav
     public function folder_selector($type, $attrs, $current = '')
     {
         // TODO
+        return null;
     }
 
     /**
@@ -322,6 +328,7 @@ class kolab_storage_dav
     public function list_folders($root = '', $mbox = '*', $filter = null, $subscribed = null, &$folderdata = array())
     {
         // TODO
+        return [];
     }
 
     /**
@@ -522,7 +529,7 @@ class kolab_storage_dav
      */
     public static function delete_user_folders($args)
     {
-        $db = rcmail::get_instance()->get_dbh();
+        $db = rcube::get_instance()->get_dbh();
         $table  = $db->table_name('kolab_folders', true);
         $prefix = 'dav://' . urlencode($args['username']) . '@' . $args['host'] . '/%';
 

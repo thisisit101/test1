@@ -27,7 +27,7 @@ class kolab_utils
 {
     public static function folder_form($form, $folder, $domain, $hidden_fields = array(), $no_acl = false)
     {
-        $rcmail = rcmail::get_instance();
+        $rcmail = rcube::get_instance();
 
         // add folder ACL tab
         if (!$no_acl && is_string($folder) && strlen($folder)) {
@@ -75,7 +75,7 @@ class kolab_utils
      */
     public static function folder_acl_form($folder)
     {
-        $rcmail  = rcmail::get_instance();
+        $rcmail  = rcube::get_instance();
         $storage = $rcmail->get_storage();
         $options = $storage->folder_info($folder);
 

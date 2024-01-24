@@ -1,4 +1,9 @@
 *.tar.gz
 *.tar.gz.gpg
 *.patch
+.phpunit.result.cache
 plugins/*/config.inc.php
+program
+skins
+tests
+vendor

@@ -34,6 +34,7 @@ class kolab_addressbook extends rcube_plugin
     public $driver;
     public $bonnie_api = false;
 
+    private $folders;
     private $sources;
     private $rc;
     private $ui;
@@ -240,7 +241,7 @@ class kolab_addressbook extends rcube_plugin
             $source = $data[$id];
             $is_collapsed = strpos($this->rc->config->get('collapsed_abooks',''), '&'.rawurlencode($id).'&') !== false;
 
-            if (!empty($folder->virtual)) {
+            if ($folder instanceof kolab_storage_folder_virtual) {
                 $source = $this->driver->abook_prop($folder->id, $folder);
             }
             else if (empty($source)) {
@@ -706,7 +707,6 @@ class kolab_addressbook extends rcube_plugin
                 // delete old revision from imap and cache
                 $imap->delete_message($msguid, $folder->name);
                 $folder->cache->set($msguid, false);
-                $this->cache = array();
             }
         }
 
@@ -919,6 +919,7 @@ class kolab_addressbook extends rcube_plugin
                     $folders[] = new kolab_storage_folder($foldername, 'contact');
                 }
 
+                $count = 0;
                 if (count($folders)) {
                     $userfolder = new kolab_storage_folder_user($user['kolabtargetfolder'], '', $user);
                     $this->folders[$userfolder->id] = $userfolder;
@@ -950,10 +951,10 @@ class kolab_addressbook extends rcube_plugin
               array_pop($imap_path);
               $parent_id = kolab_storage::folder_id(join($delim, $imap_path));
             }
-            while (count($imap_path) > 1 && !$this->folders[$parent_id]);
+            while (count($imap_path) > 1 && empty($this->folders[$parent_id]));
 
             // restore "real" parent ID
-            if ($parent_id && !$this->folders[$parent_id]) {
+            if ($parent_id && empty($this->folders[$parent_id])) {
                 $parent_id = kolab_storage::folder_id($folder->get_parent());
             }
 

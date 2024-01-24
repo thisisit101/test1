@@ -108,7 +108,7 @@ class tasklist_caldav_driver extends tasklist_driver
                 }
             }
             $info = $folder->get_folder_info();
-            $norename = $readonly || $info['norename'] || $info['protected'];
+            $norename = !$editable || $info['norename'] || $info['protected'];
         }
 
         $list_id = $folder->id;
@@ -127,7 +127,7 @@ class tasklist_caldav_driver extends tasklist_driver
             'owner' => $folder->get_owner(),
             'parentfolder' => $folder->get_parent(),
             'default' => $folder->default,
-            'virtual' => !empty($folder->virtual),
+            'virtual' => $folder instanceof kolab_storage_folder_virtual,
             'children' => true,  // TODO: determine if that folder indeed has child folders
             // 'subscribed' => (bool) $folder->is_subscribed(),
             'removable' => !$folder->default,
@@ -175,7 +175,7 @@ class tasklist_caldav_driver extends tasklist_driver
                     'parent'   => $parent_id,
                 ];
             }
-            else if (!empty($folder->virtual)) {
+            else if ($folder instanceof kolab_storage_folder_virtual) {
                 $lists[$list_id] = [
                     'id'       => $list_id,
                     'name'     => $fullname,
@@ -708,7 +708,7 @@ class tasklist_caldav_driver extends tasklist_driver
      *
      * @param array $task Hash array with task properties
      *
-     * @return array List of changes, each as a hash array
+     * @return array|false List of changes, each as a hash array
      * @see tasklist_driver::get_task_changelog()
      */
     public function get_task_changelog($prop)
@@ -804,6 +804,7 @@ class tasklist_caldav_driver extends tasklist_driver
 
         return $success;
 */
+        return false;
     }
 
     /**
@@ -951,6 +952,7 @@ class tasklist_caldav_driver extends tasklist_driver
 
         return array($uid, $mailbox, $msguid);
 */
+        return [];
     }
 
     /**
@@ -1225,6 +1227,7 @@ class tasklist_caldav_driver extends tasklist_driver
         }
 
         if (!empty($record['_attachments'])) {
+            $attachments = [];
             foreach ($record['_attachments'] as $key => $attachment) {
                 if ($attachment !== false) {
                     if (empty($attachment['name'])) {
@@ -1473,7 +1476,7 @@ class tasklist_caldav_driver extends tasklist_driver
      *       list: List identifier
      *        rev: Revision (optional)
      *
-     * @return array Hash array with attachment properties:
+     * @return array|null Hash array with attachment properties:
      *         id: Attachment identifier
      *       name: Attachment name
      *   mimetype: MIME content type of the attachment
@@ -1514,7 +1517,7 @@ class tasklist_caldav_driver extends tasklist_driver
      *       list: List identifier
      *        rev: Revision (optional)
      *
-     * @return string Attachment body
+     * @return string|false Attachment body
      */
     public function get_attachment_body($id, $task)
     {
