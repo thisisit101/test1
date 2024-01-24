@@ -8,4 +8,3 @@
  */
 $labels['loginas'] = 'Logga in som';
 $labels['loginasnotallowed'] = 'Du har inte befogenhet att logga in som $user';
-?>

@@ -36,12 +36,12 @@ class kolab_delegation_engine
     private $ldap_email_field;
     private $ldap_org_field;
     private $ldap_dn;
-    private $cache = array();
-    private $folder_types = array('mail', 'event', 'task');
+    private $cache = [];
+    private $folder_types = ['mail', 'event', 'task'];
     private $supported;
 
-    const ACL_READ  = 1;
-    const ACL_WRITE = 2;
+    public const ACL_READ  = 1;
+    public const ACL_WRITE = 2;
 
     /**
      * Class constructor
@@ -80,7 +80,7 @@ class kolab_delegation_engine
 
         // add delegate to the list
         $list[] = $dn;
-        $list   = array_map(array('kolab_ldap', 'dn_decode'), $list);
+        $list   = array_map(['kolab_ldap', 'dn_decode'], $list);
 
         // update user record
         $result = $this->user_update_delegates($list);
@@ -104,14 +104,13 @@ class kolab_delegation_engine
     {
         $storage     = $this->rc->get_storage();
         $right_types = $this->right_types();
-        $folders     = $update ? $this->list_folders($uid) : array();
+        $folders     = $update ? $this->list_folders($uid) : [];
 
         foreach ($acl as $folder_name => $rights) {
             $r = $right_types[$rights] ?? null;
             if ($r) {
                 $storage->set_acl($folder_name, $uid, $r);
-            }
-            else {
+            } else {
                 $storage->delete_acl($folder_name, $uid);
             }
 
@@ -148,7 +147,7 @@ class kolab_delegation_engine
         // remove delegate from the list
         unset($list[$dn]);
         $list = array_keys($list);
-        $list = array_map(array('kolab_ldap', 'dn_decode'), $list);
+        $list = array_map(['kolab_ldap', 'dn_decode'], $list);
         $user[$this->ldap_delegate_field] = $list;
 
         // update user record
@@ -156,7 +155,7 @@ class kolab_delegation_engine
 
         // remove ACL
         if ($result && $acl_del) {
-            $this->delegate_acl_update($delegate['uid'], array(), true);
+            $this->delegate_acl_update($delegate['uid'], [], true);
         }
 
         return $result ? null : 'deleteerror';
@@ -176,14 +175,14 @@ class kolab_delegation_engine
             $ldap = $this->ldap();
 
             if (!$ldap || empty($dn)) {
-                return array();
+                return [];
             }
 
             // Get delegate
             $user = $ldap->get_record(kolab_ldap::dn_decode($dn));
 
             if (empty($user)) {
-                return array();
+                return [];
             }
 
             $delegate = $this->parse_ldap_record($user);
@@ -207,7 +206,7 @@ class kolab_delegation_engine
         $ldap = $this->ldap();
 
         if (!$ldap || empty($login)) {
-            return array();
+            return [];
         }
 
         $list = $ldap->dosearch($this->ldap_login_field, $login, 1);
@@ -254,7 +253,7 @@ class kolab_delegation_engine
         $this->ldap_org_field = $this->rc->config->get('kolab_delegation_organization_field', $this->rc->config->get('kolab_auth_organization'));
 
         $this->ldap->set_filter($this->ldap_filter);
-        $this->ldap->extend_fieldmap(array($this->ldap_delegate_field => $this->ldap_delegate_field));
+        $this->ldap->extend_fieldmap([$this->ldap_delegate_field => $this->ldap_delegate_field]);
 
         return $this->ldap;
     }
@@ -264,12 +263,12 @@ class kolab_delegation_engine
      */
     public function list_delegates()
     {
-        $result = array();
+        $result = [];
         $ldap   = $this->ldap();
         $user   = $this->user();
 
         if (empty($ldap) || empty($user)) {
-            return array();
+            return [];
         }
 
         // Get delegates of current user
@@ -296,11 +295,11 @@ class kolab_delegation_engine
      */
     public function list_delegators()
     {
-        $result = array();
+        $result = [];
         $ldap   = $this->ldap();
 
         if (empty($ldap) || empty($this->ldap_dn)) {
-            return array();
+            return [];
         }
 
         $list = $ldap->dosearch($this->ldap_delegate_field, $this->ldap_dn, 1);
@@ -321,7 +320,7 @@ class kolab_delegation_engine
     public function list_delegators_js()
     {
         $list   = $this->list_delegators();
-        $result = array();
+        $result = [];
 
         foreach ($list as $delegator) {
             $name = $delegator['name'];
@@ -329,11 +328,11 @@ class kolab_delegation_engine
                 $name = trim(substr($name, 0, $pos));
             }
 
-            $result[$delegator['imap_uid']] = array(
+            $result[$delegator['imap_uid']] = [
                 'emails' => ';' . implode(';', $delegator['email']),
                 'email'  => $delegator['email'][0],
                 'name'   => $name,
-            );
+            ];
         }
 
         return $result;
@@ -370,7 +369,7 @@ class kolab_delegation_engine
         $storage  = $this->rc->get_storage();
         $folders  = $storage->list_folders();
         $metadata = kolab_storage::folders_typedata();
-        $result   = array();
+        $result   = [];
 
         if (!is_array($metadata)) {
             return $result;
@@ -389,7 +388,7 @@ class kolab_delegation_engine
 
             $rights = null;
             $type   = !empty($metadata[$folder]) ? $metadata[$folder] : 'mail';
-            list($class, $subclass) = strpos($type, '.') ? explode('.', $type) : [$type, ''];
+            [$class, $subclass] = strpos($type, '.') ? explode('.', $type) : [$type, ''];
 
             if (!in_array($class, $this->folder_types)) {
                 continue;
@@ -402,20 +401,18 @@ class kolab_delegation_engine
                 if (!empty($imap_acl) && (($acl = ($imap_acl[$delegate] ?? null)) || ($acl = ($imap_acl[$delegate_lc] ?? null)))) {
                     if ($this->acl_compare($acl, $right_types[self::ACL_WRITE])) {
                         $rights = self::ACL_WRITE;
-                    }
-                    else if ($this->acl_compare($acl, $right_types[self::ACL_READ])) {
+                    } elseif ($this->acl_compare($acl, $right_types[self::ACL_READ])) {
                         $rights = self::ACL_READ;
                     }
                 }
-            }
-            else if ($folder == 'INBOX' || $subclass == 'default' || $subclass == 'inbox') {
+            } elseif ($folder == 'INBOX' || $subclass == 'default' || $subclass == 'inbox') {
                 $rights = self::ACL_WRITE;
             }
 
-            $result[$folder] = array(
+            $result[$folder] = [
                 'type'   => $class,
                 'rights' => $rights,
-            );
+            ];
         }
 
         return $result;
@@ -433,14 +430,14 @@ class kolab_delegation_engine
         $ldap = $this->ldap();
 
         if (empty($ldap) || $search === '' || $search === null) {
-            return array();
+            return [];
         }
 
         $max    = (int) $this->rc->config->get('autocomplete_max', 15);
         $mode   = (int) $this->rc->config->get('addressbook_search_mode');
         $fields = array_unique(array_filter(array_merge((array)$this->ldap_name_field, (array)$this->ldap_login_field)));
-        $users  = array();
-        $keys   = array();
+        $users  = [];
+        $keys   = [];
 
         $result = $ldap->dosearch($fields, $search, $mode, (array)$this->ldap_login_field, $max);
 
@@ -454,7 +451,7 @@ class kolab_delegation_engine
 
             if ($user['uid']) {
                 $display = rcube_addressbook::compose_search_name($record);
-                $user    = array('name' => $user['uid'], 'display' => $display);
+                $user    = ['name' => $user['uid'], 'display' => $display];
                 $users[] = $user;
                 $keys[]  = $display ?: $user['uid'];
             }
@@ -478,7 +475,7 @@ class kolab_delegation_engine
      */
     private function parse_ldap_record($data, $dn = null)
     {
-        $email = array();
+        $email = [];
         $uid   = $data[$this->ldap_login_field];
         $name  = '';
 
@@ -514,8 +511,7 @@ class kolab_delegation_engine
         $realname = $name;
         if ($uid && $name) {
             $name .= ' (' . $uid . ')';
-        }
-        else {
+        } else {
             $name = $uid;
         }
 
@@ -525,7 +521,7 @@ class kolab_delegation_engine
             $imap_uid = substr($imap_uid, 0, $pos);
         }
 
-        return array(
+        return [
             'ID'       => kolab_ldap::dn_encode($dn),
             'uid'      => $uid,
             'name'     => $name,
@@ -533,7 +529,7 @@ class kolab_delegation_engine
             'imap_uid' => $imap_uid,
             'email'    => $email,
             'organization' => $organization ?? null,
-        );
+        ];
     }
 
     /**
@@ -547,7 +543,7 @@ class kolab_delegation_engine
             $ldap = $this->ldap();
 
             if (!$ldap) {
-                return array();
+                return [];
             }
 
             // Get current user record
@@ -600,12 +596,12 @@ class kolab_delegation_engine
         $delegators = $this->list_delegators();
         $use_subs   = $this->rc->config->get('kolab_use_subscriptions');
         $identities = $this->rc->user->list_emails();
-        $emails     = array();
-        $uids       = array();
+        $emails     = [];
+        $uids       = [];
 
         if (!empty($delegators)) {
             $storage  = $this->rc->get_storage();
-            $other_ns = $storage->get_namespace('other') ?: array();
+            $other_ns = $storage->get_namespace('other') ?: [];
             $folders  = $storage->list_folders();
         }
 
@@ -613,9 +609,9 @@ class kolab_delegation_engine
         foreach ($identities as $idx => $ident) {
             // get user name from default identity
             if (!$idx) {
-                $default = array(
+                $default = [
                     'name' => $ident['name'],
-                );
+                ];
             }
             $emails[$ident['identity_id']] = $ident['email'];
         }
@@ -774,7 +770,7 @@ class kolab_delegation_engine
             $args['abort']  = true;
         }
         // return only user addresses (exclude all delegators addresses)
-        else if (!empty($_SESSION['delegators'])) {
+        elseif (!empty($_SESSION['delegators'])) {
             $identities = $this->rc->user->list_emails();
             $emails[]   = $this->rc->user->get_username();
 
@@ -805,7 +801,7 @@ class kolab_delegation_engine
         }
 
         $storage  = $this->rc->get_storage();
-        $other_ns = $storage->get_namespace('other') ?: array();
+        $other_ns = $storage->get_namespace('other') ?: [];
         $delim    = $storage->get_hierarchy_delimiter();
 
         if ($mode == 'calendars') {
@@ -813,15 +809,14 @@ class kolab_delegation_engine
             $active   = $args['filter'] & calendar_driver::FILTER_ACTIVE;
             $personal = $args['filter'] & calendar_driver::FILTER_PERSONAL;
             $shared   = $args['filter'] & calendar_driver::FILTER_SHARED;
-        }
-        else {
+        } else {
             $editable = $args['filter'] & tasklist_driver::FILTER_WRITEABLE;
             $active   = $args['filter'] & tasklist_driver::FILTER_ACTIVE;
             $personal = $args['filter'] & tasklist_driver::FILTER_PERSONAL;
             $shared   = $args['filter'] & tasklist_driver::FILTER_SHARED;
         }
 
-        $folders = array();
+        $folders = [];
 
         foreach ($args['list'] as $folder) {
             if (isset($folder->ready) && !$folder->ready) {
@@ -841,8 +836,7 @@ class kolab_delegation_engine
 
                 if ($personal && $ns == 'personal') {
                     continue;
-                }
-                else if ($personal && $ns == 'other') {
+                } elseif ($personal && $ns == 'other') {
                     $found = false;
                     foreach ($other_ns as $ns) {
                         $c_folder = $ns[0] . $context . $delim;
@@ -854,8 +848,7 @@ class kolab_delegation_engine
                     if (!$found) {
                         continue;
                     }
-                }
-                else if (!$shared || $ns != 'shared') {
+                } elseif (!$shared || $ns != 'shared') {
                     continue;
                 }
             }
@@ -896,7 +889,7 @@ class kolab_delegation_engine
                 $identity = $this->rc->user->get_identity();
                 $sender   = format_email_recipient($identity['email'], $identity['name']);
 
-                $message->headers(array('Sender' => $sender), false, true);
+                $message->headers(['Sender' => $sender], false, true);
             }
         }
     }
@@ -909,10 +902,14 @@ class kolab_delegation_engine
      *
      * @param bool True if $acl1 contains all rights from $acl2
      */
-    function acl_compare($acl1, $acl2)
+    public function acl_compare($acl1, $acl2)
     {
-        if (!is_array($acl1)) $acl1 = str_split($acl1);
-        if (!is_array($acl2)) $acl2 = str_split($acl2);
+        if (!is_array($acl1)) {
+            $acl1 = str_split($acl1);
+        }
+        if (!is_array($acl2)) {
+            $acl2 = str_split($acl2);
+        }
 
         $rights = $this->rights_supported();
 
@@ -946,8 +943,7 @@ class kolab_delegation_engine
 
         if (is_array($capa)) {
             $rights = strtolower($capa[0]);
-        }
-        else {
+        } else {
             $rights = 'cd';
         }
 
@@ -960,11 +956,11 @@ class kolab_delegation_engine
         $supported = $this->rights_supported();
 
         // depending on server capability either use 'te' or 'd' for deleting msgs
-        $deleteright = implode(array_intersect(str_split('ted'), $supported));
+        $deleteright = implode('', array_intersect(str_split('ted'), $supported));
 
-        return array(
+        return [
             self::ACL_READ  => 'lrs',
-            self::ACL_WRITE => 'lrswi'.$deleteright,
-        );
+            self::ACL_WRITE => 'lrswi' . $deleteright,
+        ];
     }
 }

@@ -30,7 +30,7 @@ $config['kolab_custom_display_names'] = false;
 // Configuration of HTTP requests.
 // See http://pear.php.net/manual/en/package.http.http-request2.config.php
 // for list of supported configuration options (array keys)
-$config['kolab_http_request'] = array();
+$config['kolab_http_request'] = [];
 
 // When kolab_cache is enabled Roundcube's messages cache will be redundant
 // when working on kolab folders. Here we can:
@@ -41,11 +41,11 @@ $config['kolab_messages_cache_bypass'] = 0;
 
 // These event properties contribute to a significant revision to the calendar component
 // and if changed will increment the sequence number relevant for scheduling according to RFC 5545
-$config['kolab_event_scheduling_properties'] = array('start', 'end', 'allday', 'recurrence', 'location', 'status', 'cancelled');
+$config['kolab_event_scheduling_properties'] = ['start', 'end', 'allday', 'recurrence', 'location', 'status', 'cancelled'];
 
 // These task properties contribute to a significant revision to the calendar component
 // and if changed will increment the sequence number relevant for scheduling according to RFC 5545
-$config['kolab_task_scheduling_properties'] = array('start', 'due', 'summary', 'status');
+$config['kolab_task_scheduling_properties'] = ['start', 'due', 'summary', 'status'];
 
 // LDAP directory to find avilable users for folder sharing.
 // Either contains an array with LDAP addressbook configuration or refers to entry in $config['ldap_public'].
@@ -62,7 +62,7 @@ $config['kolab_users_filter'] = '(&(objectclass=kolabInetOrgPerson)(|(uid=%u)(ma
 $config['kolab_users_id_attrib'] = null;
 
 // Use these attributes when searching users in LDAP
-$config['kolab_users_search_attrib'] = array('cn','mail','alias');
+$config['kolab_users_search_attrib'] = ['cn','mail','alias'];
 
 // Which property of the LDAP user record to use as a display name.
 // Defaults to the 'kolab_auth_name' configuration option.

@@ -37,12 +37,12 @@ class wap_client extends rcube_plugin
     /**
      * Initializes the plugin
      */
-    function init()
+    public function init()
     {
         $this->rc = rcube::get_instance();
 
-        $this->add_hook('preferences_list', array($this, 'prefs_table'));
-        $this->add_hook('preferences_save', array($this, 'save_prefs'));
+        $this->add_hook('preferences_list', [$this, 'prefs_table']);
+        $this->add_hook('preferences_save', [$this, 'save_prefs']);
     }
 
     /**
@@ -73,7 +73,7 @@ class wap_client extends rcube_plugin
             $_SESSION['wap_client_account_type'] = $account_type;
         }
 
-        $input   = new html_radiobutton(array('name' => '_account_type', 'style' => 'display:block; float:left'));
+        $input   = new html_radiobutton(['name' => '_account_type', 'style' => 'display:block; float:left']);
         $content = '';
 
         foreach ($accounts as $idx => $def) {
@@ -82,27 +82,27 @@ class wap_client extends rcube_plugin
             $name = $this->rc->text_exists('wap_client.account.' . $name) ? $this->gettext('account.' . $name) : $name;
             $desc = $this->rc->text_exists('wap_client.accountdesc.' . $name) ? $this->gettext('accountdesc.' . $name) : $def['description'];
 
-            $name = html::span(array('style' => 'font-weight: bold'), rcube::Q($name));
+            $name = html::span(['style' => 'font-weight: bold'], rcube::Q($name));
             if ($desc) {
                 $name .= html::br() . html::span(null, rcube::Q($desc));
             }
 
             $label_style = 'display:block; margin: 5px 0; padding-left: 30px';
-            $content .= $input->show($account_type, array('value' => $idx, 'id' => $id))
-                . html::label(array('for' => $id, 'style' => $label_style), $name);
+            $content .= $input->show($account_type, ['value' => $idx, 'id' => $id])
+                . html::label(['for' => $id, 'style' => $label_style], $name);
         }
 
-        $conf = array(
-            'account' => array(
+        $conf = [
+            'account' => [
                 'name'    => rcube::Q($this->gettext('accountoptions')),
-                'options' => array(
-                    'account_type' => array(
+                'options' => [
+                    'account_type' => [
                         'title'   => $this->gettext('accounttype'),
                         'content' => $content,
-                    )
-                )
-            )
-        );
+                    ],
+                ],
+            ],
+        ];
 
         $args['blocks'] = array_merge($conf, $args['blocks']);
 
@@ -184,16 +184,17 @@ class wap_client extends rcube_plugin
 
         foreach ($account as $attr => $value) {
             switch ($attr) {
-            case 'nsroledn':
-                $value = array();
-                foreach ((array) $account['nsroledn'] as $role) {
-                    $role = str_replace('$base_dn', $base_dn, $role);
-                    $role = str_replace('$root_dn', $root_dn, $role);
-                    $value[] = $role;
-                }
+                case 'nsroledn':
+                    $value = [];
+                    foreach ((array) $account['nsroledn'] as $role) {
+                        $role = str_replace('$base_dn', $base_dn, $role);
+                        $role = str_replace('$root_dn', $root_dn, $role);
+                        $value[] = $role;
+                    }
 
-            default:
-                $query[$attr] = $value;
+                    // no break
+                default:
+                    $query[$attr] = $value;
             }
         }
 
@@ -232,12 +233,12 @@ class wap_client extends rcube_plugin
         $this->uri = rcube_utils::resolve_url($uri);
         $this->wap = libkolab::http_request($this->uri);
 
-        $query = array(
+        $query = [
             'username' => $user,
             'password' => $pass,
         //    'domain'   => $domain,
             'info'     => true,
-        );
+        ];
 
         // authenticate the user
         $response = $this->post('system.authenticate', $query);
@@ -258,7 +259,7 @@ class wap_client extends rcube_plugin
      *
      * @return kolab_client_api_result  Response
      */
-    protected function post($action, $post = array())
+    protected function post($action, $post = [])
     {
         $url = $this->build_url($action);
 
@@ -284,7 +285,7 @@ class wap_client extends rcube_plugin
      *
      * @return Net_URL2 URL object
      */
-    private function build_url($action, $args = array())
+    private function build_url($action, $args = [])
     {
         $url = rtrim($this->uri, '/');
 
@@ -313,16 +314,14 @@ class wap_client extends rcube_plugin
         try {
             $this->wap->setUrl($url);
             $response = $this->wap->send();
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, false);
             return;
         }
 
         try {
             $body = $response->getBody();
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, false);
             return;
         }

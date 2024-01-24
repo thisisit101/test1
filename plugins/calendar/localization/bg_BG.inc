@@ -194,4 +194,3 @@ $labels['birthdays'] = 'Рождени дни';
 $labels['arialabelcalendarview'] = 'Преглед на календара';
 $labels['arialabeleventattendees'] = 'Списък с участниците в събитието';
 $labels['arialabelresourceselection'] = 'Налични ресурси';
-?>

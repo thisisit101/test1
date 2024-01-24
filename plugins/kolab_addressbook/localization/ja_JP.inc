@@ -60,4 +60,3 @@ $messages['bookupdateerror'] = 'アドレス帳の更新中にエラーが発生
 $messages['bookcreateerror'] = 'アドレス帳の作成中にエラーが発生しました。';
 $messages['nobooknamewarning'] = 'アドレス帳名を入力してください。';
 $messages['noemailnamewarning'] = 'Emailアドレスまたはコンタクト名を入力してください。';
-?>

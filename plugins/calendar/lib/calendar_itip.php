@@ -31,7 +31,7 @@ class calendar_itip extends libcalendaring_itip
     /**
      * Constructor to set text domain to calendar
      */
-    function __construct($plugin, $domain = 'calendar')
+    public function __construct($plugin, $domain = 'calendar')
     {
         parent::__construct($plugin, $domain);
 
@@ -93,8 +93,7 @@ class calendar_itip extends libcalendaring_itip
             foreach ($invitation['event']['attendees'] as $i => $attendee) {
                 if ($attendee['role'] == 'ORGANIZER') {
                     $organizer = $attendee;
-                }
-                else if ($attendee['email'] == $email) {
+                } elseif ($attendee['email'] == $email) {
                     // nothing to be done here
                     if ($attendee['status'] == $newstatus) {
                         return true;
@@ -114,11 +113,10 @@ class calendar_itip extends libcalendaring_itip
                     $mailto = !empty($organizer['name']) ? $organizer['name'] : $organizer['email'];
                     $message = $this->plugin->gettext([
                             'name' => 'sentresponseto',
-                            'vars' => ['mailto' => $mailto]
+                            'vars' => ['mailto' => $mailto],
                     ]);
                     $this->rc->output->command('display_message', $message, 'confirmation');
-                }
-                else {
+                } else {
                     $this->rc->output->command('display_message', $this->plugin->gettext('itipresponseerror'), 'error');
                 }
             }
@@ -200,8 +198,8 @@ class calendar_itip extends libcalendaring_itip
         $this->rc->db->query(
             "UPDATE $this->db_itipinvitations SET `cancelled` = 1"
             . " WHERE `event_uid` = ? AND `user_id` = ?",
-           $event_uid,
-           $this->rc->user->ID
+            $event_uid,
+            $this->rc->user->ID
         );
     }
 
@@ -230,7 +228,7 @@ class calendar_itip extends libcalendaring_itip
      */
     public function decode_token($token)
     {
-        list($base, $mail, $hash) = explode('.', $token);
+        [$base, $mail, $hash] = explode('.', $token);
 
         // validate and return parts
         if ($mail && $hash && $hash == substr(md5($base . $mail . $this->rc->config->get('des_key')), 0, 6)) {

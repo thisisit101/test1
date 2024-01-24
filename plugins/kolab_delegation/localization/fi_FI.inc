@@ -33,4 +33,3 @@ $labels['createsuccess'] = 'Edustaja lisättiin onnistuneesti.';
 $labels['createerror'] = 'Edustajan lisääminen ei onnistunut.';
 $labels['arialabeldelegatedelete'] = 'Edustajien poistoikkuna';
 $labels['arialabeldelegateform'] = 'Edustajien ominaisuuslomake';
-?>

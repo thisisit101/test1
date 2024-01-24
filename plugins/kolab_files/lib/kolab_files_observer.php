@@ -18,20 +18,20 @@ class kolab_files_observer implements SplObserver
         $event = $subject->getLastEvent();
 
         switch ($event['name']) {
-        case 'receivedHeaders':
-            if (!$this->file || !($this->fp = @fopen($this->file, 'wb'))) {
-                throw new Exception("Cannot open target file '{$this->file}'");
-            }
-            break;
+            case 'receivedHeaders':
+                if (!$this->file || !($this->fp = @fopen($this->file, 'wb'))) {
+                    throw new Exception("Cannot open target file '{$this->file}'");
+                }
+                break;
 
-        case 'receivedBodyPart':
-        case 'receivedEncodedBodyPart':
-            fwrite($this->fp, $event['data']);
-            break;
+            case 'receivedBodyPart':
+            case 'receivedEncodedBodyPart':
+                fwrite($this->fp, $event['data']);
+                break;
 
-        case 'receivedBody':
-            fclose($this->fp);
-            break;
+            case 'receivedBody':
+                fclose($this->fp);
+                break;
         }
     }
 }

@@ -283,4 +283,3 @@ $labels['arialabeleventresources'] = 'Liste der Terminressourcen';
 $labels['arialabelresourcesearchform'] = 'Suchformular für Ressourcen';
 $labels['arialabelresourceselection'] = 'Verfügbare Ressourcen';
 $labels['arialabeleventform'] = 'Ereignisbearbeitungsformular';
-?>

@@ -13,5 +13,3 @@ $rcmail_config['ldap_authentication_login'] = 'email';
 // Use this fields (from fieldmap configuration) for default identity
 $rcmail_config['ldap_authentication_name']  = 'name';
 $rcmail_config['ldap_authentication_email'] = 'email';
-
-?>

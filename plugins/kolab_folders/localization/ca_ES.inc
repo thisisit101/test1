@@ -8,4 +8,3 @@
  */
 $labels['foldertypeevent'] = 'Calendari';
 $labels['foldertypetask'] = 'Tasques';
-?>

@@ -32,9 +32,9 @@ class kolab_config extends rcube_plugin
 
     private $config;
     private $loaded = false;
-    private $dicts = array();
+    private $dicts = [];
 
-    const O_TYPE = 'dictionary';
+    public const O_TYPE = 'dictionary';
 
     /**
      * Required startup method of a Roundcube plugin
@@ -45,16 +45,16 @@ class kolab_config extends rcube_plugin
 
         // Register spellchecker dictionary handlers
         if (strtolower($rcmail->config->get('spellcheck_dictionary')) != 'shared') {
-            $this->add_hook('spell_dictionary_save', array($this, 'dictionary_save'));
-            $this->add_hook('spell_dictionary_get', array($this, 'dictionary_get'));
+            $this->add_hook('spell_dictionary_save', [$this, 'dictionary_save']);
+            $this->add_hook('spell_dictionary_get', [$this, 'dictionary_get']);
         }
-/*
-        // Register addressbook saved searches handlers
-        $this->add_hook('saved_search_create', array($this, 'saved_search_create'));
-        $this->add_hook('saved_search_delete', array($this, 'saved_search_delete'));
-        $this->add_hook('saved_search_list', array($this, 'saved_search_list'));
-        $this->add_hook('saved_search_get', array($this, 'saved_search_get'));
-*/
+        /*
+                // Register addressbook saved searches handlers
+                $this->add_hook('saved_search_create', array($this, 'saved_search_create'));
+                $this->add_hook('saved_search_delete', array($this, 'saved_search_delete'));
+                $this->add_hook('saved_search_list', array($this, 'saved_search_list'));
+                $this->add_hook('saved_search_get', array($this, 'saved_search_get'));
+        */
 
         // @TODO: responses (snippets)
     }
@@ -98,8 +98,7 @@ class kolab_config extends rcube_plugin
         if (empty($dict['e'])) {
             // Delete the object
             $this->config->delete($dict['uid']);
-        }
-        else {
+        } else {
             // Update the object
             $this->config->save($dict, self::O_TYPE, $dict['uid']);
         }
@@ -150,21 +149,22 @@ class kolab_config extends rcube_plugin
             return $this->dicts[$lang];
         }
 
-        $query = array(array('type','=',self::O_TYPE), array('tags','=',$lang));
+        $query = [['type','=',self::O_TYPE], ['tags','=',$lang]];
 
         foreach ($this->config->get_objects($query, $default, null, 100) as $object) {
             if ($object['language'] == $lang || $object['language'] == 'XX') {
-                if (isset($this->dicts[$lang]) && is_array($this->dicts[$lang]))
+                if (isset($this->dicts[$lang]) && is_array($this->dicts[$lang])) {
                     $this->dicts[$lang]['e'] = array_merge((array)$this->dicts[$lang]['e'], $object['e']);
-                else
-                    $this->dicts[$lang] = $object;
-/*
-                // make sure the default object is cached
-                if ($folder->default && $object['language'] != 'XX') {
-                    $object['e'] = $this->dicts[$lang]['e'];
+                } else {
                     $this->dicts[$lang] = $object;
                 }
-*/
+                /*
+                                // make sure the default object is cached
+                                if ($folder->default && $object['language'] != 'XX') {
+                                    $object['e'] = $this->dicts[$lang]['e'];
+                                    $this->dicts[$lang] = $object;
+                                }
+                */
             }
         }
 

@@ -62,4 +62,3 @@ $messages['bookdeleteerror'] = 'Beim Löschen des Adressbuchs ist ein Fehler auf
 $messages['bookupdateerror'] = 'Bei der Aktualisierung des Adressbuchs ist ein Fehler aufgetreten.';
 $messages['bookcreateerror'] = 'Beim Anlegen des Adressbuchs ist ein Fehler aufgetreten.';
 $messages['nobooknamewarning'] = 'Bitte geben Sie den Namen des Adressbuchs ein.';
-?>

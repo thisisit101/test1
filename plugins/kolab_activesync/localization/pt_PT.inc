@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'Activesync';
 $labels['activesynctitle'] = 'Gerir dispositivos Activesync';
 $labels['devices'] = 'Dispostivos';
@@ -16,4 +17,3 @@ $labels['configuration'] = 'Configuração';
 $labels['deletedevice'] = 'Remover dispositivo';
 $labels['savingdata'] = 'A guardar os dados...';
 $labels['savingerror'] = 'Falha ao guardar as alterações.';
-?>

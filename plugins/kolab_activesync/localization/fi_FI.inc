@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'Activesync';
 $labels['activesynctitle'] = 'Hallitse Activesync-laitteita';
 $labels['devices'] = 'Laitteet';
@@ -30,4 +31,3 @@ $labels['os'] = 'Käyttöjärjestelmä';
 $labels['oslanguage'] = 'Käyttöjärjestelmän kieli';
 $labels['phonenumber'] = 'Puhelinnumero';
 $labels['arialabeldeviceframe'] = 'Laitesynkronointiasetusten lomake';
-?>

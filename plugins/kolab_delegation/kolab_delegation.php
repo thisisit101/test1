@@ -43,39 +43,39 @@ class kolab_delegation extends rcube_plugin
         $this->require_plugin('kolab_auth');
 
         // on-login delegation initialization
-        $this->add_hook('login_after', array($this, 'login_hook'));
+        $this->add_hook('login_after', [$this, 'login_hook']);
         // on-check-recent delegation support
-        $this->add_hook('check_recent', array($this, 'check_recent_hook'));
+        $this->add_hook('check_recent', [$this, 'check_recent_hook']);
 
         // on-message-send delegation support
-        $this->add_hook('message_before_send', array($this, 'message_before_send'));
+        $this->add_hook('message_before_send', [$this, 'message_before_send']);
 
         // delegation support in Calendar and Tasklist plugins
-        $this->add_hook('message_load', array($this, 'message_load'));
-        $this->add_hook('calendar_user_emails', array($this, 'calendar_user_emails'));
-        $this->add_hook('calendar_list_filter', array($this, 'calendar_list_filter'));
-        $this->add_hook('calendar_load_itip', array($this, 'calendar_load_itip'));
-        $this->add_hook('tasklist_list_filter', array($this, 'tasklist_list_filter'));
+        $this->add_hook('message_load', [$this, 'message_load']);
+        $this->add_hook('calendar_user_emails', [$this, 'calendar_user_emails']);
+        $this->add_hook('calendar_list_filter', [$this, 'calendar_list_filter']);
+        $this->add_hook('calendar_load_itip', [$this, 'calendar_load_itip']);
+        $this->add_hook('tasklist_list_filter', [$this, 'tasklist_list_filter']);
 
         // delegation support in kolab_auth plugin
-        $this->add_hook('kolab_auth_emails', array($this, 'kolab_auth_emails'));
+        $this->add_hook('kolab_auth_emails', [$this, 'kolab_auth_emails']);
 
         // delegation support in Enigma plugin
-        $this->add_hook('enigma_user_identities', array($this, 'user_identities'));
+        $this->add_hook('enigma_user_identities', [$this, 'user_identities']);
 
         if ($this->rc->task == 'settings') {
             // delegation management interface
-            $this->register_action('plugin.delegation',              array($this, 'controller_ui'));
-            $this->register_action('plugin.delegation-delete',       array($this, 'controller_action'));
-            $this->register_action('plugin.delegation-save',         array($this, 'controller_action'));
-            $this->register_action('plugin.delegation-autocomplete', array($this, 'controller_action'));
+            $this->register_action('plugin.delegation', [$this, 'controller_ui']);
+            $this->register_action('plugin.delegation-delete', [$this, 'controller_action']);
+            $this->register_action('plugin.delegation-save', [$this, 'controller_action']);
+            $this->register_action('plugin.delegation-autocomplete', [$this, 'controller_action']);
 
-            $this->add_hook('settings_actions', array($this, 'settings_actions'));
+            $this->add_hook('settings_actions', [$this, 'settings_actions']);
 
             if ($this->rc->output->type == 'html'
                 && ($this->rc->action == 'plugin.delegation' || empty($_REQUEST['_framed']))
             ) {
-                $this->add_texts('localization/', array('deleteconfirm', 'savingdata', 'yes', 'no'));
+                $this->add_texts('localization/', ['deleteconfirm', 'savingdata', 'yes', 'no']);
 
                 if ($this->rc->action == 'plugin.delegation') {
                     $this->include_script('kolab_delegation.js');
@@ -86,7 +86,7 @@ class kolab_delegation extends rcube_plugin
             }
         }
         // Calendar/Tasklist plugin UI bindings
-        else if (($this->rc->task == 'calendar' || $this->rc->task == 'tasks')
+        elseif (($this->rc->task == 'calendar' || $this->rc->task == 'tasks')
             && empty($_REQUEST['_framed'])
         ) {
             if ($this->rc->output->type == 'html') {
@@ -98,15 +98,15 @@ class kolab_delegation extends rcube_plugin
     /**
      * Adds Delegation section in Settings
      */
-    function settings_actions($args)
+    public function settings_actions($args)
     {
-        $args['actions'][] = array(
+        $args['actions'][] = [
             'action' => 'plugin.delegation',
             'class'  => 'delegation',
             'label'  => 'tabtitle',
             'domain' => 'kolab_delegation',
             'title'  => 'delegationtitle',
-        );
+        ];
 
         return $args;
     }
@@ -326,7 +326,7 @@ class kolab_delegation extends rcube_plugin
         // Remove delegators' identities from the key generation form
 
         if (!empty($_SESSION['delegators'])) {
-            $args['identities'] = array_filter($args['identities'], function($ident) {
+            $args['identities'] = array_filter($args['identities'], function ($ident) {
                 foreach ($_SESSION['delegators'] as $emails) {
                     if (in_array($ident['email'], $emails)) {
                         return false;
@@ -347,15 +347,15 @@ class kolab_delegation extends rcube_plugin
     {
         // main interface (delegates list)
         if (empty($_REQUEST['_framed'])) {
-            $this->register_handler('plugin.delegatelist', array($this, 'delegate_list'));
+            $this->register_handler('plugin.delegatelist', [$this, 'delegate_list']);
 
             $this->rc->output->include_script('list.js');
             $this->rc->output->send('kolab_delegation.settings');
         }
         // delegate frame
         else {
-            $this->register_handler('plugin.delegateform', array($this, 'delegate_form'));
-            $this->register_handler('plugin.delegatefolders', array($this, 'delegate_folders'));
+            $this->register_handler('plugin.delegateform', [$this, 'delegate_form']);
+            $this->register_handler('plugin.delegatefolders', [$this, 'delegate_folders']);
 
             $this->rc->output->set_env('autocomplete_max', (int)$this->rc->config->get('autocomplete_max', 15));
             $this->rc->output->set_env('autocomplete_min_length', $this->rc->config->get('autocomplete_min_length'));
@@ -381,14 +381,13 @@ class kolab_delegation extends rcube_plugin
 
             if (!$error) {
                 $this->rc->output->show_message($this->gettext('deletesuccess'), 'confirmation');
-                $this->rc->output->command('plugin.delegate_save_complete', array('deleted' => $id));
-            }
-            else {
+                $this->rc->output->command('plugin.delegate_save_complete', ['deleted' => $id]);
+            } else {
                 $this->rc->output->show_message($this->gettext($error), 'error');
             }
         }
         // Delegate add/update
-        else if ($this->rc->action == 'plugin.delegation-save') {
+        elseif ($this->rc->action == 'plugin.delegation-save') {
             $id  = rcube_utils::get_input_value('id', rcube_utils::INPUT_GPC);
             $acl = rcube_utils::get_input_value('folders', rcube_utils::INPUT_GPC);
 
@@ -399,9 +398,8 @@ class kolab_delegation extends rcube_plugin
 
                 if (!$error) {
                     $this->rc->output->show_message($this->gettext('updatesuccess'), 'confirmation');
-                    $this->rc->output->command('plugin.delegate_save_complete', array('updated' => $id));
-                }
-                else {
+                    $this->rc->output->command('plugin.delegate_save_complete', ['updated' => $id]);
+                } else {
                     $this->rc->output->show_message($this->gettext($error), 'error');
                 }
             }
@@ -413,18 +411,17 @@ class kolab_delegation extends rcube_plugin
 
                 if (!$error) {
                     $this->rc->output->show_message($this->gettext('createsuccess'), 'confirmation');
-                    $this->rc->output->command('plugin.delegate_save_complete', array(
+                    $this->rc->output->command('plugin.delegate_save_complete', [
                         'created' => $delegate['ID'],
                         'name'    => $delegate['name'],
-                    ));
-                }
-                else {
+                    ]);
+                } else {
                     $this->rc->output->show_message($this->gettext($error), 'error');
                 }
             }
         }
         // Delegate autocompletion
-        else if ($this->rc->action == 'plugin.delegation-autocomplete') {
+        elseif ($this->rc->action == 'plugin.delegation-autocomplete') {
             $search = rcube_utils::get_input_value('_search', rcube_utils::INPUT_GPC, true);
             $reqid  = rcube_utils::get_input_value('_reqid', rcube_utils::INPUT_GPC);
             $users  = $engine->list_users($search);
@@ -438,9 +435,9 @@ class kolab_delegation extends rcube_plugin
     /**
      * Template object of delegates list
      */
-    public function delegate_list($attrib = array())
+    public function delegate_list($attrib = [])
     {
-        $attrib += array('id' => 'delegate-list');
+        $attrib += ['id' => 'delegate-list'];
 
         $engine = $this->engine();
         $list   = $engine->list_delegates();
@@ -450,7 +447,7 @@ class kolab_delegation extends rcube_plugin
         asort($list, SORT_LOCALE_STRING);
 
         foreach ($list as $id => $delegate) {
-            $table->add_row(array('id' => 'rcmrow' . $id));
+            $table->add_row(['id' => 'rcmrow' . $id]);
             $table->add(null, rcube::Q($delegate));
         }
 
@@ -463,10 +460,10 @@ class kolab_delegation extends rcube_plugin
     /**
      * Template object of delegate form
      */
-    public function delegate_form($attrib = array())
+    public function delegate_form($attrib = [])
     {
         $engine   = $this->engine();
-        $table    = new html_table(array('cols' => 2));
+        $table    = new html_table(['cols' => 2]);
         $id       = rcube_utils::get_input_value('_id', rcube_utils::INPUT_GPC);
         $field_id = 'delegate';
 
@@ -475,14 +472,13 @@ class kolab_delegation extends rcube_plugin
         }
 
         if (!empty($delegate)) {
-            $input = new html_hiddenfield(array('name' => $field_id, 'id' => $field_id, 'size' => 40));
+            $input = new html_hiddenfield(['name' => $field_id, 'id' => $field_id, 'size' => 40]);
             $input = rcube::Q($delegate['name']) . $input->show($id);
 
             $this->rc->output->set_env('active_delegate', $id);
-            $this->rc->output->command('parent.enable_command','delegate-delete', true);
-        }
-        else {
-            $input = new html_inputfield(array('name' => $field_id, 'id' => $field_id, 'size' => 40));
+            $this->rc->output->command('parent.enable_command', 'delegate-delete', true);
+        } else {
+            $input = new html_inputfield(['name' => $field_id, 'id' => $field_id, 'size' => 40]);
             $input = $input->show();
         }
 
@@ -499,7 +495,7 @@ class kolab_delegation extends rcube_plugin
     /**
      * Template object of folders list
      */
-    public function delegate_folders($attrib = array())
+    public function delegate_folders($attrib = [])
     {
         if (!$attrib['id']) {
             $attrib['id'] = 'delegatefolders';
@@ -514,8 +510,8 @@ class kolab_delegation extends rcube_plugin
 
         $folder_data   = $engine->list_folders(!empty($delegate) ? $delegate['uid'] : null);
         $use_fieldsets = rcube_utils::get_boolean($attrib['use-fieldsets']);
-        $rights        = array();
-        $folder_groups = array();
+        $rights        = [];
+        $folder_groups = [];
 
         foreach ($folder_data as $folder_name => $folder) {
             $folder_groups[$folder['type']][] = $folder_name;
@@ -532,8 +528,7 @@ class kolab_delegation extends rcube_plugin
 
             if ($use_fieldsets) {
                 $html .= html::tag('fieldset', 'foldersblock', html::tag('legend', $type, $label) . $table);
-            }
-            else {
+            } else {
                 $html .= html::div('foldersblock', html::tag('h3', $type, $label) . $table);
             }
         }
@@ -549,35 +544,35 @@ class kolab_delegation extends rcube_plugin
     private function delegate_folders_block($a_folders, $attrib, $rights)
     {
         $path      = 'plugins/kolab_delegation/' . $this->skin_path . '/';
-        $read_ico  = !empty($attrib['readicon']) ? html::img(array('src' =>  $path . $attrib['readicon'], 'title' => $this->gettext('read'))) : '';
-        $write_ico = !empty($attrib['writeicon']) ? html::img(array('src' => $path . $attrib['writeicon'], 'title' => $this->gettext('write'))) : '';
+        $read_ico  = !empty($attrib['readicon']) ? html::img(['src' =>  $path . $attrib['readicon'], 'title' => $this->gettext('read')]) : '';
+        $write_ico = !empty($attrib['writeicon']) ? html::img(['src' => $path . $attrib['writeicon'], 'title' => $this->gettext('write')]) : '';
 
-        $table = new html_table(array('cellspacing' => 0, 'class' => 'table-striped'));
-        $table->add_header(array('class' => 'read checkbox-cell', 'title' => $this->gettext('read'), 'tabindex' => 0), $read_ico);
-        $table->add_header(array('class' => 'write checkbox-cell', 'title' => $this->gettext('write'), 'tabindex' => 0), $write_ico);
+        $table = new html_table(['cellspacing' => 0, 'class' => 'table-striped']);
+        $table->add_header(['class' => 'read checkbox-cell', 'title' => $this->gettext('read'), 'tabindex' => 0], $read_ico);
+        $table->add_header(['class' => 'write checkbox-cell', 'title' => $this->gettext('write'), 'tabindex' => 0], $write_ico);
         $table->add_header('foldername', $this->rc->gettext('folder'));
 
-        $checkbox_read  = new html_checkbox(array('name' => 'read[]', 'class' => 'read'));
-        $checkbox_write = new html_checkbox(array('name' => 'write[]', 'class' => 'write'));
+        $checkbox_read  = new html_checkbox(['name' => 'read[]', 'class' => 'read']);
+        $checkbox_write = new html_checkbox(['name' => 'write[]', 'class' => 'write']);
 
-        $names = array();
+        $names = [];
         foreach ($a_folders as $folder) {
             $foldername = $origname = kolab_storage::object_prettyname($folder);
 
             // find folder prefix to truncate (the same code as in kolab_addressbook plugin)
-            for ($i = count($names)-1; $i >= 0; $i--) {
-                if (strpos($foldername, $names[$i].' &raquo; ') === 0) {
-                    $length = strlen($names[$i].' &raquo; ');
+            for ($i = count($names) - 1; $i >= 0; $i--) {
+                if (strpos($foldername, $names[$i] . ' &raquo; ') === 0) {
+                    $length = strlen($names[$i] . ' &raquo; ');
                     $prefix = substr($foldername, 0, $length);
                     $count  = count(explode(' &raquo; ', $prefix));
-                    $foldername = str_repeat('&nbsp;&nbsp;', $count-1) . '&raquo; ' . substr($foldername, $length);
+                    $foldername = str_repeat('&nbsp;&nbsp;', $count - 1) . '&raquo; ' . substr($foldername, $length);
                     break;
                 }
             }
 
             $folder_id = 'rcmf' . rcube_utils::html_identifier($folder);
             $names[] = $origname;
-            $classes = array('mailbox');
+            $classes = ['mailbox'];
 
             if ($folder_class = $this->rc->folder_classname($folder)) {
                 if ($this->rc->text_exists($folder_class)) {
@@ -589,12 +584,14 @@ class kolab_delegation extends rcube_plugin
             $table->add_row();
             $table->add('read checkbox-cell', $checkbox_read->show(
                 $rights[$folder] >= kolab_delegation_engine::ACL_READ ? $folder : null,
-                array('value' => $folder)));
+                ['value' => $folder]
+            ));
             $table->add('write checkbox-cell', $checkbox_write->show(
                 $rights[$folder] >= kolab_delegation_engine::ACL_WRITE ? $folder : null,
-                array('value' => $folder, 'id' => $folder_id)));
+                ['value' => $folder, 'id' => $folder_id]
+            ));
 
-            $table->add(join(' ', $classes), html::label($folder_id, $foldername));
+            $table->add(implode(' ', $classes), html::label($folder_id, $foldername));
         }
 
         return $table->show();

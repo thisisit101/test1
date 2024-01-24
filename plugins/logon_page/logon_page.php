@@ -38,7 +38,7 @@ class logon_page extends rcube_plugin
      */
     public function init()
     {
-        $this->add_hook('template_object_loginform', array($this, 'logon_page_content'));
+        $this->add_hook('template_object_loginform', [$this, 'logon_page_content']);
     }
 
     /**

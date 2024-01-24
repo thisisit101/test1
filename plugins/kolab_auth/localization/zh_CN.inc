@@ -8,4 +8,3 @@
  */
 $labels['loginas'] = '以xxx登录';
 $labels['loginasnotallowed'] = '无权限以 $user 登录';
-?>

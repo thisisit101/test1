@@ -33,4 +33,3 @@ $labels['createsuccess'] = 'Ombudet lades till.';
 $labels['createerror'] = 'Ombudet kunde inte läggas till.';
 $labels['arialabeldelegatedelete'] = 'Borttagningsdialog för ombud';
 $labels['arialabeldelegateform'] = 'Egenskapsformulär för ombud';
-?>

@@ -12,4 +12,3 @@ $labels['default'] = '默认';
 $labels['inbox'] = '收件箱';
 $labels['drafts'] = '草稿箱';
 $labels['wastebasket'] = '垃圾箱';
-?>

@@ -1,4 +1,5 @@
 <?php
+
 $labels['devices'] = 'Seadmed';
 $labels['devicealias'] = 'Seadme nimi';
 $labels['synchronize'] = 'Sünkrooni';
@@ -17,4 +18,3 @@ $labels['friendlyname'] = 'Inimsõbralik nimi';
 $labels['os'] = 'Operatsioonisüsteem';
 $labels['oslanguage'] = 'OS-i keel';
 $labels['phonenumber'] = 'Telefoninumber';
-?>

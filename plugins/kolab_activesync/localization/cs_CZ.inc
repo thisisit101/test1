@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'Activesync';
 $labels['activesynctitle'] = 'Správa zařízení Avtivesync';
 $labels['devices'] = 'Zařízení';
@@ -30,4 +31,3 @@ $labels['os'] = 'Operační systém';
 $labels['oslanguage'] = 'Jazyk operačního systému';
 $labels['phonenumber'] = 'Telefonní číslo';
 $labels['arialabeldeviceframe'] = 'Nastavení synchronizace zařízení';
-?>

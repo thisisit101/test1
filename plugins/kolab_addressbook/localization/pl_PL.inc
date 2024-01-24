@@ -63,4 +63,3 @@ $messages['bookupdateerror'] = 'Podczas zapisywania książki adresowej wystąpi
 $messages['bookcreateerror'] = 'Podczas dodawania książki adresowej wystąpił błąd.';
 $messages['nobooknamewarning'] = 'Proszę podać nazwę książki adresowej.';
 $messages['noemailnamewarning'] = 'Proszę podać adres email lub nazwę kontaktu.';
-?>

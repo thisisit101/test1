@@ -26,14 +26,14 @@ class kolab_sso_oauth2
     protected $error;
     protected $plugin;
     protected $id       = 'oauth2';
-    protected $config   = array();
-    protected $params   = array();
-    protected $defaults = array(
+    protected $config   = [];
+    protected $params   = [];
+    protected $defaults = [
         'scope'          => 'email',
         'token_type'     => 'access_token',
         'user_field'     => 'email',
-        'validate_items' => array('aud'),
-    );
+        'validate_items' => ['aud'],
+    ];
 
 
     /**
@@ -55,13 +55,13 @@ class kolab_sso_oauth2
      */
     public function authorize()
     {
-        $params = array(
+        $params = [
             'response_type' => 'code',
             'scope'         => $this->get_param('scope'),
             'client_id'     => $this->get_param('client_id'),
             'state'         => $this->plugin->rc->get_request_token(),
             'redirect_uri'  => $this->redirect_uri(),
-        );
+        ];
 
         // Add extra request parameters (don't overwrite params set above)
         if (!empty($this->config['extra_params'])) {
@@ -146,7 +146,7 @@ class kolab_sso_oauth2
         $validto = new DateTime($session['validto'], new DateTimezone('UTC'));
 
         // Don't refresh often than TTL/2
-        $validto->sub(new DateInterval(sprintf('PT%dS', $session['ttl']/2)));
+        $validto->sub(new DateInterval(sprintf('PT%dS', $session['ttl'] / 2)));
         if ($now < $validto) {
             $this->plugin->debug("[{$this->id}][validate] Token valid, skipping refresh");
             return $session;
@@ -182,17 +182,16 @@ class kolab_sso_oauth2
     {
         $mode   = $refresh_token ? 'token-refresh' : 'token';
         $url    = $this->config['token_uri'] ?: ($this->config['uri'] . '/token');
-        $params = array(
+        $params = [
             'client_id'     => $this->get_param('client_id'),
             'client_secret' => $this->get_param('client_secret'),
             'grant_type'    => $refresh_token ? 'refresh_token' : 'authorization_code',
-        );
+        ];
 
         if ($refresh_token) {
             $params['refresh_token'] = $refresh_token;
             $params['scope']         = $this->get_param('scope');
-        }
-        else {
+        } else {
             $params['code']         = $code;
             $params['redirect_uri'] = $this->redirect_uri();
         }
@@ -226,12 +225,14 @@ class kolab_sso_oauth2
                 $err = $this->error_text(is_array($response) ? $response['error'] : null);
                 throw new Exception("OpenIDC request failed with error: $err");
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $this->error = $this->plugin->gettext('errorunknown');
-            rcube::raise_error(array(
-                'line' => __LINE__, 'file' => __FILE__, 'message' => $e->getMessage()),
-                true, false);
+            rcube::raise_error(
+                [
+                'line' => __LINE__, 'file' => __FILE__, 'message' => $e->getMessage()],
+                true,
+                false
+            );
             return;
         }
 
@@ -257,13 +258,13 @@ class kolab_sso_oauth2
         $validto = new DateTime(sprintf('+%d seconds', $ttl), new DateTimezone('UTC'));
         $token   = $response[$this->get_param('token_type')];
 
-        $result = array(
+        $result = [
             'code'          => $code,
             'access_token'  => $response['access_token'],
             // 'token_type'    => $response['token_type'],
             'validto'       => $validto->format(DateTime::ISO8601),
             'ttl'           => $ttl,
-        );
+        ];
 
         if (!empty($response['refresh_token'])) {
             $result['refresh_token'] = $response['refresh_token'];
@@ -282,24 +283,25 @@ class kolab_sso_oauth2
 
                     if ($keyid = openssl_pkey_get_public($pubkey)) {
                         $key = $keyid;
-                    }
-                    else {
+                    } else {
                         throw new Exception("Failed to extract public key. " . openssl_error_string());
                     }
                 }
 
-                $jwt = new Firebase\JWT\JWT;
+                $jwt = new Firebase\JWT\JWT();
                 $jwt::$leeway = 60;
 
                 $payload = $jwt->decode($token, $key, array_keys(Firebase\JWT\JWT::$supported_algs));
 
                 $result['email'] = $this->validate_token_payload($payload);
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 $this->error = $this->plugin->gettext('errorinvalidtoken');
-                rcube::raise_error(array(
-                    'line' => __LINE__, 'file' => __FILE__, 'message' => $e->getMessage()),
-                    true, false);
+                rcube::raise_error(
+                    [
+                    'line' => __LINE__, 'file' => __FILE__, 'message' => $e->getMessage()],
+                    true,
+                    false
+                );
                 return;
             }
         }
@@ -323,11 +325,11 @@ class kolab_sso_oauth2
             // More extended token validation
             // https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
             switch (strtolower($item_name)) {
-            case 'aud':
-                if (!in_array($this->get_param('client_id'), (array) $payload->aud)) {
-                    throw new Exception("Token audience does not match");
-                }
-                break;
+                case 'aud':
+                    if (!in_array($this->get_param('client_id'), (array) $payload->aud)) {
+                        throw new Exception("Token audience does not match");
+                    }
+                    break;
             }
         }
 
@@ -344,7 +346,7 @@ class kolab_sso_oauth2
         // and define a redirect in http server, example for Apache:
         // RewriteRule "^sso" "/roundcubemail/?_task=login&_action=sso" [L,QSA]
 
-        $redirect_params = empty($this->config['response_uri']) ? array('_action' => 'sso') : array();
+        $redirect_params = empty($this->config['response_uri']) ? ['_action' => 'sso'] : [];
 
         $url = $this->plugin->rc->url($redirect_params, false, true);
 
@@ -360,7 +362,7 @@ class kolab_sso_oauth2
      */
     protected function get_request($url, $type)
     {
-        $config = array_intersect_key($this->config, array_flip(array(
+        $config = array_intersect_key($this->config, array_flip([
                 'ssl_verify_peer',
                 'ssl_verify_host',
                 'ssl_cafile',
@@ -368,7 +370,7 @@ class kolab_sso_oauth2
                 'ssl_local_cert',
                 'ssl_passphrase',
                 'follow_redirects',
-        )));
+        ]));
 
         return libkolab::http_request($url, $type, $config);
     }
@@ -384,9 +386,9 @@ class kolab_sso_oauth2
 
         $msg = $this->error_text($error);
 
-        rcube::raise_error(array(
-            'message' => "[SSO] $msg." . ($description ? " $description" : '') . ($uri ? " ($uri)" : '')
-            ), true, false);
+        rcube::raise_error([
+            'message' => "[SSO] $msg." . ($description ? " $description" : '') . ($uri ? " ($uri)" : ''),
+            ], true, false);
 
         $label = 'error' . str_replace('_', '', $error);
         if (!$this->plugin->rc->text_exists($label, 'kolab_sso')) {
@@ -402,26 +404,26 @@ class kolab_sso_oauth2
     protected function error_text($error)
     {
         switch ($error) {
-        case 'invalid_request':
-            return "Request malformed";
-        case 'unauthorized_client':
-            return "The client is not authorized";
-        case 'invalid_client':
-            return "Client authentication failed";
-        case 'access_denied':
-            return "Request denied";
-        case 'unsupported_response_type':
-            return "Unsupported response type";
-        case 'invalid_grant':
-            return "Invalid authorization grant";
-        case 'unsupported_grant_type':
-            return "Unsupported authorization grant";
-        case 'invalid_scope':
-            return "Invalid scope";
-        case 'server_error':
-            return "Server error";
-        case 'temporarily_unavailable':
-            return "Service temporarily unavailable";
+            case 'invalid_request':
+                return "Request malformed";
+            case 'unauthorized_client':
+                return "The client is not authorized";
+            case 'invalid_client':
+                return "Client authentication failed";
+            case 'access_denied':
+                return "Request denied";
+            case 'unsupported_response_type':
+                return "Unsupported response type";
+            case 'invalid_grant':
+                return "Invalid authorization grant";
+            case 'unsupported_grant_type':
+                return "Unsupported authorization grant";
+            case 'invalid_scope':
+                return "Invalid scope";
+            case 'server_error':
+                return "Server error";
+            case 'temporarily_unavailable':
+                return "Service temporarily unavailable";
         }
 
         return "Unknown error";

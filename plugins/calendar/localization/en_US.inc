@@ -8,7 +8,7 @@
  * For translation see https://www.transifex.com/projects/p/kolab/resource/calendar/
  */
 
-$labels = array();
+$labels = [];
 
 // preferences
 $labels['default_view'] = 'Default view';
@@ -327,4 +327,3 @@ $labels['createtalkroom'] = 'Create Talk room';
 $labels['talkroomcreating'] = 'Creating a Talk room for the event...';
 $labels['talkroomcreateerror'] = 'Failed to create a Talk room.';
 $labels['talkroomname'] = 'Room for an event';
-?>

@@ -25,16 +25,16 @@
 
 class kolab_utils
 {
-    public static function folder_form($form, $folder, $domain, $hidden_fields = array(), $no_acl = false)
+    public static function folder_form($form, $folder, $domain, $hidden_fields = [], $no_acl = false)
     {
         $rcmail = rcube::get_instance();
 
         // add folder ACL tab
         if (!$no_acl && is_string($folder) && strlen($folder)) {
-            $form['sharing'] = array(
+            $form['sharing'] = [
                 'name'    => rcube::Q($rcmail->gettext('libkolab.tabsharing')),
                 'content' => self::folder_acl_form($folder),
-            );
+            ];
         }
 
         $form_html = '';
@@ -49,7 +49,7 @@ class kolab_utils
         // create form output
         foreach ($form as $tab) {
             if (isset($tab['fields']) && is_array($tab['fields']) && empty($tab['content'])) {
-                $table = new html_table(array('cols' => 2, 'class' => 'propform'));
+                $table = new html_table(['cols' => 2, 'class' => 'propform']);
                 foreach ($tab['fields'] as $col => $colprop) {
                     $label = !empty($colprop['label']) ? $colprop['label'] : $rcmail->gettext("$domain.$col");
 
@@ -57,8 +57,7 @@ class kolab_utils
                     $table->add(null, $colprop['value']);
                 }
                 $content = $table->show();
-            }
-            else {
+            } else {
                 $content = $tab['content'];
             }
 
@@ -82,16 +81,16 @@ class kolab_utils
         $rcmail->plugins->load_plugin('acl', true);
 
         // get sharing UI from acl plugin
-        $acl = $rcmail->plugins->exec_hook('folder_form', array(
-                'form'    => array(),
+        $acl = $rcmail->plugins->exec_hook('folder_form', [
+                'form'    => [],
                 'options' => $options,
-                'name'    => $folder
-        ));
+                'name'    => $folder,
+        ]);
 
         if (!empty($acl['form']['sharing']['content'])) {
             return $acl['form']['sharing']['content'];
         }
-        
+
         return html::div('hint', $rcmail->gettext('libkolab.aclnorights'));
     }
 }

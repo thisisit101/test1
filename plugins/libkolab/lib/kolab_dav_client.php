@@ -44,8 +44,7 @@ class kolab_dav_client
             $this->password = rawurldecode($parsedUrl['pass']);
 
             $url = str_replace(rawurlencode($this->user) . ':' . rawurlencode($this->password) . '@', '', $url);
-        }
-        else {
+        } else {
             $this->user     = $this->rc->get_user_name();
             $this->password = $this->rc->get_user_password();
         }
@@ -107,8 +106,7 @@ class kolab_dav_client
             $this->responseHeaders = $response->getHeader();
 
             return $this->parseXML($body);
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, false);
             return false;
         }
@@ -262,8 +260,7 @@ class kolab_dav_client
                 if (in_array('addressbook', $folder['resource_type'])) {
                     $folders[] = $folder;
                 }
-            }
-            else if (in_array('calendar', $folder['resource_type']) && in_array($component, (array) $folder['types'])) {
+            } elseif (in_array('calendar', $folder['resource_type']) && in_array($component, (array) $folder['types'])) {
                 $folders[] = $folder;
             }
         }
@@ -384,8 +381,7 @@ class kolab_dav_client
         if ($component == 'VCARD') {
             $ns .= ' xmlns:c="urn:ietf:params:xml:ns:carddav"';
             $props = '<d:resourcetype><d:collection/><c:addressbook/></d:resourcetype>';
-        }
-        else {
+        } else {
             $ns .= ' xmlns:c="urn:ietf:params:xml:ns:caldav"';
             $props = '<d:resourcetype><d:collection/><c:calendar/></d:resourcetype>';
         }
@@ -440,8 +436,7 @@ class kolab_dav_client
             $ns .= ' xmlns:c="urn:ietf:params:xml:ns:carddav"';
             // Resourcetype property is protected
             // $props = '<d:resourcetype><d:collection/><c:addressbook/></d:resourcetype>';
-        }
-        else {
+        } else {
             $ns .= ' xmlns:c="urn:ietf:params:xml:ns:caldav"';
             // Resourcetype property is protected
             // $props = '<d:resourcetype><d:collection/><c:calendar/></d:resourcetype>';
@@ -460,16 +455,14 @@ class kolab_dav_client
         foreach ($properties as $name => $value) {
             if ($name == 'name') {
                 $props .= '<d:displayname>' . htmlspecialchars($value, ENT_XML1, 'UTF-8') . '</d:displayname>';
-            }
-            else if ($name == 'color' && strlen($value)) {
+            } elseif ($name == 'color' && strlen($value)) {
                 if ($value[0] != '#') {
                     $value = '#' . $value;
                 }
 
                 $ns .= ' xmlns:a="http://apple.com/ns/ical/"';
                 $props .= '<a:calendar-color>' . htmlspecialchars($value, ENT_XML1, 'UTF-8') . '</a:calendar-color>';
-            }
-            else if ($name == 'alarms') {
+            } elseif ($name == 'alarms') {
                 if (!strpos($ns, 'Kolab:')) {
                     $ns .= ' xmlns:k="Kolab:"';
                 }
@@ -526,7 +519,7 @@ class kolab_dav_client
         }
 
         $body = '<?xml version="1.0" encoding="utf-8"?>'
-            .' <c:' . $queries[$component] . ' xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:' . $ns[$component]. '">'
+            . ' <c:' . $queries[$component] . ' xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:' . $ns[$component] . '">'
                 . '<d:prop>'
                     . '<d:getetag />'
                 . '</d:prop>'
@@ -587,10 +580,10 @@ class kolab_dav_client
         ];
 
         $body = '<?xml version="1.0" encoding="utf-8"?>'
-            .' <c:' . $queries[$component] . ' xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:' . $ns[$component] . '">'
+            . ' <c:' . $queries[$component] . ' xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:' . $ns[$component] . '">'
                 . '<d:prop>'
                     . '<d:getetag />'
-                    . '<c:' . $types[$component]. ' />'
+                    . '<c:' . $types[$component] . ' />'
                 . '</d:prop>'
                 . $body
             . '</c:' . $queries[$component] . '>';
@@ -662,12 +655,12 @@ class kolab_dav_client
 
         if ($href = $element->getElementsByTagName('href')->item(0)) {
             $href = $href->nodeValue;
-/*
-            $path = parse_url($this->url, PHP_URL_PATH);
-            if ($path && strpos($href, $path) === 0) {
-                $href = substr($href, strlen($path));
-            }
-*/
+            /*
+                        $path = parse_url($this->url, PHP_URL_PATH);
+                        if ($path && strpos($href, $path) === 0) {
+                            $href = substr($href, strlen($path));
+                        }
+            */
         }
 
         if ($color = $element->getElementsByTagName('calendar-color')->item(0)) {
@@ -729,21 +722,20 @@ class kolab_dav_client
         $uid = null;
         if ($href = $element->getElementsByTagName('href')->item(0)) {
             $href = $href->nodeValue;
-/*
-            $path = parse_url($this->url, PHP_URL_PATH);
-            if ($path && strpos($href, $path) === 0) {
-                $href = substr($href, strlen($path));
-            }
-*/
+            /*
+                        $path = parse_url($this->url, PHP_URL_PATH);
+                        if ($path && strpos($href, $path) === 0) {
+                            $href = substr($href, strlen($path));
+                        }
+            */
             // Extract UID from the URL
             $href_parts = explode('/', $href);
-            $uid = preg_replace('/\.[a-z]+$/', '', $href_parts[count($href_parts)-1]);
+            $uid = preg_replace('/\.[a-z]+$/', '', $href_parts[count($href_parts) - 1]);
         }
 
         if ($data = $element->getElementsByTagName('calendar-data')->item(0)) {
             $data = $data->nodeValue;
-        }
-        else if ($data = $element->getElementsByTagName('address-data')->item(0)) {
+        } elseif ($data = $element->getElementsByTagName('address-data')->item(0)) {
             $data = $data->nodeValue;
         }
 
@@ -769,7 +761,7 @@ class kolab_dav_client
     {
         if ($response !== false) {
             // Note: ETag is not always returned, e.g. https://github.com/cyrusimap/cyrus-imapd/issues/2456
-            $etag = isset($this->responseHeaders['etag']) ? $this->responseHeaders['etag'] : null;
+            $etag = $this->responseHeaders['etag'] ?? null;
 
             if (is_string($etag) && preg_match('|^".*"$|', $etag)) {
                 $etag = substr($etag, 1, -1);
@@ -784,14 +776,14 @@ class kolab_dav_client
     /**
      * Initialize HTTP request object
      */
-    protected function initRequest($url = '', $method = 'GET', $config = array())
+    protected function initRequest($url = '', $method = 'GET', $config = [])
     {
         $rcube       = rcube::get_instance();
         $http_config = (array) $rcube->config->get('kolab_http_request');
 
         // deprecated configuration options
         if (empty($http_config)) {
-            foreach (array('ssl_verify_peer', 'ssl_verify_host') as $option) {
+            foreach (['ssl_verify_peer', 'ssl_verify_host'] as $option) {
                 $value = $rcube->config->get('kolab_' . $option, true);
                 if (is_bool($value)) {
                     $http_config[$option] = $value;
@@ -823,8 +815,7 @@ class kolab_dav_client
             $request->setMethod($method);
 
             return $request;
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, true);
         }
     }

@@ -26,4 +26,3 @@ $labels['junkemail'] = '迷惑メール';
 $labels['confidential'] = '親展';
 $labels['private'] = 'プライベート';
 $messages['defaultfolderexists'] = '指定したタイプの初期フォルダは既にあります。';
-?>

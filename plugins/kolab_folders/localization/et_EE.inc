@@ -24,4 +24,3 @@ $labels['outbox'] = 'Väljuvad';
 $labels['wastebasket'] = 'Prügikast';
 $labels['junkemail'] = 'Rämpspost';
 $labels['confidential'] = 'Konfidentsiaalne';
-?>

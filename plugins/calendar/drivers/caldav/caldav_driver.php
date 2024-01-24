@@ -80,7 +80,7 @@ class caldav_driver extends kolab_driver
 
         // get all folders that support VEVENT, sorted by namespace/name
         $folders = $this->storage->get_folders('event');
-            // + $this->storage->get_user_folders('event', true);
+        // + $this->storage->get_user_folders('event', true);
 
         $this->calendars = [];
 
@@ -109,8 +109,7 @@ class caldav_driver extends kolab_driver
         if ($folder instanceof kolab_storage_folder_user) {
             $calendar = new kolab_user_calendar($folder, $this->cal);
             $calendar->subscriptions = count($folder->children) > 0;
-        }
-        else {
+        } else {
             $calendar = new caldav_calendar($folder, $this->cal);
         }
 
@@ -134,121 +133,121 @@ class caldav_driver extends kolab_driver
         $prefs     = $this->rc->config->get('kolab_calendars', []);
 
         // include virtual folders for a full folder tree
-/*
-        if (!is_null($tree)) {
-            $folders = $this->storage->folder_hierarchy($folders, $tree);
-        }
-*/
+        /*
+                if (!is_null($tree)) {
+                    $folders = $this->storage->folder_hierarchy($folders, $tree);
+                }
+        */
         $parents = array_keys($this->calendars);
 
         foreach ($folders as $id => $cal) {
             $parent_id = null;
-/*
-            $path = explode('/', $cal->name);
+            /*
+                        $path = explode('/', $cal->name);
 
-            // find parent
-            do {
-                array_pop($path);
-                $parent_id = $this->storage->folder_id(implode('/', $path));
-            }
-            while (count($path) > 1 && !in_array($parent_id, $parents));
+                        // find parent
+                        do {
+                            array_pop($path);
+                            $parent_id = $this->storage->folder_id(implode('/', $path));
+                        }
+                        while (count($path) > 1 && !in_array($parent_id, $parents));
 
-            // restore "real" parent ID
-            if ($parent_id && !in_array($parent_id, $parents)) {
-                $parent_id = $this->storage->folder_id($cal->get_parent());
-            }
+                        // restore "real" parent ID
+                        if ($parent_id && !in_array($parent_id, $parents)) {
+                            $parent_id = $this->storage->folder_id($cal->get_parent());
+                        }
 
-            $parents[] = $cal->id;
+                        $parents[] = $cal->id;
 
-            if ($cal instanceof kolab_storage_folder_virtual) {
-                $calendars[$cal->id] = [
-                    'id'       => $cal->id,
-                    'name'     => $cal->get_name(),
-                    'listname' => $cal->get_foldername(),
-                    'editname' => $cal->get_foldername(),
-                    'virtual'  => true,
-                    'editable' => false,
-                    'group'    => $cal->get_namespace(),
+                        if ($cal instanceof kolab_storage_folder_virtual) {
+                            $calendars[$cal->id] = [
+                                'id'       => $cal->id,
+                                'name'     => $cal->get_name(),
+                                'listname' => $cal->get_foldername(),
+                                'editname' => $cal->get_foldername(),
+                                'virtual'  => true,
+                                'editable' => false,
+                                'group'    => $cal->get_namespace(),
+                            ];
+                        }
+                        else {
+            */
+            // additional folders may come from kolab_storage_dav::folder_hierarchy() above
+            // make sure we deal with caldav_calendar instances
+            $cal = $this->_to_calendar($cal);
+            $this->calendars[$cal->id] = $cal;
+
+            $is_user = false; // ($cal instanceof caldav_user_calendar);
+
+            $calendars[$cal->id] = [
+                'id'        => $cal->id,
+                'name'      => $cal->get_name(),
+                'listname'  => $cal->get_foldername(),
+                'editname'  => $cal->get_foldername(),
+                'title'     => '', // $cal->get_title(),
+                'color'     => $cal->get_color(),
+                'editable'  => $cal->editable,
+                'group'     => $is_user ? 'other user' : $cal->get_namespace(),
+                'active'    => !isset($prefs[$cal->id]['active']) || !empty($prefs[$cal->id]['active']),
+                'owner'     => $cal->get_owner(),
+                'removable' => !$cal->default,
+                // extras to hide some elements in the UI
+                'subscriptions' => $cal->subscriptions,
+                'driver' => 'caldav',
+            ];
+
+            if (!$is_user) {
+                $calendars[$cal->id] += [
+                    'default'    => $cal->default,
+                    'rights'     => $cal->rights,
+                    'showalarms' => $cal->alarms,
+                    'history'    => !empty($this->bonnie_api),
+                    'children'   => true,  // TODO: determine if that folder indeed has child folders
+                    'parent'     => $parent_id,
+                    'subtype'    => $cal->subtype,
+                    'caldavurl'  => '', // $cal->get_caldav_url(),
                 ];
             }
-            else {
-*/
-                // additional folders may come from kolab_storage_dav::folder_hierarchy() above
-                // make sure we deal with caldav_calendar instances
-                $cal = $this->_to_calendar($cal);
-                $this->calendars[$cal->id] = $cal;
-
-                $is_user = false; // ($cal instanceof caldav_user_calendar);
-
-                $calendars[$cal->id] = [
-                    'id'        => $cal->id,
-                    'name'      => $cal->get_name(),
-                    'listname'  => $cal->get_foldername(),
-                    'editname'  => $cal->get_foldername(),
-                    'title'     => '', // $cal->get_title(),
-                    'color'     => $cal->get_color(),
-                    'editable'  => $cal->editable,
-                    'group'     => $is_user ? 'other user' : $cal->get_namespace(),
-                    'active'    => !isset($prefs[$cal->id]['active']) || !empty($prefs[$cal->id]['active']),
-                    'owner'     => $cal->get_owner(),
-                    'removable' => !$cal->default,
-                    // extras to hide some elements in the UI
-                    'subscriptions' => $cal->subscriptions,
-                    'driver' => 'caldav',
-                ];
-
-                if (!$is_user) {
-                    $calendars[$cal->id] += [
-                        'default'    => $cal->default,
-                        'rights'     => $cal->rights,
-                        'showalarms' => $cal->alarms,
-                        'history'    => !empty($this->bonnie_api),
-                        'children'   => true,  // TODO: determine if that folder indeed has child folders
-                        'parent'     => $parent_id,
-                        'subtype'    => $cal->subtype,
-                        'caldavurl'  => '', // $cal->get_caldav_url(),
-                    ];
-                }
-/*
-            }
-*/
+            /*
+                        }
+            */
             if ($cal->subscriptions) {
                 $calendars[$cal->id]['subscribed'] = $cal->is_subscribed();
             }
         }
-/*
-        // list virtual calendars showing invitations
-        if ($this->rc->config->get('kolab_invitation_calendars') && !($filter & self::FILTER_INSERTABLE)) {
-            foreach ([self::INVITATIONS_CALENDAR_PENDING, self::INVITATIONS_CALENDAR_DECLINED] as $id) {
-                $cal = new caldav_invitation_calendar($id, $this->cal);
-                if (!($filter & self::FILTER_ACTIVE) || $cal->is_active()) {
-                    $calendars[$id] = [
-                        'id'         => $cal->id,
-                        'name'       => $cal->get_name(),
-                        'listname'   => $cal->get_name(),
-                        'editname'   => $cal->get_foldername(),
-                        'title'      => $cal->get_title(),
-                        'color'      => $cal->get_color(),
-                        'editable'   => $cal->editable,
-                        'rights'     => $cal->rights,
-                        'showalarms' => $cal->alarms,
-                        'history'    => !empty($this->bonnie_api),
-                        'group'      => 'x-invitations',
-                        'default'    => false,
-                        'active'     => $cal->is_active(),
-                        'owner'      => $cal->get_owner(),
-                        'children'   => false,
-                        'counts'     => $id == self::INVITATIONS_CALENDAR_PENDING,
-                    ];
+        /*
+                // list virtual calendars showing invitations
+                if ($this->rc->config->get('kolab_invitation_calendars') && !($filter & self::FILTER_INSERTABLE)) {
+                    foreach ([self::INVITATIONS_CALENDAR_PENDING, self::INVITATIONS_CALENDAR_DECLINED] as $id) {
+                        $cal = new caldav_invitation_calendar($id, $this->cal);
+                        if (!($filter & self::FILTER_ACTIVE) || $cal->is_active()) {
+                            $calendars[$id] = [
+                                'id'         => $cal->id,
+                                'name'       => $cal->get_name(),
+                                'listname'   => $cal->get_name(),
+                                'editname'   => $cal->get_foldername(),
+                                'title'      => $cal->get_title(),
+                                'color'      => $cal->get_color(),
+                                'editable'   => $cal->editable,
+                                'rights'     => $cal->rights,
+                                'showalarms' => $cal->alarms,
+                                'history'    => !empty($this->bonnie_api),
+                                'group'      => 'x-invitations',
+                                'default'    => false,
+                                'active'     => $cal->is_active(),
+                                'owner'      => $cal->get_owner(),
+                                'children'   => false,
+                                'counts'     => $id == self::INVITATIONS_CALENDAR_PENDING,
+                            ];
 
 
-                    if (is_object($tree)) {
-                        $tree->children[] = $cal;
+                            if (is_object($tree)) {
+                                $tree->children[] = $cal;
+                            }
+                        }
                     }
                 }
-            }
-        }
-*/
+        */
         // append the virtual birthdays calendar
         if ($this->rc->config->get('calendar_contact_birthdays', false) && !($filter & self::FILTER_INSERTABLE)) {
             $id    = self::BIRTHDAY_CALENDAR_ID;
@@ -353,8 +352,7 @@ class caldav_driver extends kolab_driver
 
         if (isset($prop['showalarms']) && $id == self::BIRTHDAY_CALENDAR_ID) {
             $prefs['calendar_birthdays_alarm_type'] = $prop['showalarms'] ? $this->alarm_types[0] : '';
-        }
-        else if (isset($prop['showalarms'])) {
+        } elseif (isset($prop['showalarms'])) {
             $prefs['kolab_calendars'][$id]['showalarms'] = !empty($prop['showalarms']);
         }
 
@@ -422,40 +420,40 @@ class caldav_driver extends kolab_driver
     {
         $this->calendars = [];
         $this->search_more_results = false;
-/*
-        // find unsubscribed IMAP folders that have "event" type
-        if ($source == 'folders') {
-            foreach ((array) $this->storage->search_folders('event', $query, ['other']) as $folder) {
-                $calendar = new kolab_calendar($folder->name, $this->cal);
-                $this->calendars[$calendar->id] = $calendar;
-            }
-        }
-        // find other user's virtual calendars
-        else if ($source == 'users') {
-            // we have slightly more space, so display twice the number
-            $limit = $this->rc->config->get('autocomplete_max', 15) * 2;
-
-            foreach ($this->storage->search_users($query, 0, [], $limit, $count) as $user) {
-                $calendar = new caldav_user_calendar($user, $this->cal);
-                $this->calendars[$calendar->id] = $calendar;
-
-                // search for calendar folders shared by this user
-                foreach ($this->storage->list_user_folders($user, 'event', false) as $foldername) {
-                    $cal = new caldav_calendar($foldername, $this->cal);
-                    $this->calendars[$cal->id] = $cal;
-                    $calendar->subscriptions = true;
+        /*
+                // find unsubscribed IMAP folders that have "event" type
+                if ($source == 'folders') {
+                    foreach ((array) $this->storage->search_folders('event', $query, ['other']) as $folder) {
+                        $calendar = new kolab_calendar($folder->name, $this->cal);
+                        $this->calendars[$calendar->id] = $calendar;
+                    }
                 }
-            }
+                // find other user's virtual calendars
+                else if ($source == 'users') {
+                    // we have slightly more space, so display twice the number
+                    $limit = $this->rc->config->get('autocomplete_max', 15) * 2;
 
-            if ($count > $limit) {
-                $this->search_more_results = true;
-            }
-        }
+                    foreach ($this->storage->search_users($query, 0, [], $limit, $count) as $user) {
+                        $calendar = new caldav_user_calendar($user, $this->cal);
+                        $this->calendars[$calendar->id] = $calendar;
 
-        // don't list the birthday calendar
-        $this->rc->config->set('calendar_contact_birthdays', false);
-        $this->rc->config->set('kolab_invitation_calendars', false);
-*/
+                        // search for calendar folders shared by this user
+                        foreach ($this->storage->list_user_folders($user, 'event', false) as $foldername) {
+                            $cal = new caldav_calendar($foldername, $this->cal);
+                            $this->calendars[$cal->id] = $cal;
+                            $calendar->subscriptions = true;
+                        }
+                    }
+
+                    if ($count > $limit) {
+                        $this->search_more_results = true;
+                    }
+                }
+
+                // don't list the birthday calendar
+                $this->rc->config->set('calendar_contact_birthdays', false);
+                $this->rc->config->set('kolab_invitation_calendars', false);
+        */
         return $this->list_calendars();
     }
 
@@ -475,8 +473,7 @@ class caldav_driver extends kolab_driver
     {
         if ($calendars && is_string($calendars)) {
             $calendars = explode(',', $calendars);
-        }
-        else if (!$calendars) {
+        } elseif (!$calendars) {
             $this->_read_calendars();
             $calendars = array_keys($this->calendars);
         }
@@ -506,7 +503,7 @@ class caldav_driver extends kolab_driver
         $newcats = array_udiff(
             array_keys($categories),
             array_keys($old_categories),
-            function($a, $b) { return strcasecmp($a, $b); }
+            function ($a, $b) { return strcasecmp($a, $b); }
         );
 
         if (!empty($newcats)) {
@@ -579,8 +576,7 @@ class caldav_driver extends kolab_driver
                     && in_array(strtolower($attendee['email']), $emails)
                 ) {
                     $is_organizer = true;
-                }
-                else if ($attendee['role'] != 'ORGANIZER'
+                } elseif ($attendee['role'] != 'ORGANIZER'
                     && $attendee['role'] != 'NON-PARTICIPANT'
                     && $attendee['status'] != 'DELEGATED'
                 ) {
@@ -600,7 +596,7 @@ class caldav_driver extends kolab_driver
 
     /**
      * Identify changes considered relevant for scheduling
-     * 
+     *
      * @param array Hash array with NEW object properties
      * @param array Hash array with OLD object properties
      *
@@ -631,8 +627,7 @@ class caldav_driver extends kolab_driver
                 // advanced rrule comparison: no rescheduling if series was shortened
                 if ($a['COUNT'] && $b['COUNT'] && $b['COUNT'] < $a['COUNT']) {
                     unset($a['COUNT'], $b['COUNT']);
-                }
-                else if ($a['UNTIL'] && $b['UNTIL'] && $b['UNTIL'] < $a['UNTIL']) {
+                } elseif ($a['UNTIL'] && $b['UNTIL'] && $b['UNTIL'] < $a['UNTIL']) {
                     unset($a['UNTIL'], $b['UNTIL']);
                 }
             }
@@ -660,7 +655,7 @@ class caldav_driver extends kolab_driver
         $special_calendars = [
             self::BIRTHDAY_CALENDAR_ID,
             self::INVITATIONS_CALENDAR_PENDING,
-            self::INVITATIONS_CALENDAR_DECLINED
+            self::INVITATIONS_CALENDAR_DECLINED,
         ];
 
         // show default dialog for birthday calendar

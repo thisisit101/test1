@@ -94,15 +94,15 @@
  */
 abstract class calendar_driver
 {
-    const FILTER_ALL           = 0;
-    const FILTER_WRITEABLE     = 1;
-    const FILTER_INSERTABLE    = 2;
-    const FILTER_ACTIVE        = 4;
-    const FILTER_PERSONAL      = 8;
-    const FILTER_PRIVATE       = 16;
-    const FILTER_CONFIDENTIAL  = 32;
-    const FILTER_SHARED        = 64;
-    const BIRTHDAY_CALENDAR_ID = '__bdays__';
+    public const FILTER_ALL           = 0;
+    public const FILTER_WRITEABLE     = 1;
+    public const FILTER_INSERTABLE    = 2;
+    public const FILTER_ACTIVE        = 4;
+    public const FILTER_PERSONAL      = 8;
+    public const FILTER_PRIVATE       = 16;
+    public const FILTER_CONFIDENTIAL  = 32;
+    public const FILTER_SHARED        = 64;
+    public const BIRTHDAY_CALENDAR_ID = '__bdays__';
 
     // features supported by backend
     public $alarms      = false;
@@ -131,7 +131,7 @@ abstract class calendar_driver
      *
      * @return array List of calendars
      */
-    abstract function list_calendars($filter = 0);
+    abstract public function list_calendars($filter = 0);
 
     /**
      * Create a new calendar assigned to the current user
@@ -143,7 +143,7 @@ abstract class calendar_driver
      *
      * @return mixed ID of the calendar on success, False on error
      */
-    abstract function create_calendar($prop);
+    abstract public function create_calendar($prop);
 
     /**
      * Update properties of an existing calendar
@@ -156,7 +156,7 @@ abstract class calendar_driver
      *
      * @return bool True on success, Fales on failure
      */
-    abstract function edit_calendar($prop);
+    abstract public function edit_calendar($prop);
 
     /**
      * Set active/subscribed state of a calendar
@@ -167,7 +167,7 @@ abstract class calendar_driver
      *
      * @return bool True on success, Fales on failure
      */
-    abstract function subscribe_calendar($prop);
+    abstract public function subscribe_calendar($prop);
 
     /**
      * Delete the given calendar with all its contents
@@ -177,7 +177,7 @@ abstract class calendar_driver
      *
      * @return bool True on success, Fales on failure
      */
-    abstract function delete_calendar($prop);
+    abstract public function delete_calendar($prop);
 
     /**
      * Search for shared or otherwise not listed calendars the user has access
@@ -187,7 +187,7 @@ abstract class calendar_driver
      *
      * @return array List of calendars
      */
-    abstract function search_calendars($query, $source);
+    abstract public function search_calendars($query, $source);
 
     /**
      * Add a single event to the database
@@ -196,7 +196,7 @@ abstract class calendar_driver
      *
      * @return mixed New event ID on success, False on error
      */
-    abstract function new_event($event);
+    abstract public function new_event($event);
 
     /**
      * Update an event entry with the given data
@@ -205,7 +205,7 @@ abstract class calendar_driver
      *
      * @return bool True on success, False on error
      */
-    abstract function edit_event($event);
+    abstract public function edit_event($event);
 
     /**
      * Extended event editing with possible changes to the argument
@@ -245,7 +245,7 @@ abstract class calendar_driver
      *
      * @return bool True on success, False on error
      */
-    abstract function move_event($event);
+    abstract public function move_event($event);
 
     /**
      * Resize a single event
@@ -257,7 +257,7 @@ abstract class calendar_driver
      *
      * @return bool True on success, False on error
      */
-    abstract function resize_event($event);
+    abstract public function resize_event($event);
 
     /**
      * Remove a single event from the database
@@ -269,7 +269,7 @@ abstract class calendar_driver
      *
      * @return bool True on success, False on error
      */
-    abstract function remove_event($event, $force = true);
+    abstract public function remove_event($event, $force = true);
 
     /**
      * Restores a single deleted event (if supported)
@@ -298,7 +298,7 @@ abstract class calendar_driver
      *
      * @return array Event object as hash array
      */
-    abstract function get_event($event, $scope = 0, $full = false);
+    abstract public function get_event($event, $scope = 0, $full = false);
 
     /**
      * Get events from source.
@@ -312,7 +312,7 @@ abstract class calendar_driver
      *
      * @return array A list of event objects (see header of this file for struct of an event)
      */
-    abstract function load_events($start, $end, $query = null, $calendars = null, $virtual = 1, $modifiedsince = null);
+    abstract public function load_events($start, $end, $query = null, $calendars = null, $virtual = 1, $modifiedsince = null);
 
     /**
      * Get number of events in the given calendar
@@ -323,7 +323,7 @@ abstract class calendar_driver
      *
      * @return array   Hash array with counts grouped by calendar ID
      */
-    abstract function count_events($calendars, $start, $end = null);
+    abstract public function count_events($calendars, $start, $end = null);
 
     /**
      * Get a list of pending alarms to be displayed to the user
@@ -340,7 +340,7 @@ abstract class calendar_driver
      *      title: Event title/summary
      *   location: Location string
      */
-    abstract function pending_alarms($time, $calendars = null);
+    abstract public function pending_alarms($time, $calendars = null);
 
     /**
      * (User) feedback after showing an alarm notification
@@ -349,7 +349,7 @@ abstract class calendar_driver
      * @param string $event_id Event identifier
      * @param int    $snooze   Suspend the alarm for this number of seconds
      */
-    abstract function dismiss_alarm($event_id, $snooze = 0);
+    abstract public function dismiss_alarm($event_id, $snooze = 0);
 
     /**
      * Check the given event object for validity
@@ -455,17 +455,23 @@ abstract class calendar_driver
     /**
      * Create a new category
      */
-    public function add_category($name, $color) { }
+    public function add_category($name, $color)
+    {
+    }
 
     /**
      * Remove the given category
      */
-    public function remove_category($name) { }
+    public function remove_category($name)
+    {
+    }
 
     /**
      * Update/replace a category
      */
-    public function replace_category($oldname, $name, $color) { }
+    public function replace_category($oldname, $name, $color)
+    {
+    }
 
     /**
      * Fetch free/busy information from a person within the given range
@@ -502,9 +508,12 @@ abstract class calendar_driver
             // determine a reasonable end date if none given
             if (!$end) {
                 switch ($event['recurrence']['FREQ']) {
-                case 'YEARLY':  $intvl = 'P100Y'; break;
-                case 'MONTHLY': $intvl = 'P20Y';  break;
-                default:        $intvl = 'P10Y';  break;
+                    case 'YEARLY':  $intvl = 'P100Y';
+                        break;
+                    case 'MONTHLY': $intvl = 'P20Y';
+                        break;
+                    default:        $intvl = 'P10Y';
+                        break;
                 }
 
                 $end = clone $event['start'];
@@ -519,8 +528,7 @@ abstract class calendar_driver
                     $next_event['id'] = $next_event['uid'] . '-' . $next_event['_instance'];
                     $next_event['recurrence_id'] = $event['uid'];
                     $events[] = $next_event;
-                }
-                else if ($next_event['start'] > $end) {  // stop loop if out of range
+                } elseif ($next_event['start'] > $end) {  // stop loop if out of range
                     break;
                 }
 
@@ -650,8 +658,8 @@ abstract class calendar_driver
         }
 
         // convert to DateTime for comparisons
-        $start  = new DateTime('@'.$start);
-        $end    = new DateTime('@'.$end);
+        $start  = new DateTime('@' . $start);
+        $end    = new DateTime('@' . $end);
         // extract the current year
         $year   = $start->format('Y');
         $year2  = $end->format('Y');
@@ -762,7 +770,7 @@ abstract class calendar_driver
     public function get_birthday_event($id)
     {
         // decode $id
-        list(, $source, $contact_id, $year) = explode(':', rcube_ldap::dn_decode($id));
+        [, $source, $contact_id, $year] = explode(':', rcube_ldap::dn_decode($id));
 
         $rcmail = rcmail::get_instance();
 
@@ -797,15 +805,16 @@ abstract class calendar_driver
 
         try {
             $bday = libcalendaring_datetime::createFromAny($contact['birthday'], true);
-        }
-        catch (Exception $e) {
-            rcube::raise_error([
+        } catch (Exception $e) {
+            rcube::raise_error(
+                [
                     'code' => 600,
                     'file' => __FILE__,
                     'line' => __LINE__,
-                    'message' => 'Failed to parse contact birthday: ' . $e->getMessage()
+                    'message' => 'Failed to parse contact birthday: ' . $e->getMessage(),
                 ],
-                true, false
+                true,
+                false
             );
             return;
         }

@@ -36,7 +36,7 @@ class kolab_date_recurrence
     /** @var DateTime */
     private $start;
 
-    /** @var DateTime */ 
+    /** @var DateTime */
     private $next;
 
     /** @var cDateTime */
@@ -54,7 +54,7 @@ class kolab_date_recurrence
      *
      * @param kolab_format_xcal The Kolab object to operate on
      */
-    function __construct($object)
+    public function __construct($object)
     {
         $data = $object->to_array();
 
@@ -66,8 +66,7 @@ class kolab_date_recurrence
 
         if (is_object($data['start']) && is_object($data['end'])) {
             $this->duration = $data['start']->diff($data['end']);
-        }
-        else {
+        } else {
             // Prevent from errors when end date is not set (#5307) RFC5545 3.6.1
             $seconds = !empty($data['end']) ? ($data['end'] - $data['start']) : 0;
             $this->duration = new DateInterval('PT' . $seconds . 'S');
@@ -177,37 +176,38 @@ class kolab_date_recurrence
         $interval   = intval($event['recurrence']['INTERVAL'] ?: 1);
 
         switch ($event['recurrence']['FREQ']) {
-        case 'WEEKLY':
-            if (empty($event['recurrence']['BYDAY'])) {
-                return $orig_start;
-            }
+            case 'WEEKLY':
+                if (empty($event['recurrence']['BYDAY'])) {
+                    return $orig_start;
+                }
 
-            $start->sub(new DateInterval("P{$interval}W"));
-            break;
-
-        case 'MONTHLY':
-            if (empty($event['recurrence']['BYDAY']) && empty($event['recurrence']['BYMONTHDAY'])) {
-                return $orig_start;
-            }
-
-            $start->sub(new DateInterval("P{$interval}M"));
-            break;
-
-        case 'YEARLY':
-            if (empty($event['recurrence']['BYDAY']) && empty($event['recurrence']['BYMONTH'])) {
-                return $orig_start;
-            }
-
-            $start->sub(new DateInterval("P{$interval}Y"));
-            break;
-
-        case 'DAILY':
-            if (!empty($event['recurrence']['BYMONTH'])) {
+                $start->sub(new DateInterval("P{$interval}W"));
                 break;
-            }
 
-        default:
-            return $orig_start;
+            case 'MONTHLY':
+                if (empty($event['recurrence']['BYDAY']) && empty($event['recurrence']['BYMONTHDAY'])) {
+                    return $orig_start;
+                }
+
+                $start->sub(new DateInterval("P{$interval}M"));
+                break;
+
+            case 'YEARLY':
+                if (empty($event['recurrence']['BYDAY']) && empty($event['recurrence']['BYMONTH'])) {
+                    return $orig_start;
+                }
+
+                $start->sub(new DateInterval("P{$interval}Y"));
+                break;
+
+            case 'DAILY':
+                if (!empty($event['recurrence']['BYMONTH'])) {
+                    break;
+                }
+
+                // no break
+            default:
+                return $orig_start;
         }
 
         $event['start'] = $start;
@@ -236,12 +236,15 @@ class kolab_date_recurrence
         }
 
         if (!$found) {
-            rcube::raise_error(array(
+            rcube::raise_error([
                 'file' => __FILE__,
                 'line' => __LINE__,
-                'message' => sprintf("Failed to find a first occurrence. Start: %s, Recurrence: %s",
-                    $orig_start->format(DateTime::ISO8601), json_encode($event['recurrence'])),
-            ), true);
+                'message' => sprintf(
+                    "Failed to find a first occurrence. Start: %s, Recurrence: %s",
+                    $orig_start->format(DateTime::ISO8601),
+                    json_encode($event['recurrence'])
+                ),
+            ], true);
 
             return null;
         }

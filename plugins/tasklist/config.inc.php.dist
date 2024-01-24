@@ -11,4 +11,3 @@ $config['tasklist_sort_col'] = '';
 
 // default sorting order for tasks listing (asc or desc)
 $config['tasklist_sort_order'] = 'asc';
-

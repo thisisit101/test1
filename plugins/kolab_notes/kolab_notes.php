@@ -27,14 +27,14 @@
 class kolab_notes extends rcube_plugin
 {
     public $task = '?(?!login|logout).*';
-    public $allowed_prefs = array('kolab_notes_sort_col');
+    public $allowed_prefs = ['kolab_notes_sort_col'];
     public $rc;
 
     private $ui;
     private $lists;
     private $folders;
-    private $cache = array();
-    private $message_notes = array();
+    private $cache = [];
+    private $message_notes = [];
     private $note;
     private $bonnie_api = false;
     private $search_more_results = false;
@@ -49,7 +49,7 @@ class kolab_notes extends rcube_plugin
         $this->rc = rcube::get_instance();
 
         // proceed initialization in startup hook
-        $this->add_hook('startup', array($this, 'startup'));
+        $this->add_hook('startup', [$this, 'startup']);
     }
 
     /**
@@ -69,45 +69,49 @@ class kolab_notes extends rcube_plugin
 
         // load localizations
         $this->add_texts('localization/', $args['task'] == 'notes' && (!$args['action'] || $args['action'] == 'dialog-ui'));
-        $this->rc->load_language($_SESSION['language'], array('notes.notes' => $this->gettext('navtitle')));  // add label for task title
+        $this->rc->load_language($_SESSION['language'], ['notes.notes' => $this->gettext('navtitle')]);  // add label for task title
 
         if ($args['task'] == 'notes') {
-            $this->add_hook('storage_init', array($this, 'storage_init'));
+            $this->add_hook('storage_init', [$this, 'storage_init']);
 
             // register task actions
-            $this->register_action('index', array($this, 'notes_view'));
-            $this->register_action('fetch', array($this, 'notes_fetch'));
-            $this->register_action('get',   array($this, 'note_record'));
-            $this->register_action('action', array($this, 'note_action'));
-            $this->register_action('list',  array($this, 'list_action'));
-            $this->register_action('dialog-ui', array($this, 'dialog_view'));
-            $this->register_action('print', array($this, 'print_note'));
+            $this->register_action('index', [$this, 'notes_view']);
+            $this->register_action('fetch', [$this, 'notes_fetch']);
+            $this->register_action('get', [$this, 'note_record']);
+            $this->register_action('action', [$this, 'note_action']);
+            $this->register_action('list', [$this, 'list_action']);
+            $this->register_action('dialog-ui', [$this, 'dialog_view']);
+            $this->register_action('print', [$this, 'print_note']);
 
-            if (!$this->rc->output->ajax_call && in_array($args['action'], array('dialog-ui', 'list'))) {
+            if (!$this->rc->output->ajax_call && in_array($args['action'], ['dialog-ui', 'list'])) {
                 $this->load_ui();
             }
-        }
-        else if ($args['task'] == 'mail') {
-            $this->add_hook('storage_init', array($this, 'storage_init'));
-            $this->add_hook('message_compose', array($this, 'mail_message_compose'));
+        } elseif ($args['task'] == 'mail') {
+            $this->add_hook('storage_init', [$this, 'storage_init']);
+            $this->add_hook('message_compose', [$this, 'mail_message_compose']);
 
-            if (in_array($args['action'], array('show', 'preview', 'print'))) {
-                $this->add_hook('message_load', array($this, 'mail_message_load'));
-                $this->add_hook('template_object_messagebody', array($this, 'mail_messagebody_html'));
+            if (in_array($args['action'], ['show', 'preview', 'print'])) {
+                $this->add_hook('message_load', [$this, 'mail_message_load']);
+                $this->add_hook('template_object_messagebody', [$this, 'mail_messagebody_html']);
             }
 
             // add 'Append note' item to message menu
             if ($this->api->output->type == 'html' && ($_REQUEST['_rel'] ?? null) != 'note') {
-                $this->api->add_content(html::tag('li', array('role' => 'menuitem'),
-                    $this->api->output->button(array(
-                      'command'  => 'append-kolab-note',
-                      'label'    => 'kolab_notes.appendnote',
-                      'type'     => 'link',
-                      'classact' => 'icon appendnote active',
-                      'class'    => 'icon appendnote disabled',
-                      'innerclass' => 'icon note',
-                    ))),
-                    'messagemenu');
+                $this->api->add_content(
+                    html::tag(
+                        'li',
+                        ['role' => 'menuitem'],
+                        $this->api->output->button([
+                          'command'  => 'append-kolab-note',
+                          'label'    => 'kolab_notes.appendnote',
+                          'type'     => 'link',
+                          'classact' => 'icon appendnote active',
+                          'class'    => 'icon appendnote disabled',
+                          'innerclass' => 'icon note',
+                        ])
+                    ),
+                    'messagemenu'
+                );
 
                 $this->api->output->add_label('kolab_notes.appendnote', 'kolab_notes.editnote', 'kolab_notes.deletenotesconfirm', 'kolab_notes.entertitle', 'save', 'delete', 'cancel', 'close');
                 $this->include_script('notes_mail.js');
@@ -152,18 +156,20 @@ class kolab_notes extends rcube_plugin
     private function _read_lists($force = false)
     {
         // already read sources
-        if (isset($this->lists) && !$force)
+        if (isset($this->lists) && !$force) {
             return $this->lists;
+        }
 
         // get all folders that have type "task"
         $folders = kolab_storage::sort_folders(kolab_storage::get_folders('note'));
-        $this->lists = $this->folders = array();
+        $this->lists = $this->folders = [];
 
         // find default folder
         $default_index = 0;
         foreach ($folders as $i => $folder) {
-            if ($folder->default)
+            if ($folder->default) {
                 $default_index = $i;
+            }
         }
 
         // put default folder on top of the list
@@ -190,13 +196,13 @@ class kolab_notes extends rcube_plugin
 
         // attempt to create a default folder for this user
         if (empty($this->lists)) {
-            $folder = array('name' => 'Notes', 'type' => 'note', 'default' => true, 'subscribed' => true);
+            $folder = ['name' => 'Notes', 'type' => 'note', 'default' => true, 'subscribed' => true];
             if (kolab_storage::folder_update($folder)) {
                 $this->_read_lists(true);
             }
         }
 
-        $folders = array();
+        $folders = [];
         foreach ($this->lists as $id => $list) {
             if (!empty($this->folders[$id])) {
                 $folders[] = $this->folders[$id];
@@ -210,17 +216,16 @@ class kolab_notes extends rcube_plugin
 
         $delim = $this->rc->get_storage()->get_hierarchy_delimiter();
 
-        $lists = array();
+        $lists = [];
         foreach ($folders as $folder) {
             $list_id = $folder->id;
             $imap_path = explode($delim, $folder->name);
 
             // find parent
             do {
-              array_pop($imap_path);
-              $parent_id = kolab_storage::folder_id(join($delim, $imap_path));
-            }
-            while (count($imap_path) > 1 && empty($this->folders[$parent_id]));
+                array_pop($imap_path);
+                $parent_id = kolab_storage::folder_id(implode($delim, $imap_path));
+            } while (count($imap_path) > 1 && empty($this->folders[$parent_id]));
 
             // restore "real" parent ID
             if ($parent_id && empty($this->folders[$parent_id])) {
@@ -232,7 +237,7 @@ class kolab_notes extends rcube_plugin
 
             // special handling for virtual folders
             if ($folder instanceof kolab_storage_folder_user) {
-                $lists[$list_id] = array(
+                $lists[$list_id] = [
                     'id'       => $list_id,
                     'name'     => $fullname,
                     'listname' => $listname,
@@ -243,10 +248,9 @@ class kolab_notes extends rcube_plugin
                     'group'    => 'other virtual',
                     'class'    => 'user',
                     'parent'   => $parent_id,
-                );
-            }
-            else if ($folder instanceof kolab_storage_folder_virtual) {
-                $lists[$list_id] = array(
+                ];
+            } elseif ($folder instanceof kolab_storage_folder_virtual) {
+                $lists[$list_id] = [
                     'id'       => $list_id,
                     'name'     => $fullname,
                     'listname' => $listname,
@@ -255,9 +259,8 @@ class kolab_notes extends rcube_plugin
                     'rights'   => 'l',
                     'group'    => $folder->get_namespace(),
                     'parent'   => $parent_id,
-                );
-            }
-            else {
+                ];
+            } else {
                 if (!$this->lists[$list_id]) {
                     $this->lists[$list_id] = $this->folder_props($folder);
                     $this->folders[$list_id] = $folder;
@@ -280,24 +283,24 @@ class kolab_notes extends rcube_plugin
     protected function search_lists($query, $source)
     {
         if (!kolab_storage::setup()) {
-            return array();
+            return [];
         }
 
         $this->search_more_results = false;
-        $this->lists = $this->folders = array();
+        $this->lists = $this->folders = [];
 
         // find unsubscribed IMAP folders that have "event" type
         if ($source == 'folders') {
-            foreach ((array)kolab_storage::search_folders('note', $query, array('other')) as $folder) {
+            foreach ((array)kolab_storage::search_folders('note', $query, ['other']) as $folder) {
                 $this->folders[$folder->id] = $folder;
                 $this->lists[$folder->id] = $this->folder_props($folder);
             }
         }
         // search other user's namespace via LDAP
-        else if ($source == 'users') {
+        elseif ($source == 'users') {
             $limit = $this->rc->config->get('autocomplete_max', 15) * 2;  // we have slightly more space, so display twice the number
-            foreach (kolab_storage::search_users($query, 0, array(), $limit * 10) as $user) {
-                $folders = array();
+            foreach (kolab_storage::search_users($query, 0, [], $limit * 10) as $user) {
+                $folders = [];
                 // search for note folders shared by this user
                 foreach (kolab_storage::list_user_folders($user, 'note', false) as $foldername) {
                     $folders[] = new kolab_storage_folder($foldername, 'note');
@@ -337,22 +340,22 @@ class kolab_notes extends rcube_plugin
             $editable = true;
             $rights = 'lrswikxtea';
             $alarms = true;
-        }
-        else {
+        } else {
             $alarms = false;
             $rights = 'lr';
             $editable = false;
             if (($myrights = $folder->get_myrights()) && !PEAR::isError($myrights)) {
                 $rights = $myrights;
-                if (strpos($rights, 't') !== false || strpos($rights, 'd') !== false)
+                if (strpos($rights, 't') !== false || strpos($rights, 'd') !== false) {
                     $editable = strpos($rights, 'i');
+                }
             }
             $info = $folder->get_folder_info();
             $norename = !$editable || $info['norename'] || $info['protected'];
         }
 
         $list_id = $folder->id;
-        return array(
+        return [
             'id' => $list_id,
             'name' => $folder->get_name(),
             'listname' => $folder->get_foldername(),
@@ -365,7 +368,7 @@ class kolab_notes extends rcube_plugin
             'default'  => $folder->default,
             'group'    => $folder->default ? 'default' : $folder->get_namespace(),
             'class'    => trim($folder->get_namespace() . ($folder->default ? ' default' : '')),
-        );
+        ];
     }
 
     /**
@@ -409,16 +412,16 @@ class kolab_notes extends rcube_plugin
         // resolve message reference
         if ($msgref = rcube_utils::get_input_value('_msg', rcube_utils::INPUT_GPC, true)) {
             $storage = $this->rc->get_storage();
-            list($uid, $folder) = explode('-', $msgref, 2);
+            [$uid, $folder] = explode('-', $msgref, 2);
             if ($message = $storage->get_message_headers($msgref)) {
-                $this->rc->output->set_env('kolab_notes_template', array(
+                $this->rc->output->set_env('kolab_notes_template', [
                     '_from_mail' => true,
                     'title' => $message->get('subject'),
-                    'links' => array(kolab_storage_config::get_message_reference(
+                    'links' => [kolab_storage_config::get_message_reference(
                         kolab_storage_config::get_message_uri($message, $folder),
                         'note'
-                    )),
-                ));
+                    )],
+                ]);
             }
         }
 
@@ -436,12 +439,12 @@ class kolab_notes extends rcube_plugin
 
         $data = $this->notes_data($this->list_notes($list, $search), $tags);
 
-        $this->rc->output->command('plugin.data_ready', array(
+        $this->rc->output->command('plugin.data_ready', [
                 'list'   => $list,
                 'search' => $search,
                 'data'   => $data,
-                'tags'   => array_values($tags)
-        ));
+                'tags'   => array_values($tags),
+        ]);
     }
 
     /**
@@ -466,17 +469,17 @@ class kolab_notes extends rcube_plugin
      */
     protected function list_notes($list_id, $search = null)
     {
-        $results = array();
+        $results = [];
 
         // query Kolab storage
-        $query = array();
+        $query = [];
 
         // full text search (only works with cache enabled)
         if (strlen($search)) {
             $words = array_filter(rcube_utils::normalize_string(mb_strtolower($search), true));
             foreach ($words as $word) {
                 if (strlen($word) > 2) {  // only words > 3 chars are stored in DB
-                    $query[] = array('words', '~', $word);
+                    $query[] = ['words', '~', $word];
                 }
             }
         }
@@ -514,10 +517,10 @@ class kolab_notes extends rcube_plugin
      */
     public function note_record()
     {
-        $data = $this->get_note(array(
+        $data = $this->get_note([
             'uid'  => rcube_utils::get_input_value('_id', rcube_utils::INPUT_GPC),
             'list' => rcube_utils::get_input_value('_list', rcube_utils::INPUT_GPC),
-        ));
+        ]);
 
         // encode for client use
         if (is_array($data)) {
@@ -535,8 +538,7 @@ class kolab_notes extends rcube_plugin
         if (is_array($note)) {
             $uid = $note['uid'] ?: $note['id'];
             $list_id = $note['list'];
-        }
-        else {
+        } else {
             $uid = $note;
         }
 
@@ -584,9 +586,9 @@ class kolab_notes extends rcube_plugin
             }
         }
 
-        foreach (array('created','changed') as $key) {
+        foreach (['created','changed'] as $key) {
             if (is_object($note[$key]) && $note[$key] instanceof DateTime) {
-                $note[$key.'_'] = $note[$key]->format('U');
+                $note[$key . '_'] = $note[$key]->format('U');
                 $note[$key] = $this->rc->format_date($note[$key]);
             }
         }
@@ -652,17 +654,16 @@ class kolab_notes extends rcube_plugin
                 if (is_array($data) && !empty($data)) {
                     $rcmail = $this->rc;
                     $dtformat = $rcmail->config->get('date_format') . ' ' . $this->rc->config->get('time_format');
-                    array_walk($data, function(&$change) use ($rcmail, $dtformat) {
-                      if ($change['date']) {
-                          $dt = rcube_utils::anytodatetime($change['date']);
-                          if ($dt instanceof DateTime) {
-                              $change['date'] = $rcmail->format_date($dt, $dtformat);
-                          }
-                      }
+                    array_walk($data, function (&$change) use ($rcmail, $dtformat) {
+                        if ($change['date']) {
+                            $dt = rcube_utils::anytodatetime($change['date']);
+                            if ($dt instanceof DateTime) {
+                                $change['date'] = $rcmail->format_date($dt, $dtformat);
+                            }
+                        }
                     });
                     $this->rc->output->command('plugin.note_render_changelog', $data);
-                }
-                else {
+                } else {
                     $this->rc->output->command('plugin.note_render_changelog', false);
                 }
                 $silent = true;
@@ -673,8 +674,7 @@ class kolab_notes extends rcube_plugin
                 $data = $this->get_diff($note, $note['rev1'], $note['rev2']);
                 if (is_array($data)) {
                     $this->rc->output->command('plugin.note_show_diff', $data);
-                }
-                else {
+                } else {
                     $this->rc->output->command('display_message', $this->gettext('objectdiffnotavailable'), 'error');
                 }
                 break;
@@ -682,8 +682,7 @@ class kolab_notes extends rcube_plugin
             case 'show':
                 if ($rec = $this->get_revison($note, $note['rev'])) {
                     $this->rc->output->command('plugin.note_show_revision', $this->_client_encode($rec));
-                }
-                else {
+                } else {
                     $this->rc->output->command('display_message', $this->gettext('objectnotfound'), 'error');
                 }
                 $silent = true;
@@ -692,10 +691,9 @@ class kolab_notes extends rcube_plugin
             case 'restore':
                 if ($this->restore_revision($note, $note['rev'])) {
                     $refresh = $this->get_note($note);
-                    $this->rc->output->command('display_message', $this->gettext(array('name' => 'objectrestoresuccess', 'vars' => array('rev' => $note['rev']))), 'confirmation');
+                    $this->rc->output->command('display_message', $this->gettext(['name' => 'objectrestoresuccess', 'vars' => ['rev' => $note['rev']]]), 'confirmation');
                     $this->rc->output->command('plugin.close_history_dialog');
-                }
-                else {
+                } else {
                     $this->rc->output->command('display_message', $this->gettext('objectrestoreerror'), 'error');
                 }
                 $silent = true;
@@ -705,8 +703,7 @@ class kolab_notes extends rcube_plugin
         // show confirmation/error message
         if ($success) {
             $this->rc->output->show_message('successfullysaved', 'confirmation');
-        }
-        else if (!$silent) {
+        } elseif (!$silent) {
             $this->rc->output->show_message('errorsaving', 'error');
         }
 
@@ -729,13 +726,15 @@ class kolab_notes extends rcube_plugin
         $this->_read_lists();
 
         $list_id = $note['list'];
-        if (!$list_id || !($folder = $this->get_folder($list_id)))
+        if (!$list_id || !($folder = $this->get_folder($list_id))) {
             return false;
+        }
 
         // moved from another folder
         if (!empty($note['_fromlist']) && ($fromfolder = $this->get_folder($note['_fromlist']))) {
-            if (!$fromfolder->move($note['uid'], $folder->name))
+            if (!$fromfolder->move($note['uid'], $folder->name)) {
                 return false;
+            }
 
             unset($note['_fromlist']);
         }
@@ -744,12 +743,14 @@ class kolab_notes extends rcube_plugin
         $old = null;
         if (!empty($note['uid'])) {
             $old = $folder->get_object($note['uid']);
-            if (!$old || PEAR::isError($old))
+            if (!$old || PEAR::isError($old)) {
                 return false;
+            }
 
             // merge existing properties if the update isn't complete
-            if (!isset($note['title']) || !isset($note['description']))
+            if (!isset($note['title']) || !isset($note['description'])) {
                 $note += $old;
+            }
         }
 
         // generate new note object from input
@@ -765,14 +766,16 @@ class kolab_notes extends rcube_plugin
         $saved = $folder->save($object, 'note', $note['uid']);
 
         if (!$saved) {
-            rcube::raise_error(array(
+            rcube::raise_error(
+                [
                 'code' => 600, 'type' => 'php',
                 'file' => __FILE__, 'line' => __LINE__,
-                'message' => "Error saving note object to Kolab server"),
-                true, false);
+                'message' => "Error saving note object to Kolab server"],
+                true,
+                false
+            );
             $saved = false;
-        }
-        else {
+        } else {
             // save links in configuration.relation object
             $this->save_links($object['uid'], $links);
             // save tags in configuration.relation object
@@ -793,7 +796,7 @@ class kolab_notes extends rcube_plugin
     /**
      * Move the given note to another folder
      */
-    function move_note($note, $list_id)
+    public function move_note($note, $list_id)
     {
         $this->_read_lists();
 
@@ -841,7 +844,7 @@ class kolab_notes extends rcube_plugin
         $uid  = rcube_utils::get_input_value('_uid', rcube_utils::INPUT_GET);
         $list = rcube_utils::get_input_value('_list', rcube_utils::INPUT_GET);
 
-        $this->note = $this->get_note(array('uid' => $uid, 'list' => $list));
+        $this->note = $this->get_note(['uid' => $uid, 'list' => $list]);
 
         // encode for client use
         if (is_array($this->note)) {
@@ -849,10 +852,10 @@ class kolab_notes extends rcube_plugin
         }
 
         $this->rc->output->set_pagetitle($this->note['title']);
-        $this->rc->output->add_handlers(array(
-                'noteheader' => array($this, 'print_note_header'),
-                'notebody'   => array($this, 'print_note_body'),
-        ));
+        $this->rc->output->add_handlers([
+                'noteheader' => [$this, 'print_note_header'],
+                'notebody'   => [$this, 'print_note_body'],
+        ]);
 
         $this->include_script('notes.js');
 
@@ -861,22 +864,23 @@ class kolab_notes extends rcube_plugin
 
     public function print_note_header()
     {
-        $tags = array_map(array('rcube', 'Q'), (array) $this->note['tags']);
+        $tags = array_map(['rcube', 'Q'], (array) $this->note['tags']);
         $tags = implode(' ', $tags);
 
-        return html::tag('h1', array('id' => 'notetitle'), rcube::Q($this->note['title']))
-            . html::div(array('id' => 'notetags', 'class' => 'tagline'), $tags)
-            . html::div('dates',
+        return html::tag('h1', ['id' => 'notetitle'], rcube::Q($this->note['title']))
+            . html::div(['id' => 'notetags', 'class' => 'tagline'], $tags)
+            . html::div(
+                'dates',
                 html::label(null, rcube::Q($this->gettext('created')))
-                . html::span(array('id' => 'notecreated'), rcube::Q($this->note['created']))
+                . html::span(['id' => 'notecreated'], rcube::Q($this->note['created']))
                 . html::label(null, rcube::Q($this->gettext('changed')))
-                . html::span(array('id' => 'notechanged'), rcube::Q($this->note['changed']))
+                . html::span(['id' => 'notechanged'], rcube::Q($this->note['changed']))
             );
     }
 
     public function print_note_body()
     {
-        return isset($this->note['html']) ? $this->note['html'] : rcube::Q($this->note['description']);
+        return $this->note['html'] ?? rcube::Q($this->note['description']);
     }
 
     /**
@@ -891,7 +895,7 @@ class kolab_notes extends rcube_plugin
             return false;
         }
 
-        list($uid, $mailbox, $msguid) = $this->_resolve_note_identity($note);
+        [$uid, $mailbox, $msguid] = $this->_resolve_note_identity($note);
 
         $result = $uid && $mailbox ? $this->bonnie_api->changelog('note', $uid, $mailbox, $msguid) : null;
         if (is_array($result) && $result['uid'] == $uid) {
@@ -915,7 +919,7 @@ class kolab_notes extends rcube_plugin
             return false;
         }
 
-        list($uid, $mailbox, $msguid) = $this->_resolve_note_identity($note);
+        [$uid, $mailbox, $msguid] = $this->_resolve_note_identity($note);
 
         // call Bonnie API
         $result = $this->bonnie_api->get('note', $uid, $rev, $mailbox, $msguid);
@@ -947,7 +951,7 @@ class kolab_notes extends rcube_plugin
             return false;
         }
 
-        list($uid, $mailbox, $msguid) = $this->_resolve_note_identity($note);
+        [$uid, $mailbox, $msguid] = $this->_resolve_note_identity($note);
 
         // call Bonnie API
         $result = $this->bonnie_api->diff('note', $uid, $rev1, $rev2, $mailbox, $msguid);
@@ -956,13 +960,13 @@ class kolab_notes extends rcube_plugin
             $result['rev2'] = $rev2;
 
             // convert some properties, similar to self::_client_encode()
-            $keymap = array(
+            $keymap = [
                 'summary'  => 'title',
                 'lastmodified-date' => 'changed',
-            );
+            ];
 
             // map kolab object properties to keys and values the client expects
-            array_walk($result['changes'], function(&$change, $i) use ($keymap) {
+            array_walk($result['changes'], function (&$change, $i) use ($keymap) {
                 if (array_key_exists($change['property'], $keymap)) {
                     $change['property'] = $keymap[$change['property']];
                 }
@@ -981,7 +985,7 @@ class kolab_notes extends rcube_plugin
                     $change['diff_'] = libkolab::html_diff($change['old'], $change['new']);
                     if (!empty($change['diff_'])) {
                         unset($change['old'], $change['new']);
-                        $change['diff_'] = preg_replace(array('!^.*<body[^>]*>!Uims','!</body>.*$!Uims'), '', $change['diff_']);
+                        $change['diff_'] = preg_replace(['!^.*<body[^>]*>!Uims','!</body>.*$!Uims'], '', $change['diff_']);
                         $change['diff_'] = preg_replace("!</(p|li|span)>\n!", '</\\1>', $change['diff_']);
                     }
                 }
@@ -1008,7 +1012,7 @@ class kolab_notes extends rcube_plugin
             return false;
         }
 
-        list($uid, $mailbox, $msguid) = $this->_resolve_note_identity($note);
+        [$uid, $mailbox, $msguid] = $this->_resolve_note_identity($note);
 
         $folder = $this->get_folder($note['list']);
         $success = false;
@@ -1023,7 +1027,7 @@ class kolab_notes extends rcube_plugin
                 // delete old revision from imap and cache
                 $imap->delete_message($msguid, $folder->name);
                 $folder->cache->set($msguid, false);
-                $this->cache = array();
+                $this->cache = [];
             }
         }
 
@@ -1046,9 +1050,8 @@ class kolab_notes extends rcube_plugin
         if (is_array($note)) {
             $uid = $note['uid'] ?: $note['id'];
             $list = $note['list'];
-        }
-        else {
-            return array(null, $mailbox, $msguid);
+        } else {
+            return [null, $mailbox, $msguid];
         }
 
         if ($folder = $this->get_folder($list)) {
@@ -1061,7 +1064,7 @@ class kolab_notes extends rcube_plugin
             }
         }
 
-        return array($uid, $mailbox, $msguid);
+        return [$uid, $mailbox, $msguid];
     }
 
 
@@ -1093,8 +1096,7 @@ class kolab_notes extends rcube_plugin
 
                 if ($folder === false) {
                     $save_error = $this->gettext(kolab_storage::$last_error);
-                }
-                else {
+                } else {
                     $success = true;
                     $update_cmd = 'plugin.update_list';
                     $list['id'] = kolab_storage::folder_id($folder);
@@ -1109,8 +1111,7 @@ class kolab_notes extends rcube_plugin
 
                 if ($newfolder === false) {
                     $save_error = $this->gettext(kolab_storage::$last_error);
-                }
-                else {
+                } else {
                     $success = true;
                     $update_cmd = 'plugin.update_list';
                     $list['newid'] = kolab_storage::folder_id($newfolder);
@@ -1131,15 +1132,14 @@ class kolab_notes extends rcube_plugin
                 if ($folder && kolab_storage::folder_delete($folder->name)) {
                     $success = true;
                     $update_cmd = 'plugin.destroy_list';
-                }
-                else {
+                } else {
                     $save_error = $this->gettext(kolab_storage::$last_error);
                 }
                 break;
 
             case 'search':
                 $this->load_ui();
-                $results = array();
+                $results = [];
                 foreach ((array)$this->search_lists(rcube_utils::get_input_value('q', rcube_utils::INPUT_GPC), rcube_utils::get_input_value('source', rcube_utils::INPUT_GPC)) as $id => $prop) {
                     $editname = $prop['editname'];
                     unset($prop['editname']);  // force full name to be displayed
@@ -1163,18 +1163,22 @@ class kolab_notes extends rcube_plugin
             case 'subscribe':
                 $success = false;
                 if ($list['id'] && ($folder = $this->get_folder($list['id']))) {
-                    if (isset($list['permanent']))
+                    if (isset($list['permanent'])) {
                         $success |= $folder->subscribe(intval($list['permanent']));
-                    if (isset($list['active']))
+                    }
+                    if (isset($list['active'])) {
                         $success |= $folder->activate(intval($list['active']));
+                    }
 
                     // apply to child folders, too
                     if ($list['recursive']) {
                         foreach ((array)kolab_storage::list_folders($folder->name, '*', 'node') as $subfolder) {
-                            if (isset($list['permanent']))
+                            if (isset($list['permanent'])) {
                                 ($list['permanent'] ? kolab_storage::folder_subscribe($subfolder) : kolab_storage::folder_unsubscribe($subfolder));
-                            if (isset($list['active']))
+                            }
+                            if (isset($list['active'])) {
                                 ($list['active'] ? kolab_storage::folder_activate($subfolder) : kolab_storage::folder_deactivate($subfolder));
+                            }
                         }
                     }
                 }
@@ -1189,8 +1193,7 @@ class kolab_notes extends rcube_plugin
             if ($update_cmd) {
                 $this->rc->output->command($update_cmd, $list);
             }
-        }
-        else {
+        } else {
             $error_msg = $this->gettext('errorsaving') . (!empty($save_error) ? ': ' . $save_error : '');
             $this->rc->output->show_message($error_msg, 'error');
         }
@@ -1207,14 +1210,14 @@ class kolab_notes extends rcube_plugin
             $list = $args['param']['notes_list'];
 
             foreach ($uids as $uid) {
-                if ($note = $this->get_note(array('uid' => $uid, 'list' => $list))) {
+                if ($note = $this->get_note(['uid' => $uid, 'list' => $list])) {
                     $data = $this->note2message($note);
-                    $args['attachments'][] = array(
+                    $args['attachments'][] = [
                         'name'     => abbreviate_string($note['title'], 50, ''),
                         'mimetype' => 'message/rfc822',
                         'data'     => $data,
                         'size'     => strlen($data),
-                    );
+                    ];
 
                     if (empty($args['param']['subject'])) {
                         $args['param']['subject'] = $note['title'];
@@ -1245,12 +1248,12 @@ class kolab_notes extends rcube_plugin
     {
         $html = '';
         foreach ($this->message_notes as $note) {
-            $html .= html::a(array(
-                'href' => $this->rc->url(array('task' => 'notes', '_list' => $note['list'], '_id' => $note['uid'])),
+            $html .= html::a([
+                'href' => $this->rc->url(['task' => 'notes', '_list' => $note['list'], '_id' => $note['uid']]),
                 'class' => 'kolabnotesref',
                 'rel' => $note['uid'] . '@' . $note['list'],
                 'target' => '_blank',
-            ), rcube::Q($note['title']));
+            ], rcube::Q($note['title']));
         }
 
         // prepend note links to message body
@@ -1287,10 +1290,10 @@ class kolab_notes extends rcube_plugin
         $message->setParam('html_charset', RCUBE_CHARSET);
         $message->setParam('text_charset', RCUBE_CHARSET);
 
-        $message->headers(array(
+        $message->headers([
             'Subject' => $note['title'],
             'Date' => $note['changed']->format('r'),
-        ));
+        ]);
 
         if ($this->is_html($note)) {
             $message->setHTMLBody($note['description']);
@@ -1304,8 +1307,7 @@ class kolab_notes extends rcube_plugin
             $plain_part = preg_replace('/\r?\n/', "\r\n", $plain_part);
 
             $message->setTXTBody($plain_part);
-        }
-        else {
+        } else {
             $message->setTXTBody($note['description']);
         }
 
@@ -1334,7 +1336,7 @@ class kolab_notes extends rcube_plugin
     {
         $config = kolab_storage_config::get_instance();
         $tags   = $config->get_tags($uid);
-        $tags   = array_map(function($v) { return $v['name']; }, $tags);
+        $tags   = array_map(function ($v) { return $v['name']; }, $tags);
 
         return $tags;
     }
@@ -1366,7 +1368,7 @@ class kolab_notes extends rcube_plugin
     /**
      * Process the given note data (submitted by the client) before saving it
      */
-    private function _write_preprocess($note, $old = array())
+    private function _write_preprocess($note, $old = [])
     {
         $object = $note;
 
@@ -1374,9 +1376,8 @@ class kolab_notes extends rcube_plugin
 
         // convert link references into simple URIs
         if (array_key_exists('links', $note)) {
-            $object['links'] = array_map(function($link){ return is_array($link) ? $link['uri'] : strval($link); }, $note['links']);
-        }
-        else {
+            $object['links'] = array_map(function ($link) { return is_array($link) ? $link['uri'] : strval($link); }, $note['links']);
+        } else {
             if ($old) {
                 $object['links'] = $old['links'] ?? null;
             }
@@ -1389,7 +1390,7 @@ class kolab_notes extends rcube_plugin
         // try to be smart and convert to plain-text if no real formatting is detected
         if (preg_match('!<body><(?:p|pre)>(.*)</(?:p|pre)></body>!Uims', $object['description'], $m)) {
             if (!preg_match('!<(a|b|i|strong|em|p|span|div|pre|li|img)(\s+[a-z]|>)!im', $m[1], $n)
-                || ($n[1] != 'img' && !strpos($m[1], '</'.$n[1].'>'))
+                || ($n[1] != 'img' && !strpos($m[1], '</' . $n[1] . '>'))
             ) {
                 // $converter = new rcube_html2text($m[1], false, true, 0);
                 // $object['description'] = rtrim($converter->get_text());
@@ -1400,14 +1401,15 @@ class kolab_notes extends rcube_plugin
 
         // Add proper HTML header, otherwise Kontact renders it as plain text
         if ($is_html) {
-            $object['description'] = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">'."\n" .
+            $object['description'] = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">' . "\n" .
                 str_replace('<head>', '<head><meta name="qrichtext" content="1" />', $object['description']);
         }
 
         // copy meta data (starting with _) from old object
         foreach ((array)$old as $key => $val) {
-            if (!isset($object[$key]) && $key[0] == '_')
+            if (!isset($object[$key]) && $key[0] == '_') {
                 $object[$key] = $val;
+            }
         }
 
         // make list of categories unique
@@ -1426,23 +1428,23 @@ class kolab_notes extends rcube_plugin
     {
         // Add header with charset spec., washtml cannot work without that
         $html = '<html><head>'
-            . '<meta http-equiv="Content-Type" content="text/html; charset='.RCUBE_CHARSET.'" />'
+            . '<meta http-equiv="Content-Type" content="text/html; charset=' . RCUBE_CHARSET . '" />'
             . '</head><body>' . $html . '</body></html>';
 
         // clean HTML with washtml by Frederic Motte
-        $wash_opts = array(
+        $wash_opts = [
             'show_washed'   => false,
             'allow_remote'  => 1,
             'charset'       => RCUBE_CHARSET,
-            'html_elements' => array('html', 'head', 'meta', 'body', 'link'),
-            'html_attribs'  => array('rel', 'type', 'name', 'http-equiv'),
-        );
+            'html_elements' => ['html', 'head', 'meta', 'body', 'link'],
+            'html_attribs'  => ['rel', 'type', 'name', 'http-equiv'],
+        ];
 
         // initialize HTML washer
         $washer = new rcube_washtml($wash_opts);
 
-        $washer->add_callback('form', array($this, '_washtml_callback'));
-        $washer->add_callback('a',    array($this, '_washtml_callback'));
+        $washer->add_callback('form', [$this, '_washtml_callback']);
+        $washer->add_callback('a', [$this, '_washtml_callback']);
 
         // Remove non-UTF8 characters
         $html = rcube_charset::clean($html);
@@ -1461,26 +1463,26 @@ class kolab_notes extends rcube_plugin
     public function _washtml_callback($tagname, $attrib, $content, $washtml)
     {
         switch ($tagname) {
-        case 'form':
-            $out = html::div('form', $content);
-            break;
+            case 'form':
+                $out = html::div('form', $content);
+                break;
 
-        case 'a':
-            // strip temporary link tags from plain-text markup
-            $attrib = html::parse_attrib_string($attrib);
-            if (!empty($attrib['class']) && strpos($attrib['class'], 'x-templink') !== false) {
-                // remove link entirely
-                if (strpos($attrib['href'], html_entity_decode($content)) !== false) {
-                    $out = $content;
-                    break;
+            case 'a':
+                // strip temporary link tags from plain-text markup
+                $attrib = html::parse_attrib_string($attrib);
+                if (!empty($attrib['class']) && strpos($attrib['class'], 'x-templink') !== false) {
+                    // remove link entirely
+                    if (strpos($attrib['href'], html_entity_decode($content)) !== false) {
+                        $out = $content;
+                        break;
+                    }
+                    $attrib['class'] = trim(str_replace('x-templink', '', $attrib['class']));
                 }
-                $attrib['class'] = trim(str_replace('x-templink', '', $attrib['class']));
-            }
-            $out = html::a($attrib, $content);
-            break;
+                $out = html::a($attrib, $content);
+                break;
 
-        default:
-            $out = '';
+            default:
+                $out = '';
         }
 
         return $out;

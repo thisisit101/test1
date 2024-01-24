@@ -59,8 +59,7 @@ class caldav_calendar extends kolab_storage_dav_folder
     {
         if ($folder_or_id instanceof kolab_storage_dav_folder) {
             $this->storage = $folder_or_id;
-        }
-        else {
+        } else {
             // $this->storage = kolab_storage_dav::get_folder($folder_or_id, 'event');
         }
 
@@ -78,13 +77,13 @@ class caldav_calendar extends kolab_storage_dav_folder
             if ($this->storage->get_namespace() == 'personal') {
                 $this->editable = true;
                 $this->rights = 'lrswikxteav';
-            }
-            else {
+            } else {
                 $rights = $this->storage->get_myrights();
                 if ($rights) {
                     $this->rights = $rights;
                     if (strpos($rights, 't') !== false || strpos($rights, 'd') !== false) {
-                        $this->editable = strpos($rights, 'i');;
+                        $this->editable = strpos($rights, 'i');
+                        ;
                     }
                 }
             }
@@ -118,16 +117,16 @@ class caldav_calendar extends kolab_storage_dav_folder
      */
     public function get_caldav_url()
     {
-/*
-        if ($template = $this->cal->rc->config->get('calendar_caldav_url', null)) {
-            return strtr($template, [
-                    '%h' => $_SERVER['HTTP_HOST'],
-                    '%u' => urlencode($this->cal->rc->get_user_name()),
-                    '%i' => urlencode($this->storage->get_uid()),
-                    '%n' => urlencode($this->name),
-            ]);
-        }
-*/
+        /*
+                if ($template = $this->cal->rc->config->get('calendar_caldav_url', null)) {
+                    return strtr($template, [
+                            '%h' => $_SERVER['HTTP_HOST'],
+                            '%u' => urlencode($this->cal->rc->get_user_name()),
+                            '%i' => urlencode($this->storage->get_uid()),
+                            '%n' => urlencode($this->name),
+                    ]);
+                }
+        */
         return false;
     }
 
@@ -166,8 +165,7 @@ class caldav_calendar extends kolab_storage_dav_folder
                 // check for match on the first instance already
                 if (!empty($master['_instance']) && $master['_instance'] == $instance_id) {
                     $this->events[$id] = $master;
-                }
-                else if (!empty($master['recurrence'])) {
+                } elseif (!empty($master['recurrence'])) {
                     $start_date = $master['start'];
                     // For performance reasons we'll get only the specific instance
                     if (($date = substr($id, strlen($master_id) + 1, 8)) && strlen($date) == 8 && is_numeric($date)) {
@@ -190,15 +188,15 @@ class caldav_calendar extends kolab_storage_dav_folder
     {
         $event = $this->get_event($event['id']);
         $data = $this->storage->get_attachment($id, $event);
-/*
-        if ($data === false) {
-            // try again with master UID
-            $uid = preg_replace('/-\d+(T\d{6})?$/', '', $event['id']);
-            if ($uid != $event['id']) {
-                $data = $this->storage->get_attachment($uid, $id); // TODO
-            }
-        }
-*/
+        /*
+                if ($data === false) {
+                    // try again with master UID
+                    $uid = preg_replace('/-\d+(T\d{6})?$/', '', $event['id']);
+                    if ($uid != $event['id']) {
+                        $data = $this->storage->get_attachment($uid, $id); // TODO
+                    }
+                }
+        */
         return $data;
     }
 
@@ -219,14 +217,12 @@ class caldav_calendar extends kolab_storage_dav_folder
         // to workaround possible timezone differences
         try {
             $start = new DateTime('@' . ($start - 12 * 3600));
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $start = new DateTime('@0');
         }
         try {
             $end = new DateTime('@' . ($end + 12 * 3600));
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $end = new DateTime('today +10 years');
         }
 
@@ -323,7 +319,7 @@ class caldav_calendar extends kolab_storage_dav_folder
                 $events = array_merge($events, $this->get_recurring_events($event, $start, $end));
             }
             // add top-level exceptions (aka loose single occurrences)
-            else if (!empty($record['exceptions'])) {
+            elseif (!empty($record['exceptions'])) {
                 foreach ($record['exceptions'] as $ex) {
                     $component = $this->_to_driver_event($ex, false, false, $record);
                     if ($component['start'] <= $end && $component['end'] >= $start) {
@@ -335,7 +331,7 @@ class caldav_calendar extends kolab_storage_dav_folder
 
         // post-filter all events by fulltext search and partstat values
         $me = $this;
-        $events = array_filter($events, function($event) use ($words, $partstat_exclude, $user_emails, $me) {
+        $events = array_filter($events, function ($event) use ($words, $partstat_exclude, $user_emails, $me) {
             // fulltext search
             if (count($words)) {
                 $hits = 0;
@@ -382,16 +378,14 @@ class caldav_calendar extends kolab_storage_dav_folder
     {
         // convert to DateTime for comparisons
         try {
-            $start = new DateTime('@'.$start);
-        }
-        catch (Exception $e) {
+            $start = new DateTime('@' . $start);
+        } catch (Exception $e) {
             $start = new DateTime('@0');
         }
         if ($end) {
             try {
-                $end = new DateTime('@'.$end);
-            }
-            catch (Exception $e) {
+                $end = new DateTime('@' . $end);
+            } catch (Exception $e) {
                 $end = null;
             }
         }
@@ -409,8 +403,7 @@ class caldav_calendar extends kolab_storage_dav_folder
                 $query[] = ['tags', '!=', 'x-partstat:' . $email . ':needs-action'];
                 $query[] = ['tags', '!=', 'x-partstat:' . $email . ':declined'];
             }
-        }
-        else if (is_array($filter_query)) {
+        } elseif (is_array($filter_query)) {
             $query = array_merge($query, $filter_query);
         }
 
@@ -439,11 +432,13 @@ class caldav_calendar extends kolab_storage_dav_folder
         $saved  = $this->storage->save($object, 'event');
 
         if (!$saved) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error saving event object to DAV server"
+                    'message' => "Error saving event object to DAV server",
                 ],
-                true, false
+                true,
+                false
             );
             return false;
         }
@@ -483,14 +478,15 @@ class caldav_calendar extends kolab_storage_dav_folder
         $saved = $this->storage->save($object, 'event', $old['uid']);
 
         if (!$saved) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error saving event object to CalDAV server"
+                    'message' => "Error saving event object to CalDAV server",
                 ],
-                true, false
+                true,
+                false
             );
-        }
-        else {
+        } else {
             // save links in configuration.relation object
             // if ($this->save_links($event['uid'], $links)) {
             //     $object['links'] = $links;
@@ -521,11 +517,13 @@ class caldav_calendar extends kolab_storage_dav_folder
         $deleted = $this->storage->delete($uid, $force);
 
         if (!$deleted) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error deleting event '{$uid}' from CalDAV server"
+                    'message' => "Error deleting event '{$uid}' from CalDAV server",
                 ],
-                true, false
+                true,
+                false
             );
         }
 
@@ -697,8 +695,7 @@ class caldav_calendar extends kolab_storage_dav_folder
                 if ($limit && count($events) >= $limit) {
                     return $events;
                 }
-            }
-            else if ($next_event['start'] > $end) {
+            } elseif ($next_event['start'] > $end) {
                 // stop loop if out of range
                 break;
             }
@@ -746,14 +743,13 @@ class caldav_calendar extends kolab_storage_dav_folder
             && empty($record['recurrence_id']) && empty($record['_instance'])
         ) {
             $record['_instance'] = $record['start']->format($recurrence_id_format);
-        }
-        else if (isset($record['recurrence_date']) && $record['recurrence_date'] instanceof DateTimeInterface) {
+        } elseif (isset($record['recurrence_date']) && $record['recurrence_date'] instanceof DateTimeInterface) {
             $record['_instance'] = $record['recurrence_date']->format($recurrence_id_format);
         }
 
         // clean up exception data
         if (!empty($record['recurrence']) && !empty($record['recurrence']['EXCEPTIONS'])) {
-            array_walk($record['recurrence']['EXCEPTIONS'], function(&$exception) {
+            array_walk($record['recurrence']['EXCEPTIONS'], function (&$exception) {
                 unset($exception['_attachments']);
             });
         }
@@ -804,7 +800,7 @@ class caldav_calendar extends kolab_storage_dav_folder
         }
 
         // remove some internal properties which should not be cached
-        $cleanup_fn = function(&$event) {
+        $cleanup_fn = function (&$event) {
             unset($event['_savemode'], $event['_fromcalendar'], $event['_identity'], $event['_folder_id'],
                 $event['calendar'], $event['className'], $event['recurrence_id'],
                 $event['attachments'], $event['deleted_attachments']);
@@ -866,13 +862,11 @@ class caldav_calendar extends kolab_storage_dav_folder
             foreach ($prop as $key => $val) {
                 if (is_numeric($key)) {
                     $out .= self::_complex2string($val);
-                }
-                else if (!in_array($key, $ignorekeys)) {
+                } elseif (!in_array($key, $ignorekeys)) {
                     $out .= $val . ' ';
                 }
             }
-        }
-        else if (is_string($prop) || is_numeric($prop)) {
+        } elseif (is_string($prop) || is_numeric($prop)) {
             $out .= $prop . ' ';
         }
 

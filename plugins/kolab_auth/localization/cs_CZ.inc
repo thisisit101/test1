@@ -8,4 +8,3 @@
  */
 $labels['loginas'] = 'Přihlásit se jako';
 $labels['loginasnotallowed'] = 'Žádná práva pro přihlášení se jako $user';
-?>

@@ -30,4 +30,3 @@ $labels['updatesuccess'] = 'A meghatalmazás sikeresen frissítve lett.';
 $labels['updateerror'] = 'Nem sikerült frissíteni a meghatalmazást.';
 $labels['createsuccess'] = 'A meghatalmazás sikeresen létre lett hozva.';
 $labels['createerror'] = 'Nem sikerült létrehozni a meghatalmazást.';
-?>

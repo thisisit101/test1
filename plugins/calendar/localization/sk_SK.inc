@@ -79,4 +79,3 @@ $labels['availbusy'] = 'Zaneprázdnený';
 $labels['availtentative'] = 'Nezáväzne';
 $labels['availoutofoffice'] = 'Mimo kancelárie';
 $labels['tabsummary'] = 'Sumár';
-?>

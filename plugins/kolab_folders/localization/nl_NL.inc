@@ -26,4 +26,3 @@ $labels['junkemail'] = 'Ongewenst';
 $labels['confidential'] = 'Vertrouwelijk';
 $labels['private'] = 'Privé';
 $messages['defaultfolderexists'] = 'Er is al een standaardmap van het opgegeven type';
-?>

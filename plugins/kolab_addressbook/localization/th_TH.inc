@@ -49,4 +49,3 @@ $messages['bookupdateerror'] = 'เกิดข้อผิดพลาดใน
 $messages['bookcreateerror'] = 'เกิดข้อผิดพลาดในระหว่างสร้างสมุดที่อยุ่';
 $messages['nobooknamewarning'] = 'กรุณาป้อนชื่อสมุดบันทึกที่อยู่';
 $messages['noemailnamewarning'] = 'กรุณาป้อน อีเมล์ และ ชื่อผู้ติดต่อ';
-?>

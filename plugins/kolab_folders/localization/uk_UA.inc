@@ -10,4 +10,3 @@ $labels['foldertypeevent'] = 'Календар';
 $labels['foldertypetask'] = 'Задачі';
 $labels['foldertypenote'] = 'Нотатки';
 $labels['foldertypefile'] = 'Файли';
-?>

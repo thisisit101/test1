@@ -27,4 +27,3 @@ $labels['confidential'] = 'Vertraulich';
 $labels['private'] = 'Privat';
 $labels['xdays'] = '$x Tage';
 $messages['defaultfolderexists'] = 'Es gibt bereits einen Standardordner des angegebenen Typs';
-?>

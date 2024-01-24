@@ -33,4 +33,3 @@ $labels['createsuccess'] = 'La délégation a été ajoutée.';
 $labels['createerror'] = 'La délégation n\'a pas pu être ajoutée.';
 $labels['arialabeldelegatedelete'] = 'Fenêtre de suppression de la délégation';
 $labels['arialabeldelegateform'] = 'Formulaire de propriétés de la délégation';
-?>

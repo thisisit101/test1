@@ -35,8 +35,7 @@ class kolab_storage_folder_user extends kolab_storage_folder_virtual
 
         if (!empty($ldaprec)) {
             $this->ldaprec = $ldaprec;
-        }
-        else {
+        } else {
             $this->ldaprec = kolab_storage::folder_id2user(parent::get_foldername());
             if (!empty($this->ldaprec)) {
                 $this->ldaprec['kolabtargetfolder'] = $name;

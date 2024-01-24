@@ -29,7 +29,7 @@ class kolab_shortcuts extends rcube_plugin
     public $noajax = true;
 
 
-    function init()
+    public function init()
     {
         $this->include_script('kolab_shortcuts.js');
     }

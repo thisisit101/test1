@@ -11,4 +11,3 @@ $labels['foldertypetask'] = 'Tarefas';
 $labels['foldertypenote'] = 'Notas';
 $labels['foldertypeconfiguration'] = 'Configuração';
 $labels['foldertypefile'] = 'Ficheiros';
-?>

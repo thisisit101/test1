@@ -64,4 +64,3 @@ $messages['bookupdateerror'] = 'Der opstod en fejl under opdatering af adressebo
 $messages['bookcreateerror'] = 'Der opstod en fejl under oprettelse af adressebogen.';
 $messages['nobooknamewarning'] = 'Angiv venligst navnet på adressebogen.';
 $messages['noemailnamewarning'] = 'Angiv venligst e-postadresse eller kontaktnavn.';
-?>

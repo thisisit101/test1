@@ -32,7 +32,7 @@ class resources_driver_ldap extends resources_driver
     /**
      * Default constructor
      */
-    function __construct($cal)
+    public function __construct($cal)
     {
         $this->cal = $cal;
         $this->rc = $cal->rc;
@@ -59,8 +59,7 @@ class resources_driver_ldap extends resources_driver
         if (isset($query)) {
             $mode = $searchField == 'owner' ? rcube_addressbook::SEARCH_STRICT : 0;
             $results = $ldap->search($searchField, $query, $mode, true, true);
-        }
-        else {
+        } else {
             $results = $ldap->list_records();
         }
 
@@ -130,8 +129,7 @@ class resources_driver_ldap extends resources_driver
                 if (!empty($sattr) && $sattr[0] === '{') {
                     $attr = @json_decode($sattr, true);
                     $attributes += $attr;
-                }
-                else if (!empty($sattr) && empty($rec['description'])) {
+                } elseif (!empty($sattr) && empty($rec['description'])) {
                     $rec['description'] = $sattr;
                 }
             }

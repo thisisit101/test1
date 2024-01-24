@@ -26,7 +26,7 @@ class kolab_format_task extends kolab_format_xcal
 {
     public $CTYPEv2 = 'application/x-vnd.kolab.task';
 
-    public static $scheduling_properties = array('start', 'due', 'summary', 'status');
+    public static $scheduling_properties = ['start', 'due', 'summary', 'status'];
 
     protected $objclass = 'Todo';
     protected $read_func = 'readTodo';
@@ -35,7 +35,7 @@ class kolab_format_task extends kolab_format_xcal
     /**
      * Default constructor
      */
-    function __construct($data = null, $version = 3.0)
+    public function __construct($data = null, $version = 3.0)
     {
         parent::__construct(is_string($data) ? $data : null, $version);
 
@@ -58,10 +58,11 @@ class kolab_format_task extends kolab_format_xcal
         $this->obj->setPercentComplete($object['complete']);
 
         $status = kolabformat::StatusUndefined;
-        if ($object['complete'] == 100 && !array_key_exists('status', $object))
+        if ($object['complete'] == 100 && !array_key_exists('status', $object)) {
             $status = kolabformat::StatusCompleted;
-        else if (!empty($object['status']) && array_key_exists($object['status'], $this->status_map))
+        } elseif (!empty($object['status']) && array_key_exists($object['status'], $this->status_map)) {
             $status = $this->status_map[$object['status']];
+        }
         $this->obj->setStatus($status);
 
         if (!empty($object['start'])) {
@@ -71,9 +72,10 @@ class kolab_format_task extends kolab_format_xcal
             $this->obj->setDue(self::get_datetime($object['due'], null, !empty($object['due']->_dateonly)));
         }
 
-        $related = new vectors;
-        if (!empty($object['parent_id']))
+        $related = new vectors();
+        if (!empty($object['parent_id'])) {
             $related->push($object['parent_id']);
+        }
         $this->obj->setRelatedTo($related);
 
         // cache this data
@@ -96,11 +98,12 @@ class kolab_format_task extends kolab_format_xcal
      *
      * @return array  Config object data as hash array
      */
-    public function to_array($data = array())
+    public function to_array($data = [])
     {
         // return cached result
-        if (!empty($this->data))
+        if (!empty($this->data)) {
             return $this->data;
+        }
 
         // read common xcal props
         $object = parent::to_array($data);
@@ -108,13 +111,15 @@ class kolab_format_task extends kolab_format_xcal
         $object['complete'] = intval($this->obj->percentComplete());
 
         // if due date is set
-        if ($due = $this->obj->due())
+        if ($due = $this->obj->due()) {
             $object['due'] = self::php_datetime($due);
+        }
 
         // related-to points to parent task; we only support one relation
         $related = self::vector2array($this->obj->relatedTo());
-        if (count($related))
+        if (count($related)) {
             $object['parent_id'] = $related[0];
+        }
 
         // TODO: map more properties
 
@@ -146,14 +151,17 @@ class kolab_format_task extends kolab_format_xcal
         $tags = parent::get_tags($obj);
         $object = $obj ?: $this->data;
 
-        if (($object['status'] ?? null) == 'COMPLETED' || (($object['complete'] ?? null) == 100 && empty($object['status'] ?? null)))
+        if (($object['status'] ?? null) == 'COMPLETED' || (($object['complete'] ?? null) == 100 && empty($object['status'] ?? null))) {
             $tags[] = 'x-complete';
+        }
 
-        if (!empty($object['priority']))
+        if (!empty($object['priority'])) {
             $tags[] = 'x-flagged';
+        }
 
-        if (!empty($object['parent_id']))
+        if (!empty($object['parent_id'])) {
             $tags[] = 'x-parent:' . $object['parent_id'];
+        }
 
         return array_unique($tags);
     }

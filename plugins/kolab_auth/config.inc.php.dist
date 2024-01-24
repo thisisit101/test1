@@ -25,9 +25,9 @@ $config['kolab_auth_login'] = 'email';
 // If the value array contains more than one field, first non-empty will be used
 // Note: These aren't LDAP attributes, but field names in config
 // Note: If there's more than one email address, as many identities will be created
-$config['kolab_auth_name']         = array('name', 'cn');
-$config['kolab_auth_email']        = array('email');
-$config['kolab_auth_organization'] = array('organization');
+$config['kolab_auth_name']         = ['name', 'cn'];
+$config['kolab_auth_email']        = ['email'];
+$config['kolab_auth_organization'] = ['organization'];
 
 // Role field (from fieldmap configuration)
 $config['kolab_auth_role'] = 'role';
@@ -48,24 +48,24 @@ $config['kolab_auth_auditlog'] = false;
 // The effective rights value refers to either entry level attribute level rights:
 //  * entry:[read|add|delete]
 //  * attrib:<attribute-name>:[read|write|delete]
-$config['kolab_auth_admin_rights'] = array(
+$config['kolab_auth_admin_rights'] = [
     // Roundcube task => required effective right
     'settings'        => 'entry:read',
     'mail'            => 'entry:delete',
     'addressbook'     => 'entry:delete',
     // or use a wildcard entry like this:
     '*'               => 'entry:read',
-);
+];
 
 // Enable plugins on a role-by-role basis. In this example, the 'acl' plugin
 // is enabled for people with a 'cn=professional-user,dc=mykolab,dc=ch' role.
 //
 // Note that this does NOT mean the 'acl' plugin is disabled for other people.
-$config['kolab_auth_role_plugins'] = Array(
-        'cn=professional-user,dc=mykolab,dc=ch' => Array(
+$config['kolab_auth_role_plugins'] = [
+        'cn=professional-user,dc=mykolab,dc=ch' => [
                 'acl',
-            ),
-    );
+            ],
+    ];
 
 // Settings on a role-by-role basis. In this example, the 'htmleditor' setting
 // is enabled(1) for people with a 'cn=professional-user,dc=mykolab,dc=ch' role,
@@ -73,25 +73,23 @@ $config['kolab_auth_role_plugins'] = Array(
 // do not allow the setting to be controlled through the preferences, enable the
 // html editor for professional users and allow them to override the setting in
 // the preferences.
-$config['kolab_auth_role_settings'] = Array(
-        'cn=professional-user,dc=mykolab,dc=ch' => Array(
-                'htmleditor' => Array(
+$config['kolab_auth_role_settings'] = [
+        'cn=professional-user,dc=mykolab,dc=ch' => [
+                'htmleditor' => [
                         'mode' => 'override',
                         'value' => 1,
-                        'allow_override' => true
-                    ),
-            ),
-    );
+                        'allow_override' => true,
+                    ],
+            ],
+    ];
 
 // List of LDAP addressbooks (keys of ldap_public configuration array)
 // for which base_dn variables (%dc, etc.) will be replaced according to authenticated user DN
 // Note: special name '*' for all LDAP addressbooks
-$config['kolab_auth_ldap_addressbooks'] = array('*');
+$config['kolab_auth_ldap_addressbooks'] = ['*'];
 
 // Enables storing/updating session tokens for free-busy token authentication
 // See httpauth.allow_token option in Free-Busy service config.
 // The option can be set to a number of seconds after which the token-session
 // expires or to true (to get the configured Roundcube session time)
 $config['freebusy_session_auth'] = null;
-
-?>

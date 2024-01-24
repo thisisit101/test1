@@ -46,7 +46,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         $this->dav   = $dav;
         $this->valid = true;
 
-        list($this->type, $suffix) = strpos($type, '.') ? explode('.', $type) : [$type, ''];
+        [$this->type, $suffix] = strpos($type, '.') ? explode('.', $type) : [$type, ''];
         $this->default = $suffix == 'default';
         $this->subtype = $this->default ? '' : $suffix;
 
@@ -374,8 +374,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
             if (empty($object['created'])) {
                 $object['created'] = new DateTime('now');
             }
-        }
-        else {
+        } else {
             $object['changed'] = new DateTime('now');
         }
 
@@ -383,8 +382,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         if (empty($object['uid'])) {
             if ($uid) {
                 $object['uid'] = $uid;
-            }
-            else {
+            } else {
                 $username = rcube::get_instance()->user->get_username();
                 $object['uid'] = strtoupper(md5(time() . uniqid(rand())) . '-' . substr(md5($username), 0, 16));
             }
@@ -431,7 +429,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         if (!is_array($objects) || count($objects) != 1) {
             rcube::raise_error([
                     'code' => 900,
-                    'message' => "Failed to fetch {$href}"
+                    'message' => "Failed to fetch {$href}",
                 ], true);
             return false;
         }
@@ -466,7 +464,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         if (!is_array($objects)) {
             rcube::raise_error([
                     'code' => 900,
-                    'message' => "Failed to fetch objects from {$this->href}"
+                    'message' => "Failed to fetch objects from {$this->href}",
                 ], true);
             return false;
         }
@@ -506,7 +504,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
      */
     public function from_dav($object)
     {
-        if (empty($object ) || empty($object['data'])) {
+        if (empty($object) || empty($object['data'])) {
             return false;
         }
 
@@ -522,8 +520,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
 
             $result['_attachments'] = $result['attachments'] ?? [];
             unset($result['attachments']);
-        }
-        else if ($this->type == 'contact') {
+        } elseif ($this->type == 'contact') {
             if (stripos($object['data'], 'BEGIN:VCARD') !== 0) {
                 return false;
             }
@@ -545,14 +542,13 @@ class kolab_storage_dav_folder extends kolab_storage_folder
                 $result = $vcard->get_assoc();
 
                 // Contact groups
-                if (!empty($result['x-kind']) && implode($result['x-kind']) == 'group') {
+                if (!empty($result['x-kind']) && implode('', $result['x-kind']) == 'group') {
                     $result['_type'] = 'group';
-                    $members = isset($result['x-member']) ? $result['x-member'] : [];
+                    $members = $result['x-member'] ?? [];
                     unset($result['x-kind'], $result['x-member']);
-                }
-                else if (!empty($result['kind']) && implode($result['kind']) == 'group') {
+                } elseif (!empty($result['kind']) && implode('', $result['kind']) == 'group') {
                     $result['_type'] = 'group';
-                    $members = isset($result['member']) ? $result['member'] : [];
+                    $members = $result['member'] ?? [];
                     unset($result['kind'], $result['member']);
                 }
 
@@ -561,8 +557,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
                     foreach ($members as $member) {
                         if (strpos($member, 'urn:uuid:') === 0) {
                             $result['member'][] = ['uid' => substr($member, 9)];
-                        }
-                        else if (strpos($member, 'mailto:') === 0) {
+                        } elseif (strpos($member, 'mailto:') === 0) {
                             $member = reset(rcube_mime::decode_address_list(urldecode(substr($member, 7))));
                             if (!empty($member['mailto'])) {
                                 $result['member'][] = ['email' => $member['mailto'], 'name' => $member['name']];
@@ -572,10 +567,9 @@ class kolab_storage_dav_folder extends kolab_storage_folder
                 }
 
                 if (!empty($result['uid'])) {
-                    $result['uid'] = preg_replace('/^urn:uuid:/', '', implode($result['uid']));
+                    $result['uid'] = preg_replace('/^urn:uuid:/', '', implode('', $result['uid']));
                 }
-            }
-            else {
+            } else {
                 return false;
             }
         }
@@ -621,12 +615,10 @@ class kolab_storage_dav_folder extends kolab_storage_folder
                                 // here nor in rcube_imap_generic before IMAP APPEND
                                 $stat = fstat($attachment['data']);
                                 $attachment['size'] = $stat ? $stat['size'] : 0;
-                            }
-                            else {
+                            } else {
                                 $attachment['size'] = strlen($attachment['data']);
                             }
-                        }
-                        else if (!empty($attachment['path'])) {
+                        } elseif (!empty($attachment['path'])) {
                             $attachment['size'] = filesize($attachment['path']);
                         }
 
@@ -639,8 +631,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
             unset($object['_attachments']);
 
             $result = $ical->export([$object], null, false, [$this, 'get_attachment']);
-        }
-        else if ($this->type == 'contact') {
+        } elseif ($this->type == 'contact') {
             // copy values into vcard object
             // TODO: We should probably use Sabre/Vobject to create the vCard
 
@@ -655,7 +646,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
             }
 
             foreach ($object as $key => $values) {
-                list($field, $section) = rcube_utils::explode(':', $key);
+                [$field, $section] = rcube_utils::explode(':', $key);
 
                 // avoid casting DateTime objects to array
                 if (is_object($values) && $values instanceof DateTimeInterface) {
@@ -677,11 +668,9 @@ class kolab_storage_dav_folder extends kolab_storage_folder
                     $value = null;
                     if (!empty($member['uid'])) {
                         $value = 'urn:uuid:' . $member['uid'];
-                    }
-                    else if (!empty($member['email']) && !empty($member['name'])) {
+                    } elseif (!empty($member['email']) && !empty($member['name'])) {
                         $value = 'mailto:' . urlencode(sprintf('"%s" <%s>', addcslashes($member['name'], '"'), $member['email']));
-                    }
-                    else if (!empty($member['email'])) {
+                    } elseif (!empty($member['email'])) {
                         $value = 'mailto:' . $member['email'];
                     }
 
@@ -738,18 +727,15 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         //       '_attachments' is defined after fetching the object from the DAV server
         if (is_int($id) && isset($event['attachments'][$id])) {
             $attachment = $event['attachments'][$id];
-        }
-        else if (is_int($id) && isset($event['_attachments'][$id])) {
+        } elseif (is_int($id) && isset($event['_attachments'][$id])) {
             $attachment = $event['_attachments'][$id];
-        }
-        else if (is_string($id) && !empty($event['attachments'])) {
+        } elseif (is_string($id) && !empty($event['attachments'])) {
             foreach ($event['attachments'] as $att) {
                 if (!empty($att['id']) && $att['id'] === $id) {
                     $attachment = $att;
                 }
             }
-        }
-        else if (is_string($id) && !empty($event['_attachments'])) {
+        } elseif (is_string($id) && !empty($event['_attachments'])) {
             foreach ($event['_attachments'] as $att) {
                 if (!empty($att['id']) && $att['id'] === $id) {
                     $attachment = $att;

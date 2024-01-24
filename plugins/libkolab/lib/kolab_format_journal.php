@@ -64,11 +64,12 @@ class kolab_format_journal extends kolab_format
      *
      * @return array  Config object data as hash array
      */
-    public function to_array($data = array())
+    public function to_array($data = [])
     {
         // return cached result
-        if (!empty($this->data))
+        if (!empty($this->data)) {
             return $this->data;
+        }
 
         // read common object props into local data object
         $object = parent::to_array($data);

@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'Activesync';
 $labels['devices'] = 'Dispositivos';
 $labels['devicealias'] = 'Nome do dispositivo';
@@ -20,4 +21,3 @@ $labels['devicedeleteconfirm'] = 'Você deseja realmente remover a configuraçã
 $labels['successfullydeleted'] = 'A configuração do dispositivo foi removida com sucesso';
 $labels['devicenotfound'] = 'Não foi possível ler a configuração do dispositivo';
 $labels['phonenumber'] = 'Telefone';
-?>

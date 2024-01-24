@@ -126,8 +126,7 @@ class carddav_contacts extends rcube_addressbook
             if ($this->storage->get_owner() == $_SESSION['username']) {
                 $this->readonly = false;
                 $this->rights = 'lrswikxtea';
-            }
-            else {
+            } else {
                 $rights = $this->storage->get_myrights();
                 if ($rights && !PEAR::isError($rights)) {
                     $this->rights = $rights;
@@ -208,17 +207,17 @@ class carddav_contacts extends rcube_addressbook
      */
     public function get_carddav_url()
     {
-/*
-        $rcmail = rcmail::get_instance();
-        if ($template = $rcmail->config->get('kolab_addressbook_carddav_url', null)) {
-            return strtr($template, [
-                    '%h' => $_SERVER['HTTP_HOST'],
-                    '%u' => urlencode($rcmail->get_user_name()),
-                    '%i' => urlencode($this->storage->get_uid()),
-                    '%n' => urlencode($this->imap_folder),
-            ]);
-        }
-*/
+        /*
+                $rcmail = rcmail::get_instance();
+                if ($template = $rcmail->config->get('kolab_addressbook_carddav_url', null)) {
+                    return strtr($template, [
+                            '%h' => $_SERVER['HTTP_HOST'],
+                            '%u' => urlencode($rcmail->get_user_name()),
+                            '%i' => urlencode($this->storage->get_uid()),
+                            '%n' => urlencode($this->imap_folder),
+                    ]);
+                }
+        */
         return false;
     }
 
@@ -267,7 +266,7 @@ class carddav_contacts extends rcube_addressbook
      *
      * @return array Indexed list of contact groups, each a hash array
      */
-    function list_groups($search = null, $mode = 0)
+    public function list_groups($search = null, $mode = 0)
     {
         $this->_fetch_groups();
         $groups = [];
@@ -279,7 +278,7 @@ class carddav_contacts extends rcube_addressbook
         }
 
         // sort groups by name
-        uasort($groups, function($a, $b) { return strcoll($a['name'], $b['name']); });
+        uasort($groups, function ($a, $b) { return strcoll($a['name'], $b['name']); });
 
         return array_values($groups);
     }
@@ -295,7 +294,7 @@ class carddav_contacts extends rcube_addressbook
      */
     public function list_records($cols = null, $subset = 0, $nocount = false)
     {
-        $this->result = new rcube_result_set(0, ($this->list_page-1) * $this->page_size);
+        $this->result = new rcube_result_set(0, ($this->list_page - 1) * $this->page_size);
 
         $fetch_all = false;
         $fast_mode = !empty($cols) && is_array($cols);
@@ -318,8 +317,7 @@ class carddav_contacts extends rcube_addressbook
 
                 if (!empty($member['uid'])) {
                     $uids[] = $member['uid'];
-                }
-                else if (!empty($member['email'])) {
+                } elseif (!empty($member['email'])) {
                     $this->contacts[$member['ID']] = $member;
                     $local_sortindex[$member['ID']] = $this->_sort_string($member);
                     $fetch_all = true;
@@ -331,15 +329,13 @@ class carddav_contacts extends rcube_addressbook
                 $this->_fetch_contacts($query = [['uid', '=', $uids]], $fetch_all ? false : count($uids), $fast_mode);
                 $this->sortindex = array_merge($this->sortindex, $local_sortindex);
             }
-        }
-        else if (isset($this->filter['ids']) && is_array($this->filter['ids'])) {
+        } elseif (isset($this->filter['ids']) && is_array($this->filter['ids'])) {
             $ids = $this->filter['ids'];
             if (count($ids)) {
                 $uids = array_map([$this, 'id2uid'], $this->filter['ids']);
                 $this->_fetch_contacts($query = [['uid', '=', $uids]], count($ids), $fast_mode);
             }
-        }
-        else {
+        } else {
             $this->_fetch_contacts($query = 'contact', true, $fast_mode);
         }
 
@@ -359,13 +355,11 @@ class carddav_contacts extends rcube_addressbook
                     $this->result->add($this->contacts[$idx] ?: $this->_to_rcube_contact($this->dataset[$idx]));
                 }
             }
-        }
-        else if (!empty($this->dataset)) {
+        } elseif (!empty($this->dataset)) {
             // get all records count, skip the query if possible
             if (!isset($query) || count($this->dataset) < $this->page_size) {
                 $this->result->count = count($this->dataset) + $this->page_size * ($this->list_page - 1);
-            }
-            else {
+            } else {
                 $this->result->count = $this->storage->count($query);
             }
 
@@ -410,8 +404,7 @@ class carddav_contacts extends rcube_addressbook
                 }
             }
             return $result;
-        }
-        else if ($fields == '*') {
+        } elseif ($fields == '*') {
             $fields = $this->search_fields;
         }
 
@@ -426,8 +419,7 @@ class carddav_contacts extends rcube_addressbook
         if (is_array($value)) {
             $advanced = true;
             $value = array_map('mb_strtolower', $value);
-        }
-        else {
+        } else {
             $value = mb_strtolower($value);
         }
 
@@ -478,9 +470,8 @@ class carddav_contacts extends rcube_addressbook
                 foreach ((array)$contact[$col] as $val) {
                     if (!empty($advanced)) {
                         $found[$colname] = $this->compare_search_value($colname, $val, $value[array_search($colname, $fields)], $mode);
-                    }
-                    else {
-                        $contents .= ' ' . join(' ', (array)$val);
+                    } else {
+                        $contents .= ' ' . implode(' ', (array)$val);
                     }
                 }
             }
@@ -495,7 +486,7 @@ class carddav_contacts extends rcube_addressbook
 
         // dummy result with contacts count
         if (!$select) {
-            return new rcube_result_set(count($this->filter['ids']), ($this->list_page-1) * $this->page_size);
+            return new rcube_result_set(count($this->filter['ids']), ($this->list_page - 1) * $this->page_size);
         }
 
         // list records (now limited by $this->filter)
@@ -524,15 +515,13 @@ class carddav_contacts extends rcube_addressbook
         if ($this->gid) {
             $this->_fetch_groups();
             $count = count($this->distlists[$this->gid]['member']);
-        }
-        else if (isset($this->filter['ids']) && is_array($this->filter['ids'])) {
+        } elseif (isset($this->filter['ids']) && is_array($this->filter['ids'])) {
             $count = count($this->filter['ids']);
-        }
-        else {
+        } else {
             $count = $this->storage->count('contact');
         }
 
-        return new rcube_result_set($count, ($this->list_page-1) * $this->page_size);
+        return new rcube_result_set($count, ($this->list_page - 1) * $this->page_size);
     }
 
     /**
@@ -564,18 +553,18 @@ class carddav_contacts extends rcube_addressbook
             $rec = $this->contacts[$id];
             $this->readonly = true;  // set source to read-only
         }
-/*
-        else if (!empty($rev)) {
-            $rcmail = rcube::get_instance();
-            $plugin = $rcmail->plugins->get_plugin('kolab_addressbook');
-            if ($plugin && ($object = $plugin->get_revision($id, kolab_storage::id_encode($this->imap_folder), $rev))) {
-                $rec = $this->_to_rcube_contact($object);
-                $rec['rev'] = $rev;
-            }
-            $this->readonly = true;  // set source to read-only
-        }
-*/
-        else if ($object = $this->storage->get_object($uid)) {
+        /*
+                else if (!empty($rev)) {
+                    $rcmail = rcube::get_instance();
+                    $plugin = $rcmail->plugins->get_plugin('kolab_addressbook');
+                    if ($plugin && ($object = $plugin->get_revision($id, kolab_storage::id_encode($this->imap_folder), $rev))) {
+                        $rec = $this->_to_rcube_contact($object);
+                        $rec['rev'] = $rev;
+                    }
+                    $this->readonly = true;  // set source to read-only
+                }
+        */
+        elseif ($object = $this->storage->get_object($uid)) {
             $rec = $this->_to_rcube_contact($object);
         }
 
@@ -649,13 +638,15 @@ class carddav_contacts extends rcube_addressbook
             $saved  = $this->storage->save($object, 'contact');
 
             if (!$saved) {
-                rcube::raise_error([
+                rcube::raise_error(
+                    [
                         'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                        'message' => "Error saving contact object to CardDAV server"
+                        'message' => "Error saving contact object to CardDAV server",
                     ],
-                    true, false);
-            }
-            else {
+                    true,
+                    false
+                );
+            } else {
                 $insert_id = $object['uid'];
             }
         }
@@ -680,14 +671,15 @@ class carddav_contacts extends rcube_addressbook
             $object = $this->_from_rcube_contact($save_data, $old);
 
             if (!$this->storage->save($object, 'contact', $old['uid'])) {
-                rcube::raise_error([
+                rcube::raise_error(
+                    [
                         'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                        'message' => "Error saving contact object to CardDAV server"
+                        'message' => "Error saving contact object to CardDAV server",
                     ],
-                    true, false
+                    true,
+                    false
                 );
-            }
-            else {
+            } else {
                 $updated = true;
 
                 // TODO: update data in groups this contact is member of
@@ -720,14 +712,15 @@ class carddav_contacts extends rcube_addressbook
                 $deleted = $is_mailto || $this->storage->delete($uid, $force);
 
                 if (!$deleted) {
-                    rcube::raise_error([
+                    rcube::raise_error(
+                        [
                             'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                            'message' => "Error deleting a contact object $uid from the CardDAV server"
+                            'message' => "Error deleting a contact object $uid from the CardDAV server",
                         ],
-                        true, false
+                        true,
+                        false
                     );
-                }
-                else {
+                } else {
                     // remove from distribution lists
                     if (isset($this->groupmembers[$id])) {
                         foreach ((array) $this->groupmembers[$id] as $gid) {
@@ -767,13 +760,14 @@ class carddav_contacts extends rcube_addressbook
             $uid = $this->id2uid($id);
             if ($this->storage->undelete($uid)) {
                 $count++;
-            }
-            else {
-                rcube::raise_error([
+            } else {
+                rcube::raise_error(
+                    [
                         'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                        'message' => "Error undeleting a contact object $uid from the CardDav server"
+                        'message' => "Error undeleting a contact object $uid from the CardDav server",
                     ],
-                    true, false
+                    true,
+                    false
                 );
             }
         }
@@ -812,7 +806,7 @@ class carddav_contacts extends rcube_addressbook
      *
      * @return mixed False on error, array with record props in success
      */
-    function create_group($name)
+    public function create_group($name)
     {
         $this->_fetch_groups();
 
@@ -828,11 +822,13 @@ class carddav_contacts extends rcube_addressbook
         $saved = $this->storage->save($list, 'contact');
 
         if (!$saved) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error saving a contact group to CardDAV server"
+                    'message' => "Error saving a contact group to CardDAV server",
                 ],
-                true, false
+                true,
+                false
             );
 
             return false;
@@ -852,7 +848,7 @@ class carddav_contacts extends rcube_addressbook
      *
      * @return bool True on success, false if no data was changed
      */
-    function delete_group($gid)
+    public function delete_group($gid)
     {
         $this->_fetch_groups();
 
@@ -865,11 +861,13 @@ class carddav_contacts extends rcube_addressbook
         $deleted = $this->storage->delete($list['uid']);
 
         if (!$deleted) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error deleting a contact group from the CardDAV server"
+                    'message' => "Error deleting a contact group from the CardDAV server",
                 ],
-                true, false
+                true,
+                false
             );
         }
 
@@ -885,7 +883,7 @@ class carddav_contacts extends rcube_addressbook
      *
      * @return string|false New name on success, false if no data was changed
      */
-    function rename_group($gid, $newname, &$newid)
+    public function rename_group($gid, $newname, &$newid)
     {
         $this->_fetch_groups();
 
@@ -903,11 +901,13 @@ class carddav_contacts extends rcube_addressbook
         $saved = $this->storage->save($list, 'contact', $list['uid']);
 
         if (!$saved) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error saving a contact group to CardDAV server"
+                    'message' => "Error saving a contact group to CardDAV server",
                 ],
-                true, false
+                true,
+                false
             );
 
             return false;
@@ -924,7 +924,7 @@ class carddav_contacts extends rcube_addressbook
      *
      * @return int Number of contacts added
      */
-    function add_to_group($gid, $ids)
+    public function add_to_group($gid, $ids)
     {
         if (!is_array($ids)) {
             $ids = explode(',', $ids);
@@ -959,8 +959,7 @@ class carddav_contacts extends rcube_addressbook
                 ];
                 $this->groupmembers[$contact_id][] = $gid;
                 $added++;
-            }
-            else {
+            } else {
                 $uids[$uid] = $contact_id;
             }
         }
@@ -976,23 +975,23 @@ class carddav_contacts extends rcube_addressbook
 
         if ($added) {
             $saved = $this->storage->save($list, 'contact', $list['uid']);
-        }
-        else {
+        } else {
             $saved = true;
         }
 
         if (!$saved) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error saving a contact-group to CardDAV server"
+                    'message' => "Error saving a contact-group to CardDAV server",
                 ],
-                true, false
+                true,
+                false
             );
 
             $added = false;
             $this->set_error(self::ERROR_SAVING, 'errorsaving');
-        }
-        else {
+        } else {
             $this->distlists[$gid] = $list;
         }
 
@@ -1007,7 +1006,7 @@ class carddav_contacts extends rcube_addressbook
      *
      * @return bool
      */
-    function remove_from_group($gid, $ids)
+    public function remove_from_group($gid, $ids)
     {
         $this->_fetch_groups();
 
@@ -1033,14 +1032,15 @@ class carddav_contacts extends rcube_addressbook
         $saved = $this->storage->save($list, 'contact', $list['uid']);
 
         if (!$saved) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error saving a contact group to CardDAV server"
+                    'message' => "Error saving a contact group to CardDAV server",
                 ],
-                true, false
+                true,
+                false
             );
-        }
-        else {
+        } else {
             // remove group assigments in local cache
             foreach ($ids as $id) {
                 $j = array_search($gid, $this->groupmembers[$id]);
@@ -1092,7 +1092,7 @@ class carddav_contacts extends rcube_addressbook
         if (!isset($this->dataset) || !empty($query)) {
             if ($limit) {
                 $size = is_int($limit) && $limit < $this->page_size ? $limit : $this->page_size;
-                $this->storage->set_order_and_limit($this->_sort_columns(), $size, ($this->list_page-1) * $this->page_size);
+                $this->storage->set_order_and_limit($this->_sort_columns(), $size, ($this->list_page - 1) * $this->page_size);
             }
 
             $this->sortindex = [];
@@ -1113,19 +1113,20 @@ class carddav_contacts extends rcube_addressbook
         $str = '';
 
         switch ($this->sort_col) {
-        case 'name':
-            $str = ($rec['name'] ?? '') . ($rec['prefix'] ?? '');
-        case 'firstname':
-            $str .= ($rec['firstname'] ?? '') . ($rec['middlename'] ?? '') . ($rec['surname'] ?? '');
-            break;
+            case 'name':
+                $str = ($rec['name'] ?? '') . ($rec['prefix'] ?? '');
+                // no break
+            case 'firstname':
+                $str .= ($rec['firstname'] ?? '') . ($rec['middlename'] ?? '') . ($rec['surname'] ?? '');
+                break;
 
-        case 'surname':
-            $str = ($rec['surname'] ?? '') . ($rec['firstname'] ?? '') . ($rec['middlename'] ?? '');
-            break;
+            case 'surname':
+                $str = ($rec['surname'] ?? '') . ($rec['firstname'] ?? '') . ($rec['middlename'] ?? '');
+                break;
 
-        default:
-            $str = $rec[$this->sort_col] ?? '';
-            break;
+            default:
+                $str = $rec[$this->sort_col] ?? '';
+                break;
         }
 
         if (!empty($rec['email'])) {
@@ -1143,16 +1144,17 @@ class carddav_contacts extends rcube_addressbook
         $sortcols = [];
 
         switch ($this->sort_col) {
-        case 'name':
-            $sortcols[] = 'name';
+            case 'name':
+                $sortcols[] = 'name';
 
-        case 'firstname':
-            $sortcols[] = 'firstname';
-            break;
+                // no break
+            case 'firstname':
+                $sortcols[] = 'firstname';
+                break;
 
-        case 'surname':
-            $sortcols[] = 'surname';
-            break;
+            case 'surname':
+                $sortcols[] = 'surname';
+                break;
         }
 
         $sortcols[] = 'email';
@@ -1218,16 +1220,17 @@ class carddav_contacts extends rcube_addressbook
 
         if (count($cols)) {
             if ($mode & rcube_addressbook::SEARCH_STRICT) {
-                $prefix = '^'; $suffix = '$';
-            }
-            else if ($mode & rcube_addressbook::SEARCH_PREFIX) {
-                $prefix = '^'; $suffix = '';
-            }
-            else {
-                $prefix = ''; $suffix = '';
+                $prefix = '^';
+                $suffix = '$';
+            } elseif ($mode & rcube_addressbook::SEARCH_PREFIX) {
+                $prefix = '^';
+                $suffix = '';
+            } else {
+                $prefix = '';
+                $suffix = '';
             }
 
-            $search_string = is_array($value) ? join(' ', $value) : $value;
+            $search_string = is_array($value) ? implode(' ', $value) : $value;
             foreach (rcube_utils::normalize_string($search_string, true) as $word) {
                 $query[] = ['words', 'LIKE', $prefix . $word . $suffix];
             }
@@ -1259,11 +1262,9 @@ class carddav_contacts extends rcube_addressbook
     {
         if (empty($contact['uid']) && !empty($contact['ID'])) {
             $contact['uid'] = $this->id2uid($contact['ID']);
-        }
-        else if (empty($contact['uid']) && !empty($old['uid'])) {
+        } elseif (empty($contact['uid']) && !empty($old['uid'])) {
             $contact['uid'] = $old['uid'];
-        }
-        else if (empty($contact['uid'])) {
+        } elseif (empty($contact['uid'])) {
             $rcube = rcube::get_instance();
             $contact['uid'] = strtoupper(md5(time() . uniqid(rand())) . '-' . substr(md5($rcube->user->get_username()), 0, 16));
         }

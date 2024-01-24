@@ -8,4 +8,3 @@
  */
 $labels['loginas'] = 'Logi sisse kui';
 $labels['loginasnotallowed'] = 'Pole õigusi, et logida sisse kui $user';
-?>

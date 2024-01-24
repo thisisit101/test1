@@ -25,20 +25,20 @@
 
 class html_converter extends rcube_plugin
 {
-    private static $replaces = array(
+    private static $replaces = [
         "<blockquote>"  => "<br>&amp;&raquo;&amp;<br>",
         "</blockquote>" => "<br>&amp;&laquo;&amp;<br>",
         "\x02\x03"      => "***^^^SIG^^^***",
-    );
+    ];
 
 
     /**
      * Plugin initialization.
      */
-    function init()
+    public function init()
     {
         // register hook to convert HTML to Text
-        $this->add_hook('html2text', array($this, 'html2text'));
+        $this->add_hook('html2text', [$this, 'html2text']);
     }
 
     /**
@@ -82,17 +82,17 @@ class html_converter extends rcube_plugin
             return false;
         }
 
-        $args = array(
+        $args = [
             '{path}'    => $tmpfname,
             '{width}'   => (int) $p['width'],
             '{charset}' => $p['charset'],
             '{links}'   => $p['links'] ? 1 : 0,
-        );
-/*
-        $command = 'links -force-html -no-connect -no-g -codepage {charset}'
-            . ' -aggressive-cache 0 -html-margin 0 -html-numbered-links {links}'
-            . ' -width {width} -dump {path}';
-*/
+        ];
+        /*
+                $command = 'links -force-html -no-connect -no-g -codepage {charset}'
+                    . ' -aggressive-cache 0 -html-margin 0 -html-numbered-links {links}'
+                    . ' -width {width} -dump {path}';
+        */
         $command = 'lynx -force_html -noreferer -nomargins -dont_wrap_pre'
             . ' -nolist -display_charset={charset} -width={width} -dump {path}';
 
@@ -112,11 +112,11 @@ class html_converter extends rcube_plugin
         unlink($tmpfname);
 
         if ($status) {
-            rcube::raise_error(array(
+            rcube::raise_error([
                     'line'    => __LINE__,
                     'file'    => __FILE__,
-                    'message' => "Failed executing: $command (code: $status)"
-                ), true, false);
+                    'message' => "Failed executing: $command (code: $status)",
+                ], true, false);
             return false;
         }
 
@@ -142,7 +142,7 @@ class html_converter extends rcube_plugin
     /**
      * Post-filtering on plain text content.
      */
-    function postfilter($text)
+    public function postfilter($text)
     {
         $replaces = self::$replaces;
 
@@ -168,25 +168,21 @@ class html_converter extends rcube_plugin
                     $level++;
                     $last = true;
                     unset($result[$idx]);
-                }
-                else if ($line === $end) {
+                } elseif ($line === $end) {
                     $level--;
                     $last = true;
                     unset($result[$idx]);
-                }
-                else if ($last && !strlen($line)) {
+                } elseif ($last && !strlen($line)) {
                     unset($result[$idx]);
                     $last = false;
-                }
-                else if ($level) {
+                } elseif ($level) {
                     $len = strlen($line);
 
-                    if (!$len && isset($result[$idx+1])
-                        && ($result[$idx+1] === $end || $result[$idx+1] === $start)
+                    if (!$len && isset($result[$idx + 1])
+                        && ($result[$idx + 1] === $end || $result[$idx + 1] === $start)
                     ) {
                         unset($result[$idx]);
-                    }
-                    else {
+                    } else {
                         $result[$idx] = str_repeat('>', $level) . ($len ? ' ' . $line : '');
                     }
                 }

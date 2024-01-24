@@ -63,4 +63,3 @@ $messages['bookupdateerror'] = 'Během aktualizování adresáře došlo k chyb�
 $messages['bookcreateerror'] = 'Během vytváření adresáře došlo k chybě.';
 $messages['nobooknamewarning'] = 'Prosím, zadejte název adresáře.';
 $messages['noemailnamewarning'] = 'Prosím, zadejte e-mailovou adresu nebo kontaktní jméno.';
-?>

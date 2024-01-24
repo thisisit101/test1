@@ -35,4 +35,3 @@ $labels['createsuccess'] = 'Представитель успешно добав
 $labels['createerror'] = 'Не удалось добавить представителя.';
 $labels['arialabeldelegatedelete'] = 'Диалог удаления представителей';
 $labels['arialabeldelegateform'] = 'Диалог свойств представителей';
-?>

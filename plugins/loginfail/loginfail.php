@@ -4,9 +4,9 @@ class loginfail extends rcube_plugin
 {
     public $task = 'login';
 
-    function init()
+    public function init()
     {
-        $this->add_hook('login_failed', array($this, 'login_failed'));
+        $this->add_hook('login_failed', [$this, 'login_failed']);
     }
 
     public function login_failed($args)

@@ -33,7 +33,7 @@ class kolab_chat extends rcube_plugin
     {
         $this->rc = rcube::get_instance();
 
-        $this->add_hook('startup', array($this, 'startup'));
+        $this->add_hook('startup', [$this, 'startup']);
     }
 
     /**
@@ -65,14 +65,14 @@ class kolab_chat extends rcube_plugin
 
         // Register UI end-points
         $this->register_task('kolab-chat');
-        $this->register_action('index', array($this, 'ui'));
-        $this->register_action('action', array($this, 'action'));
+        $this->register_action('index', [$this, 'ui']);
+        $this->register_action('action', [$this, 'action']);
 
         if ($this->rc->output->type == 'html' && !$this->rc->output->get_env('framed')) {
             $this->include_stylesheet($this->local_skin_path() . '/kolab_chat.css');
             $this->rc->output->set_env('kolab_chat_extwin', (bool) $extwin);
             $this->rc->output->add_script(
-"rcmail.addEventListener('beforeswitch-task', function(p) {
+                "rcmail.addEventListener('beforeswitch-task', function(p) {
     if (p == 'kolab-chat' && rcmail.env.kolab_chat_extwin) {
         rcmail.open_window('?_task=kolab-chat&redirect=1', false, false, true);
         return false;
@@ -81,23 +81,23 @@ class kolab_chat extends rcube_plugin
                 'foot'
             );
 
-            $this->add_button(array(
+            $this->add_button([
                     'command'    => 'kolab-chat',
                     'class'      => 'button-chat',
                     'classsel'   => 'button-chat button-selected',
                     'innerclass' => 'button-inner',
                     'label'      => 'kolab_chat.chat',
                     'type'       => 'link',
-                ), 'taskbar');
+                ], 'taskbar');
 
             $this->driver->ui();
         }
 
         if ($this->rc->output->type == 'html' && $args['task'] == 'settings') {
             // add hooks for Chat settings
-            $this->add_hook('preferences_sections_list', array($this, 'preferences_sections_list'));
-            $this->add_hook('preferences_list', array($this, 'preferences_list'));
-            $this->add_hook('preferences_save', array($this, 'preferences_save')); 
+            $this->add_hook('preferences_sections_list', [$this, 'preferences_sections_list']);
+            $this->add_hook('preferences_list', [$this, 'preferences_list']);
+            $this->add_hook('preferences_save', [$this, 'preferences_save']);
         }
     }
 
@@ -105,7 +105,7 @@ class kolab_chat extends rcube_plugin
      * Display chat iframe wrapped by Roundcube interface elements (taskmenu)
      * or a dummy page with redirect to the chat app.
      */
-    function ui()
+    public function ui()
     {
         $this->driver->ui();
 
@@ -116,8 +116,7 @@ class kolab_chat extends rcube_plugin
                 . '<meta http-equiv="refresh" content="0; url=' . $url . '">'
                 . '</head><body></body></html>';
             exit;
-        }
-        else {
+        } else {
             $this->rc->output->add_script(
                 "rcmail.addEventListener('init', function() {"
                     . "rcmail.location_href('$url', rcmail.get_frame_window(rcmail.env.contentframe));"
@@ -132,7 +131,7 @@ class kolab_chat extends rcube_plugin
     /**
      * Handler for driver specific actions
      */
-    function action()
+    public function action()
     {
         $this->driver->action();
     }
@@ -145,11 +144,11 @@ class kolab_chat extends rcube_plugin
      *
      * @return array Modified parameters
      */
-    function preferences_sections_list($p)
+    public function preferences_sections_list($p)
     {
-        $p['list']['kolab-chat'] = array(
-            'id' => 'kolab-chat', 'section' => $this->gettext('chat'), 'class' => 'chat'
-        );
+        $p['list']['kolab-chat'] = [
+            'id' => 'kolab-chat', 'section' => $this->gettext('chat'), 'class' => 'chat',
+        ];
 
         return $p;
     }
@@ -162,7 +161,7 @@ class kolab_chat extends rcube_plugin
      *
      * @return array Modified parameters
      */
-    function preferences_list($p)
+    public function preferences_list($p)
     {
         if ($p['section'] != 'kolab-chat') {
             return $p;
@@ -179,17 +178,17 @@ class kolab_chat extends rcube_plugin
             }
 
             $field_id = 'rcmfd_kolab_chat_extwin';
-            $input    = new html_checkbox(array('name' => '_kolab_chat_extwin', 'id' => $field_id, 'value' => 1));
+            $input    = new html_checkbox(['name' => '_kolab_chat_extwin', 'id' => $field_id, 'value' => 1]);
 
-            $p['blocks']['main']['options']['kolab_chat_extwin'] = array(
+            $p['blocks']['main']['options']['kolab_chat_extwin'] = [
                 'title'   => html::label($field_id, rcube::Q($this->gettext('showinextwin'))),
                 'content' => $input->show($this->rc->config->get('kolab_chat_extwin') ? 1 : 0),
-            );
+            ];
         }
 
         if ($p['current']) {
             // update env flag in the parent window
-            $this->rc->output->command('parent.set_env', array('kolab_chat_extwin' => (bool) $this->rc->config->get('kolab_chat_extwin')));
+            $this->rc->output->command('parent.set_env', ['kolab_chat_extwin' => (bool) $this->rc->config->get('kolab_chat_extwin')]);
 
             // Add driver-specific options
             $this->driver->preferences_list($p);
@@ -206,12 +205,12 @@ class kolab_chat extends rcube_plugin
      *
      * @return array Modified parameters
      */
-    function preferences_save($p)
+    public function preferences_save($p)
     {
         if ($p['section'] == 'kolab-chat') {
-            $p['prefs'] = array(
+            $p['prefs'] = [
                 'kolab_chat_extwin' => isset($_POST['_kolab_chat_extwin']),
-            );
+            ];
 
             // Add driver-specific options
             $this->driver->preferences_save($p);

@@ -8,4 +8,3 @@
  */
 $labels['loginas'] = 'Log ind som';
 $labels['loginasnotallowed'] = 'Har ikke privilegier til at logge ind som $user';
-?>

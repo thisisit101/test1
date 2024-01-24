@@ -41,7 +41,7 @@ class libcalendaring_recurrence
      * @param libcalendaring $lib   The libcalendaring plugin instance
      * @param array          $event The event object to operate on
      */
-    function __construct($lib, $event = null)
+    public function __construct($lib, $event = null)
     {
         $this->lib   = $lib;
         $this->event = $event;
@@ -95,8 +95,7 @@ class libcalendaring_recurrence
         try {
             $this->engine->next();
             $current = $this->engine->getDtStart();
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             // do nothing
         }
 
@@ -119,8 +118,7 @@ class libcalendaring_recurrence
             && $next_start->format('Ymd') != $this->start->format('Ymd')
         ) {
             $next_start = $this->toDateTime($next_start);
-        }
-        else {
+        } else {
             $next_start = $this->next_start();
         }
 
@@ -164,17 +162,16 @@ class libcalendaring_recurrence
             foreach ($this->engine as $end) {
                 // do nothing
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             // do nothing
         }
-/*
-        if (empty($end) && isset($this->event['start']) && $this->event['start'] instanceof DateTimeInterface) {
-            // determine a reasonable end date if none given
-            $end = clone $this->event['start'];
-            $end->add(new DateInterval('P100Y'));
-        }
-*/
+        /*
+                if (empty($end) && isset($this->event['start']) && $this->event['start'] instanceof DateTimeInterface) {
+                    // determine a reasonable end date if none given
+                    $end = clone $this->event['start'];
+                    $end->add(new DateInterval('P100Y'));
+                }
+        */
 
         return isset($end) ? $this->toDateTime($end) : false;
     }
@@ -191,37 +188,38 @@ class libcalendaring_recurrence
         $freq     = $this->recurrence['FREQ'] ?? null;
 
         switch ($freq) {
-        case 'WEEKLY':
-            if (empty($this->recurrence['BYDAY'])) {
-                return $start;
-            }
+            case 'WEEKLY':
+                if (empty($this->recurrence['BYDAY'])) {
+                    return $start;
+                }
 
-            $start->sub(new DateInterval("P{$interval}W"));
-            break;
-
-        case 'MONTHLY':
-            if (empty($this->recurrence['BYDAY']) && empty($this->recurrence['BYMONTHDAY'])) {
-                return $start;
-            }
-
-            $start->sub(new DateInterval("P{$interval}M"));
-            break;
-
-        case 'YEARLY':
-            if (empty($this->recurrence['BYDAY']) && empty($this->recurrence['BYMONTH'])) {
-                return $start;
-            }
-
-            $start->sub(new DateInterval("P{$interval}Y"));
-            break;
-
-        case 'DAILY':
-            if (!empty($this->recurrence['BYMONTH'])) {
+                $start->sub(new DateInterval("P{$interval}W"));
                 break;
-            }
 
-        default:
-            return $start;
+            case 'MONTHLY':
+                if (empty($this->recurrence['BYDAY']) && empty($this->recurrence['BYMONTHDAY'])) {
+                    return $start;
+                }
+
+                $start->sub(new DateInterval("P{$interval}M"));
+                break;
+
+            case 'YEARLY':
+                if (empty($this->recurrence['BYDAY']) && empty($this->recurrence['BYMONTH'])) {
+                    return $start;
+                }
+
+                $start->sub(new DateInterval("P{$interval}Y"));
+                break;
+
+            case 'DAILY':
+                if (!empty($this->recurrence['BYMONTH'])) {
+                    break;
+                }
+
+                // no break
+            default:
+                return $start;
         }
 
         $recurrence = $this->recurrence;
@@ -255,8 +253,11 @@ class libcalendaring_recurrence
             rcube::raise_error(
                 [
                     'file' => __FILE__, 'line' => __LINE__,
-                    'message' => sprintf("Failed to find a first occurrence. Start: %s, Recurrence: %s",
-                        $this->start->format(DateTime::ISO8601), json_encode($recurrence)),
+                    'message' => sprintf(
+                        "Failed to find a first occurrence. Start: %s, Recurrence: %s",
+                        $this->start->format(DateTime::ISO8601),
+                        json_encode($recurrence)
+                    ),
                 ],
                 true
             );

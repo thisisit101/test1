@@ -15,4 +15,3 @@ $labels['yes'] = 'Ναι';
 $labels['no'] = 'Όχι';
 $labels['write'] = 'Εγγραφή';
 $labels['savingdata'] = 'Αποθήκευση δεδομένων...';
-?>

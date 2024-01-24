@@ -28,4 +28,3 @@ $labels['private'] = 'Privado';
 $labels['folderexpire'] = 'Eliminar mensajes anteriores a';
 $labels['xdays'] = '$x días';
 $messages['defaultfolderexists'] = 'There is already default folder of specified type';
-?>

@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'アクティブシンク';
 $labels['activesynctitle'] = 'アクティブシンクデバイス管理';
 $labels['devices'] = '機器';
@@ -30,4 +31,3 @@ $labels['os'] = 'OS';
 $labels['oslanguage'] = 'OS言語';
 $labels['phonenumber'] = '電話番号';
 $labels['arialabeldeviceframe'] = 'デバイス同期設定元';
-?>

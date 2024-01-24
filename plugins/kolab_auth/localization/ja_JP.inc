@@ -8,4 +8,3 @@
  */
 $labels['loginas'] = 'ログイン';
 $labels['loginasnotallowed'] = '$user としてログインする権限がありません';
-?>

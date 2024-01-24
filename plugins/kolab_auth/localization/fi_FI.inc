@@ -8,4 +8,3 @@
  */
 $labels['loginas'] = 'Kirjaudu tilillä';
 $labels['loginasnotallowed'] = 'Ei oikeuksia kirjautua käyttäjänä $user';
-?>

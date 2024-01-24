@@ -10,7 +10,7 @@ $config['kolab_files_url'] = '/chwala/';
 $config['kolab_files_server_url'] = '';
 
 // List of files list columns. Available are: name, size, mtime, type
-$config['kolab_files_list_cols'] = array('name', 'mtime', 'size');
+$config['kolab_files_list_cols'] = ['name', 'mtime', 'size'];
 
 // Name of the column to sort files list by
 $config['kolab_files_sort_col'] = 'name';
@@ -19,7 +19,7 @@ $config['kolab_files_sort_col'] = 'name';
 $config['kolab_files_sort_order'] = 'asc';
 
 // List of editing sessions list columns. Available are: name, owner
-$config['kolab_files_sessions_list_cols'] = array('name', 'owner');
+$config['kolab_files_sessions_list_cols'] = ['name', 'owner'];
 
 // Name of the column to sort sessions list by
 $config['kolab_files_sessions_sort_col'] = 'name';

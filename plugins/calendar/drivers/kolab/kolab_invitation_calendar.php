@@ -45,19 +45,19 @@ class kolab_invitation_calendar
         $this->id  = $id;
 
         switch ($this->id) {
-        case kolab_driver::INVITATIONS_CALENDAR_PENDING:
-            $this->partstats = ['NEEDS-ACTION'];
-            $this->name      = $this->cal->gettext('invitationspending');
+            case kolab_driver::INVITATIONS_CALENDAR_PENDING:
+                $this->partstats = ['NEEDS-ACTION'];
+                $this->name      = $this->cal->gettext('invitationspending');
 
-            if (!empty($_REQUEST['_quickview'])) {
-                $this->partstats[] = 'TENTATIVE';
-            }
-            break;
+                if (!empty($_REQUEST['_quickview'])) {
+                    $this->partstats[] = 'TENTATIVE';
+                }
+                break;
 
-        case kolab_driver::INVITATIONS_CALENDAR_DECLINED:
-            $this->partstats = ['DECLINED'];
-            $this->name      = $this->cal->gettext('invitationsdeclined');
-            break;
+            case kolab_driver::INVITATIONS_CALENDAR_DECLINED:
+                $this->partstats = ['DECLINED'];
+                $this->name      = $this->cal->gettext('invitationsdeclined');
+                break;
         }
 
         // user-specific alarms settings win
@@ -213,8 +213,7 @@ class kolab_invitation_calendar
         // find the actual folder this event resides in
         if (!empty($event['_folder_id'])) {
             $cal = $this->cal->driver->get_calendar($event['_folder_id']);
-        }
-        else {
+        } else {
             $cal = null;
             foreach (kolab_storage::list_folders('', '*', 'event', null) as $foldername) {
                 $cal = $this->_get_calendar($foldername);
@@ -313,7 +312,7 @@ class kolab_invitation_calendar
 
         $filter = [
             ['tags', '!=', 'x-status:cancelled'],
-            [$subquery, 'OR']
+            [$subquery, 'OR'],
         ];
 
         // aggregate counts from all calendar folders

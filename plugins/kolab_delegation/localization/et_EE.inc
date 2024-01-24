@@ -19,4 +19,3 @@ $labels['read'] = 'Ainult loetav';
 $labels['write'] = 'Kirjuta';
 $labels['savingdata'] = 'Andmete salvestamine...';
 $labels['deleteconfirm'] = 'Kinnitamine';
-?>

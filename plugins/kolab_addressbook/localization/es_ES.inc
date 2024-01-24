@@ -63,4 +63,3 @@ $messages['bookupdateerror'] = 'Se ha producido un error durante la actualizaci�
 $messages['bookcreateerror'] = 'Se ha producido un error durante la creación de la libreta de direcciones.';
 $messages['nobooknamewarning'] = 'Introducir un nombre para la libreta de direcciones';
 $messages['noemailnamewarning'] = 'Introduzca una dirección de correo electrónico o nombre de contacto';
-?>

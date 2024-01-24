@@ -122,7 +122,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
         if (!is_array($dav_index)) {
             rcube::raise_error([
                     'code' => 900,
-                    'message' => "Failed to sync the kolab cache for {$this->folder->href}"
+                    'message' => "Failed to sync the kolab cache for {$this->folder->href}",
                 ], true);
             return false;
         }
@@ -151,8 +151,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                 }
 
                 $update_index[$uid] = $object['href'];
-            }
-            else {
+            } else {
                 $new_index[$uid] = $object['href'];
             }
         }
@@ -167,7 +166,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                 if (!is_array($objects)) {
                     rcube::raise_error([
                             'code' => 900,
-                            'message' => "Failed to sync the kolab cache for {$this->folder->href}"
+                            'message' => "Failed to sync the kolab cache for {$this->folder->href}",
                         ], true);
                     return false;
                 }
@@ -197,7 +196,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                 if (!is_array($objects)) {
                     rcube::raise_error([
                             'code' => 900,
-                            'message' => "Failed to sync the kolab cache for {$this->folder->href}"
+                            'message' => "Failed to sync the kolab cache for {$this->folder->href}",
                         ], true);
                     return false;
                 }
@@ -220,7 +219,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
         // Remove deleted objects
         $old_index = array_filter($old_index);
         if (!empty($old_index)) {
-            $quoted_uids = join(',', array_map(array($this->db, 'quote'), $old_index));
+            $quoted_uids = implode(',', array_map([$this->db, 'quote'], $old_index));
             $this->db->query(
                 "DELETE FROM `{$this->cache_table}` WHERE `folder_id` = ? AND `uid` IN ($quoted_uids)",
                 $this->folder_id
@@ -360,8 +359,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                     . " WHERE `folder_id` = ? AND `uid` = ?";
                 $args[] = $this->folder_id;
                 $args[] = $olduid;
-            }
-            else {
+            } else {
                 $query = "INSERT INTO `{$this->cache_table}` (`created`, " . implode(', ', $cols)
                     . ") VALUES (" . $this->db->now() . str_repeat(', ?', count($cols)) . ")";
             }
@@ -371,7 +369,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
             if (!$this->db->affected_rows($result)) {
                 rcube::raise_error([
                     'code' => 900,
-                    'message' => "Failed to write to kolab cache"
+                    'message' => "Failed to write to kolab cache",
                 ], true);
             }
         }
@@ -438,8 +436,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
         while ($sql_arr = $this->db->fetch_assoc($sql_result)) {
             if (!$uids && ($object = $this->_unserialize($sql_arr, true, $fast))) {
                 $result[] = $object;
-            }
-            else {
+            } else {
                 $result[] = $sql_arr['uid'];
             }
         }
@@ -460,7 +457,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
         $this->_read_folder_data();
 
         $sql_result = $this->db->query(
-            "SELECT COUNT(*) AS `numrows` FROM `{$this->cache_table}` ".
+            "SELECT COUNT(*) AS `numrows` FROM `{$this->cache_table}` " .
             "WHERE `folder_id` = ?" . $this->_sql_where($query),
             $this->folder_id
         );
@@ -528,7 +525,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                     $sql_data['changed'],
                     $sql_data['data'],
                     $sql_data['tags'],
-                    $sql_data['words']
+                    $sql_data['words'],
                 ];
 
                 foreach ($this->extra_cols as $col) {
@@ -536,7 +533,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                     $extra_args[] = '?';
                 }
 
-                $cols = implode(', ', array_map(function($n) { return "`{$n}`"; }, $cols));
+                $cols = implode(', ', array_map(function ($n) { return "`{$n}`"; }, $cols));
                 $extra_args = count($extra_args) ? ', ' . implode(', ', $extra_args) : '';
 
                 $result = $this->db->query(
@@ -546,15 +543,15 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                 );
 
                 if (!$this->db->affected_rows($result)) {
-                    rcube::raise_error(array(
-                        'code' => 900, 'message' => "Failed to write to kolab cache"
-                    ), true);
+                    rcube::raise_error([
+                        'code' => 900, 'message' => "Failed to write to kolab cache",
+                    ], true);
                 }
 
                 return;
             }
 
-            $values = array(
+            $values = [
                 $this->db->quote($this->folder_id),
                 $this->db->quote(rcube_charset::clean($object['uid'])),
                 $this->db->quote(rcube_charset::clean($object['etag'])),
@@ -563,23 +560,22 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                 $this->db->quote($sql_data['data']),
                 $this->db->quote($sql_data['tags']),
                 $this->db->quote($sql_data['words']),
-            );
+            ];
             foreach ($this->extra_cols as $col) {
                 $values[] = $this->db->quote($sql_data[$col]);
             }
-            $line = '(' . join(',', $values) . ')';
+            $line = '(' . implode(',', $values) . ')';
         }
 
         if ($buffer && ($force || (strlen($buffer) + strlen($line) > $this->max_sql_packet()))) {
-            $columns = implode(', ', array_map(function($n) { return "`{$n}`"; }, $cols));
+            $columns = implode(', ', array_map(function ($n) { return "`{$n}`"; }, $cols));
 
             if ($this->db->db_provider == 'postgres') {
                 $update = "ON CONFLICT (folder_id, uid) DO UPDATE SET "
-                    . implode(', ', array_map(function($i) { return "`{$i}` = EXCLUDED.`{$i}`"; }, array_slice($cols, 2)));
-            }
-            else {
+                    . implode(', ', array_map(function ($i) { return "`{$i}` = EXCLUDED.`{$i}`"; }, array_slice($cols, 2)));
+            } else {
                 $update = "ON DUPLICATE KEY UPDATE "
-                    . implode(', ', array_map(function($i) { return "`{$i}` = VALUES(`{$i}`)"; }, array_slice($cols, 2)));
+                    . implode(', ', array_map(function ($i) { return "`{$i}` = VALUES(`{$i}`)"; }, array_slice($cols, 2)));
             }
 
             $result = $this->db->query("INSERT INTO `{$this->cache_table}` ($columns) VALUES $buffer $update");
@@ -621,11 +617,11 @@ class kolab_storage_dav_cache extends kolab_storage_cache
             if (isset($object[$prop])) {
                 $data[$prop] = $object[$prop];
                 if ($data[$prop] instanceof DateTimeInterface) {
-                    $data[$prop] = array(
+                    $data[$prop] = [
                         'cl' => 'DateTime',
                         'dt' => $data[$prop]->format('Y-m-d H:i:s'),
                         'tz' => $data[$prop]->getTimezone()->getName(),
-                    );
+                    ];
                 }
             }
         }
@@ -644,7 +640,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
      */
     protected function _unserialize($sql_arr, $noread = false, $fast_mode = false)
     {
-        $init = function(&$object) use ($sql_arr) {
+        $init = function (&$object) use ($sql_arr) {
             if ($sql_arr['created'] && empty($object['created'])) {
                 $object['created'] = new DateTime($sql_arr['created'], $this->server_timezone);
             }
@@ -664,8 +660,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                     && isset($object[$prop]['cl']) && $object[$prop]['cl'] == 'DateTime'
                 ) {
                     $object[$prop] = new DateTime($object[$prop]['dt'], new DateTimeZone($object[$prop]['tz']));
-                }
-                else if (!isset($object[$prop]) && isset($sql_arr[$prop])) {
+                } elseif (!isset($object[$prop]) && isset($sql_arr[$prop])) {
                     $object[$prop] = $sql_arr[$prop];
                 }
             }
@@ -675,8 +670,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
 
         if (!empty($fast_mode) && !empty($object)) {
             unset($object['_raw']);
-        }
-        else if ($noread) {
+        } elseif ($noread) {
             // We have the raw content already, parse it
             if (!empty($object['_raw'])) {
                 $object['data'] = $object['_raw'];
@@ -687,8 +681,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
             }
 
             return null;
-        }
-        else {
+        } else {
             // Fetch a complete object from the server
             $object = $this->folder->read_object($sql_arr['uid'], '*');
         }
@@ -711,17 +704,16 @@ class kolab_storage_dav_cache extends kolab_storage_cache
         // Therefore we both `resource` and `type` in WHERE.
 
         $sql_arr = $this->db->fetch_assoc($this->db->query(
-                "SELECT `folder_id`, `synclock`, `ctag`, `changed` FROM `{$this->folders_table}`"
+            "SELECT `folder_id`, `synclock`, `ctag`, `changed` FROM `{$this->folders_table}`"
                 . " WHERE `resource` = ? AND `type` = ?",
-                $this->resource_uri,
-                $this->folder->type
+            $this->resource_uri,
+            $this->folder->type
         ));
 
         if ($sql_arr) {
             $this->folder_id = $sql_arr['folder_id'];
             $this->metadata  = $sql_arr;
-        }
-        else {
+        } else {
             $this->db->query("INSERT INTO `{$this->folders_table}` (`resource`, `type`)"
                 . " VALUES (?, ?)", $this->resource_uri, $this->folder->type);
 

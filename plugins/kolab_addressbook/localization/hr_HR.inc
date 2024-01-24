@@ -11,4 +11,3 @@ $labels['searchterms'] = 'Search terms';
 $labels['foldersubscribe'] = 'List permanently';
 $labels['objectchangelog'] = 'Change History';
 $labels['objectdiffnotavailable'] = 'No comparison possible for the selected revisions';
-?>

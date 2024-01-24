@@ -23,10 +23,10 @@
 
 class kolab_tags_backend
 {
-    private $tag_cols = array('name', 'category', 'color', 'parent', 'iconName', 'priority', 'members');
+    private $tag_cols = ['name', 'category', 'color', 'parent', 'iconName', 'priority', 'members'];
 
-    const O_TYPE     = 'relation';
-    const O_CATEGORY = 'tag';
+    public const O_TYPE     = 'relation';
+    public const O_CATEGORY = 'tag';
 
 
     /**
@@ -36,12 +36,12 @@ class kolab_tags_backend
      *
      * @return array List of tags
      */
-    public function list_tags($filter = array())
+    public function list_tags($filter = [])
     {
         $config   = kolab_storage_config::get_instance();
         $default  = true;
-        $filter[] = array('type', '=', self::O_TYPE);
-        $filter[] = array('category', '=', self::O_CATEGORY);
+        $filter[] = ['type', '=', self::O_TYPE];
+        $filter[] = ['category', '=', self::O_CATEGORY];
 
         // for performance reasons assume there will be no more than 100 tags (per-folder)
 
@@ -77,7 +77,7 @@ class kolab_tags_backend
     public function update($tag)
     {
         // get tag object data, we need _mailbox
-        $list    = $this->list_tags(array(array('uid', '=', $tag['uid'])));
+        $list    = $this->list_tags([['uid', '=', $tag['uid']]]);
         $old_tag = $list[0];
 
         if (!$old_tag) {

@@ -33,4 +33,3 @@ $labels['createsuccess'] = 'Der Vertreter wurde erfolgreich hinzugefügt';
 $labels['createerror'] = 'Konnte Vertreter nicht hinzufügen.';
 $labels['arialabeldelegatedelete'] = 'Vertreter Löschen Dialog';
 $labels['arialabeldelegateform'] = 'Verterter Eigenschaften Maske';
-?>

@@ -8,7 +8,7 @@
  * For translation see https://www.transifex.com/projects/p/kolab/resource/kolab_delegation/
  */
 
-$labels = array();
+$labels = [];
 
 $labels['tabtitle'] = 'Delegation';
 $labels['delegationtitle'] = 'Manage delegates';
@@ -40,5 +40,3 @@ $labels['createerror'] = 'Could not add delegate.';
 
 $labels['arialabeldelegatedelete'] = 'Delegate deletion dialog';
 $labels['arialabeldelegateform'] = 'Delegate properties form';
-
-?>

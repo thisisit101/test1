@@ -22,47 +22,47 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
- /**
-  * Struct of an internal task object how it is passed from/to the driver classes:
-  *
-  *  $task = array(
-  *            'id' => 'Task ID used for editing',  // must be unique for the current user
-  *     'parent_id' => 'ID of parent task',  // null if top-level task
-  *           'uid' => 'Unique identifier of this task',
-  *          'list' => 'Task list identifier to add the task to or where the task is stored',
-  *       'changed' => <DateTime>,  // Last modification date/time of the record
-  *         'title' => 'Event title/summary',
-  *   'description' => 'Event description',
-  *          'tags' => array(),      // List of tags for this task
-  *          'date' => 'Due date',   // as string of format YYYY-MM-DD or null if no date is set
-  *          'time' => 'Due time',   // as string of format hh::ii or null if no due time is set
-  *     'startdate' => 'Start date'  // Delay start of the task until that date
-  *     'starttime' => 'Start time'  // ...and time
-  *    'categories' => 'Task category',
-  *       'flagged' => 'Boolean value whether this record is flagged',
-  *      'complete' => 'Float value representing the completeness state (range 0..1)',
-  *      'status'   => 'Task status string according to (NEEDS-ACTION, IN-PROCESS, COMPLETED, CANCELLED) RFC 2445',
-  *       'valarms' => array(           // List of reminders (new format), each represented as a hash array:
-  *                array(
-  *                   'trigger' => '-PT90M',     // ISO 8601 period string prefixed with '+' or '-', or DateTime object
-  *                    'action' => 'DISPLAY|EMAIL|AUDIO',
-  *                  'duration' => 'PT15M',      // ISO 8601 period string
-  *                    'repeat' => 0,            // number of repetitions
-  *               'description' => '',           // text to display for DISPLAY actions
-  *                   'summary' => '',           // message text for EMAIL actions
-  *                 'attendees' => array(),      // list of email addresses to receive alarm messages
-  *                ),
-  *    ),
-  *    'recurrence' => array(   // Recurrence definition according to iCalendar (RFC 2445) specification as list of key-value pairs
-  *              'FREQ' => 'DAILY|WEEKLY|MONTHLY|YEARLY',
-  *          'INTERVAL' => 1...n,
-  *             'UNTIL' => DateTime,
-  *             'COUNT' => 1..n,     // number of times
-  *             'RDATE' => array(),  // complete list of DateTime objects denoting individual repeat dates
-  *     ),
-  *     '_fromlist' => 'List identifier where the task was stored before',
-  *  );
-  */
+/**
+ * Struct of an internal task object how it is passed from/to the driver classes:
+ *
+ *  $task = array(
+ *            'id' => 'Task ID used for editing',  // must be unique for the current user
+ *     'parent_id' => 'ID of parent task',  // null if top-level task
+ *           'uid' => 'Unique identifier of this task',
+ *          'list' => 'Task list identifier to add the task to or where the task is stored',
+ *       'changed' => <DateTime>,  // Last modification date/time of the record
+ *         'title' => 'Event title/summary',
+ *   'description' => 'Event description',
+ *          'tags' => array(),      // List of tags for this task
+ *          'date' => 'Due date',   // as string of format YYYY-MM-DD or null if no date is set
+ *          'time' => 'Due time',   // as string of format hh::ii or null if no due time is set
+ *     'startdate' => 'Start date'  // Delay start of the task until that date
+ *     'starttime' => 'Start time'  // ...and time
+ *    'categories' => 'Task category',
+ *       'flagged' => 'Boolean value whether this record is flagged',
+ *      'complete' => 'Float value representing the completeness state (range 0..1)',
+ *      'status'   => 'Task status string according to (NEEDS-ACTION, IN-PROCESS, COMPLETED, CANCELLED) RFC 2445',
+ *       'valarms' => array(           // List of reminders (new format), each represented as a hash array:
+ *                array(
+ *                   'trigger' => '-PT90M',     // ISO 8601 period string prefixed with '+' or '-', or DateTime object
+ *                    'action' => 'DISPLAY|EMAIL|AUDIO',
+ *                  'duration' => 'PT15M',      // ISO 8601 period string
+ *                    'repeat' => 0,            // number of repetitions
+ *               'description' => '',           // text to display for DISPLAY actions
+ *                   'summary' => '',           // message text for EMAIL actions
+ *                 'attendees' => array(),      // list of email addresses to receive alarm messages
+ *                ),
+ *    ),
+ *    'recurrence' => array(   // Recurrence definition according to iCalendar (RFC 2445) specification as list of key-value pairs
+ *              'FREQ' => 'DAILY|WEEKLY|MONTHLY|YEARLY',
+ *          'INTERVAL' => 1...n,
+ *             'UNTIL' => DateTime,
+ *             'COUNT' => 1..n,     // number of times
+ *             'RDATE' => array(),  // complete list of DateTime objects denoting individual repeat dates
+ *     ),
+ *     '_fromlist' => 'List identifier where the task was stored before',
+ *  );
+ */
 
 /**
  * Driver interface for the Tasklist plugin
@@ -79,14 +79,14 @@ abstract class tasklist_driver
     public $alarm_absolute = true;
     public $last_error;
 
-    const FILTER_ALL           = 0;
-    const FILTER_WRITEABLE     = 1;
-    const FILTER_INSERTABLE    = 2;
-    const FILTER_ACTIVE        = 4;
-    const FILTER_PERSONAL      = 8;
-    const FILTER_PRIVATE       = 16;
-    const FILTER_CONFIDENTIAL  = 32;
-    const FILTER_SHARED        = 64;
+    public const FILTER_ALL           = 0;
+    public const FILTER_WRITEABLE     = 1;
+    public const FILTER_INSERTABLE    = 2;
+    public const FILTER_ACTIVE        = 4;
+    public const FILTER_PERSONAL      = 8;
+    public const FILTER_PRIVATE       = 16;
+    public const FILTER_CONFIDENTIAL  = 32;
+    public const FILTER_SHARED        = 64;
 
 
     /**
@@ -94,7 +94,7 @@ abstract class tasklist_driver
      * @param integer Bitmask defining filter criterias.
      *                See FILTER_* constants for possible values.
      */
-    abstract function get_lists($filter = 0);
+    abstract public function get_lists($filter = 0);
 
     /**
      * Create a new list assigned to the current user
@@ -105,7 +105,7 @@ abstract class tasklist_driver
      *  showalarms: True if alarms are enabled
      * @return mixed ID of the new list on success, False on error
      */
-    abstract function create_list(&$prop);
+    abstract public function create_list(&$prop);
 
     /**
      * Update properties of an existing tasklist
@@ -117,7 +117,7 @@ abstract class tasklist_driver
      *  showalarms: True if alarms are enabled (if supported)
      * @return boolean True on success, Fales on failure
      */
-    abstract function edit_list(&$prop);
+    abstract public function edit_list(&$prop);
 
     /**
      * Set active/subscribed state of a list
@@ -127,7 +127,7 @@ abstract class tasklist_driver
      *      active: True if list is active, false if not
      * @return boolean True on success, Fales on failure
      */
-    abstract function subscribe_list($prop);
+    abstract public function subscribe_list($prop);
 
     /**
      * Delete the given list with all its contents
@@ -136,7 +136,7 @@ abstract class tasklist_driver
      *      id: list Identifier
      * @return boolean True on success, Fales on failure
      */
-    abstract function delete_list($prop);
+    abstract public function delete_list($prop);
 
     /**
      * Search for shared or otherwise not listed tasklists the user has access
@@ -145,7 +145,7 @@ abstract class tasklist_driver
      * @param string Section/source to search
      * @return array List of tasklists
      */
-    abstract function search_lists($query, $source);
+    abstract public function search_lists($query, $source);
 
     /**
      * Get number of tasks matching the given filter
@@ -153,7 +153,7 @@ abstract class tasklist_driver
      * @param array List of lists to count tasks of
      * @return array Hash array with counts grouped by status (all|flagged|completed|today|tomorrow|nodate)
      */
-    abstract function count_tasks($lists = null);
+    abstract public function count_tasks($lists = null);
 
     /**
      * Get all task records matching the given filter
@@ -166,14 +166,14 @@ abstract class tasklist_driver
      * @param array List of lists to get tasks from
      * @return array List of tasks records matchin the criteria
      */
-    abstract function list_tasks($filter, $lists = null);
+    abstract public function list_tasks($filter, $lists = null);
 
     /**
      * Get a list of tags to assign tasks to
      *
      * @return array List of tags
      */
-    abstract function get_tags();
+    abstract public function get_tags();
 
     /**
      * Get a list of pending alarms to be displayed to the user
@@ -187,7 +187,7 @@ abstract class tasklist_driver
      *       time: Task due time
      *      title: Task title/summary
      */
-    abstract function pending_alarms($time, $lists = null);
+    abstract public function pending_alarms($time, $lists = null);
 
     /**
      * (User) feedback after showing an alarm notification
@@ -196,7 +196,7 @@ abstract class tasklist_driver
      * @param  string  Task identifier
      * @param  integer Suspend the alarm for this number of seconds
      */
-    abstract function dismiss_alarm($id, $snooze = 0);
+    abstract public function dismiss_alarm($id, $snooze = 0);
 
     /**
      * Remove alarm dismissal or snooze state
@@ -231,7 +231,7 @@ abstract class tasklist_driver
      * @param array Hash array with task properties (see header of this file)
      * @return mixed New event ID on success, False on error
      */
-    abstract function create_task($prop);
+    abstract public function create_task($prop);
 
     /**
      * Update an task entry with the given data
@@ -239,7 +239,7 @@ abstract class tasklist_driver
      * @param array Hash array with task properties (see header of this file)
      * @return boolean True on success, False on error
      */
-    abstract function edit_task($prop);
+    abstract public function edit_task($prop);
 
     /**
      * Move a single task to another list
@@ -250,7 +250,7 @@ abstract class tasklist_driver
      *      _fromlist: Previous list identifier
      * @return boolean True on success, False on error
      */
-    abstract function move_task($prop);
+    abstract public function move_task($prop);
 
     /**
      * Remove a single task from the database
@@ -261,7 +261,7 @@ abstract class tasklist_driver
      * @param boolean Remove record irreversible (mark as deleted otherwise, if supported by the backend)
      * @return boolean True on success, False on error
      */
-    abstract function delete_task($prop, $force = true);
+    abstract public function delete_task($prop, $force = true);
 
     /**
      * Restores a single deleted task (if supported)

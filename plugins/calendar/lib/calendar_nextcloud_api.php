@@ -22,13 +22,12 @@
  */
 class calendar_nextcloud_api
 {
-
-    const PARTICIPANT_OWNER             = 1;
-    const PARTICIPANT_MODERATOR         = 2;
-    const PARTICIPANT_USER              = 3;
-    const PARTICIPANT_GUEST             = 4;
-    const PARTICIPANT_PUBLIC            = 5;
-    const PARTICIPANT_GUEST_MODERATOR   = 6;
+    public const PARTICIPANT_OWNER             = 1;
+    public const PARTICIPANT_MODERATOR         = 2;
+    public const PARTICIPANT_USER              = 3;
+    public const PARTICIPANT_GUEST             = 4;
+    public const PARTICIPANT_PUBLIC            = 5;
+    public const PARTICIPANT_GUEST_MODERATOR   = 6;
 
 
     /**
@@ -66,8 +65,7 @@ class calendar_nextcloud_api
             if (!empty($params)) {
                 if ($method == 'POST') {
                     $request->addPostParameter($params);
-                }
-                else {
+                } else {
                     $request->setUrl($url . '?' . http_build_query($params));
                 }
             }
@@ -91,14 +89,12 @@ class calendar_nextcloud_api
                 $doc->loadXML($body);
                 $code = $doc->getElementsByTagName('statuscode')->item(0)->textContent;
                 $msg = $doc->getElementsByTagName('message')->item(0)->textContent;
-            }
-            else {
+            } else {
                 $msg = 'Unknown error';
             }
 
             throw new Exception("Nextcloud API Error: [$code] $msg");
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, false);
         }
 

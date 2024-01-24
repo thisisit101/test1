@@ -52,25 +52,23 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
             $imap = $rcmail->get_storage();
             $folders = $imap->list_folders('', '*');
 
-            foreach (array('Calendar','Contacts','Files','Tasks','Notes') as $folder) {
+            foreach (['Calendar','Contacts','Files','Tasks','Notes'] as $folder) {
                 if (in_array($folder, $folders)) {
                     if (!$imap->clear_folder($folder)) {
                         throw new Exception("Failed to clear folder '$folder'");
                     }
-                }
-                else {
+                } else {
                     throw new Exception("Default folder '$folder' doesn't exits in test user account");
                 }
             }
-        }
-        else {
+        } else {
             throw new Exception('Missing test account username/password in config-test.inc.php');
         }
 
         kolab_storage::setup();
     }
 
-    function test_001_folder_type_check()
+    public function test_001_folder_type_check()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -89,7 +87,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($folder->get_error(), kolab_storage::ERROR_INVALID_FOLDER);
     }
 
-    function test_002_get_owner()
+    public function test_002_get_owner()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -110,7 +108,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($folder->get_owner(true), 'major.tom' . $domain);
     }
 
-    function test_003_get_resource_uri()
+    public function test_003_get_resource_uri()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -122,14 +120,15 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         $hostname   = $uri['host'];
 
         $folder = new kolab_storage_folder($foldername, 'event', 'event.default');
-        $this->assertEquals($folder->get_resource_uri(), sprintf('imap://%s@%s/%s',
+        $this->assertEquals($folder->get_resource_uri(), sprintf(
+            'imap://%s@%s/%s',
             urlencode($rcmail->config->get('tests_username')),
             $hostname,
             $foldername
         ));
     }
 
-    function test_004_get_uid()
+    public function test_004_get_uid()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -144,7 +143,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($folder->get_error(), kolab_storage::ERROR_IMAP_CONN);
     }
 
-    function test_005_subscribe()
+    public function test_005_subscribe()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -160,7 +159,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         $folder->subscribe(true);
     }
 
-    function test_006_activate()
+    public function test_006_activate()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -174,7 +173,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         $this->assertFalse($folder->is_active());
     }
 
-    function test_010_write_contacts()
+    public function test_010_write_contacts()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -185,15 +184,15 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         $saved = $folder->save(null, 'contact');
         $this->assertFalse($saved);
 
-        $contact = array(
+        $contact = [
             'name' => 'FN',
             'surname' => 'Last',
             'firstname' => 'First',
-            'email' => array(
-                array('type' => 'home', 'address' => 'first.last@example.org'),
-            ),
-            'organization' => 'Company A.G.'
-        );
+            'email' => [
+                ['type' => 'home', 'address' => 'first.last@example.org'],
+            ],
+            'organization' => 'Company A.G.',
+        ];
 
         $saved = $folder->save($contact, 'contact');
         $this->assertTrue((bool)$saved);
@@ -202,7 +201,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
     /**
      * @depends test_010_write_contacts
      */
-    function test_011_list_contacts()
+    public function test_011_list_contacts()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -212,7 +211,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($folder->count(), 1);
     }
 
-    function test_T491_get_uid()
+    public function test_T491_get_uid()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -230,11 +229,11 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         $uid    = $folder->get_uid();
 
         // now get folder uniqueid annotations
-        $annotations = array(
+        $annotations = [
             'cyrus'   => kolab_storage::UID_KEY_CYRUS,
             'shared'  => kolab_storage::UID_KEY_SHARED,
             'private' => '/private/vendor/kolab/uniqueid',
-        );
+        ];
         foreach ($annotations as $key => $annotation) {
             $meta              = $imap->get_metadata('Calendar', $annotation);
             $annotations[$key] = $meta['Calendar'][$annotation];
@@ -243,11 +242,9 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
         // compare results
         if ($annotations['shared']) {
             $this->assertSame($annotations['shared'], $uid);
-        }
-        else if ($annotations['cyrus']) {
+        } elseif ($annotations['cyrus']) {
             $this->assertSame($annotations['cyrus'], $uid);
-        }
-        else {
+        } else {
             // never use private namespace
             $this->assertTrue($annotations['private'] != $uid);
         }

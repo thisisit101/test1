@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'Activesync';
 $labels['activesynctitle'] = 'Διαχείριση συσκευών Activesync';
 $labels['devices'] = 'Συσκευές';
@@ -27,4 +28,3 @@ $labels['os'] = 'Λειτουργικό σύστημα';
 $labels['oslanguage'] = 'Γλώσσα λειτουργικού συστήματος';
 $labels['phonenumber'] = 'Αριθμός τηλεφώνου';
 $labels['arialabeldeviceframe'] = 'Ρυθμίσεις συγχρονισμού συσκευής από';
-?>

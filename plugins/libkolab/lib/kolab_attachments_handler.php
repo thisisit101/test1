@@ -36,7 +36,7 @@ class kolab_attachments_handler
     public static function ui()
     {
         $rcmail = rcube::get_instance();
-        $self   = new self;
+        $self   = new self();
 
         $rcmail->output->add_handler('plugin.attachments_form', [$self, 'files_form']);
         $rcmail->output->add_handler('plugin.attachments_list', [$self, 'files_list']);
@@ -148,8 +148,7 @@ class kolab_attachments_handler
 
                     if ($uploads_api) {
                         $err = !$this->rc->insert_uploaded_file($attachment);
-                    }
-                    else {
+                    } else {
                         $attachment = $this->rc->plugins->exec_hook('attachment_upload', $attachment);
                     }
                 }
@@ -170,18 +169,19 @@ class kolab_attachments_handler
                     ) {
                         $button = html::img([
                             'src' => $icon,
-                            'alt' => $this->rc->gettext('delete')
+                            'alt' => $this->rc->gettext('delete'),
                         ]);
-                    }
-                    else if (!empty($_SESSION[$session_key . '_textbuttons'])) {
+                    } elseif (!empty($_SESSION[$session_key . '_textbuttons'])) {
                         $button = rcube::Q($this->rc->gettext('delete'));
-                    }
-                    else {
+                    } else {
                         $button = '';
                     }
 
-                    $link_content = sprintf('<span class="attachment-name">%s</span><span class="attachment-size">(%s)</span>',
-                        rcube::Q($attachment['name']), $this->rc->show_bytes($attachment['size']));
+                    $link_content = sprintf(
+                        '<span class="attachment-name">%s</span><span class="attachment-size">(%s)</span>',
+                        rcube::Q($attachment['name']),
+                        $this->rc->show_bytes($attachment['size'])
+                    );
 
                     $delete_link = html::a([
                             'href'       => "#delete",
@@ -198,25 +198,22 @@ class kolab_attachments_handler
                          ], $link_content);
 
                     $left = !empty($_SESSION[$session_key . '_icon_pos']) && $_SESSION[$session_key . '_icon_pos'] == 'left';
-                    $content = $left ? $delete_link.$content_link : $content_link.$delete_link;
+                    $content = $left ? $delete_link . $content_link : $content_link . $delete_link;
 
                     $this->rc->output->command('add2attachment_list', "rcmfile$id", [
                             'html'      => $content,
                             'name'      => $attachment['name'],
                             'mimetype'  => $attachment['mimetype'],
                             'classname' => 'no-menu ' . rcube_utils::file2class($attachment['mimetype'], $attachment['name']),
-                            'complete'  => true
+                            'complete'  => true,
                         ], $uploadid);
-                }
-                else {  // upload failed
+                } else {  // upload failed
                     if ($err == UPLOAD_ERR_INI_SIZE || $err == UPLOAD_ERR_FORM_SIZE) {
                         $msg = $this->rc->gettext(['name' => 'filesizeerror', 'vars' => [
                             'size' => $this->rc->show_bytes(parse_bytes(ini_get('upload_max_filesize')))]]);
-                    }
-                    else if (!empty($attachment['error'])) {
+                    } elseif (!empty($attachment['error'])) {
                         $msg = $attachment['error'];
-                    }
-                    else {
+                    } else {
                         $msg = $this->rc->gettext('fileuploaderror');
                     }
 
@@ -224,15 +221,13 @@ class kolab_attachments_handler
                     $this->rc->output->command('remove_from_attachment_list', $uploadid);
                 }
             }
-        }
-        else if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // if filesize exceeds post_max_size then $_FILES array is empty,
             // show filesizeerror instead of fileuploaderror
             if ($maxsize = ini_get('post_max_size')) {
                 $msg = $this->rc->gettext(['name' => 'filesizeerror', 'vars' => [
                     'size' => $this->rc->show_bytes(parse_bytes($maxsize))]]);
-            }
-            else {
+            } else {
                 $msg = $this->rc->gettext('fileuploaderror');
             }
 
@@ -254,7 +249,7 @@ class kolab_attachments_handler
 
         if ($attachment && !empty($attachment['body'])) {
             // allow post-processing of the attachment body
-            $part = new rcube_message_part;
+            $part = new rcube_message_part();
             $part->filename  = $attachment['name'];
             $part->size      = $attachment['size'];
             $part->mimetype  = $attachment['mimetype'];
@@ -271,20 +266,19 @@ class kolab_attachments_handler
             }
 
             $mimetype = $plugin['mimetype'];
-            list($ctype_primary, $ctype_secondary) = explode('/', $mimetype);
+            [$ctype_primary, $ctype_secondary] = explode('/', $mimetype);
 
             $browser = $this->rc->output->browser;
 
             // send download headers
             if ($plugin['download']) {
                 header("Content-Type: application/octet-stream");
-                if ($browser->ie)
+                if ($browser->ie) {
                     header("Content-Type: application/force-download");
-            }
-            else if ($ctype_primary == 'text') {
+                }
+            } elseif ($ctype_primary == 'text') {
                 header("Content-Type: text/$ctype_secondary");
-            }
-            else {
+            } else {
                 header("Content-Type: $mimetype");
                 header("Content-Transfer-Encoding: binary");
             }
@@ -294,8 +288,7 @@ class kolab_attachments_handler
                 $OUTPUT = new rcmail_html_page();
                 // @TODO: use washtml on $body
                 $OUTPUT->write($plugin['body']);
-            }
-            else {
+            } else {
                 // don't kill the connection if download takes more than 30 sec.
                 @set_time_limit(0);
 
@@ -304,8 +297,7 @@ class kolab_attachments_handler
 
                 if ($browser->ie) {
                     $filename = rawurlencode($filename);
-                }
-                else {
+                } else {
                     $filename = addcslashes($filename, '"');
                 }
 
@@ -333,8 +325,8 @@ class kolab_attachments_handler
 
         header('Content-Type: text/html; charset=' . RCUBE_CHARSET);
         print "<html>\n<head>\n"
-            . '<meta http-equiv="refresh" content="0; url='.rcube::Q($url).'">' . "\n"
-            . '<meta http-equiv="content-type" content="text/html; charset='.RCUBE_CHARSET.'">' . "\n"
+            . '<meta http-equiv="refresh" content="0; url=' . rcube::Q($url) . '">' . "\n"
+            . '<meta http-equiv="content-type" content="text/html; charset=' . RCUBE_CHARSET . '">' . "\n"
             . "</head>\n<body>\n$message\n</body>\n</html>";
         exit;
     }
@@ -345,7 +337,7 @@ class kolab_attachments_handler
     public function attachment_frame($attrib = [])
     {
         $mimetype = strtolower($this->attachment['mimetype']);
-        list($ctype_primary, $ctype_secondary) = explode('/', $mimetype);
+        [$ctype_primary, $ctype_secondary] = explode('/', $mimetype);
 
         $attrib['src'] = './?' . str_replace('_frame=', ($ctype_primary == 'text' ? '_show=' : '_preload='), $_SERVER['QUERY_STRING']);
 
@@ -396,8 +388,7 @@ class kolab_attachments_handler
         // Roundcube >= 1.7
         if (method_exists($this->rc, 'delete_uploaded_files')) {
             $this->rc->delete_uploaded_files($session_key);
-        }
-        else if (!empty($_SESSION[$session_key]) && ($group = $_SESSION[$session_key]['id'])) {
+        } elseif (!empty($_SESSION[$session_key]) && ($group = $_SESSION[$session_key]['id'])) {
             $this->rc->plugins->exec_hook('attachments_cleanup', ['group' => $group]);
             $this->rc->session->remove($session_key);
         }
@@ -417,8 +408,7 @@ class kolab_attachments_handler
                     $attachments[$attachment['id']] = $attachment;
                 }
             }
-        }
-        else if (!empty($_SESSION[$session_key]) && $_SESSION[$session_key]['id'] == $group) {
+        } elseif (!empty($_SESSION[$session_key]) && $_SESSION[$session_key]['id'] == $group) {
             if (!empty($_SESSION[$session_key]['attachments'])) {
                 foreach ($_SESSION[$session_key]['attachments'] as $id => $attachment) {
                     if (is_array($ids) && in_array($id, $ids)) {
@@ -465,8 +455,7 @@ class kolab_attachments_handler
 
             if ($uploads_api) {
                 $attachment['status'] = $this->rc->insert_uploaded_file($attachment, 'attachment_save');
-            }
-            else {
+            } else {
                 $attachment = $this->rc->plugins->exec_hook('attachment_save', $attachment);
             }
 

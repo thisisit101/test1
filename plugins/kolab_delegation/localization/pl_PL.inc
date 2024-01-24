@@ -35,4 +35,3 @@ $labels['createsuccess'] = 'Delegat został dodany.';
 $labels['createerror'] = 'Nie można dodać delegata.';
 $labels['arialabeldelegatedelete'] = 'Okno usuwania delegata';
 $labels['arialabeldelegateform'] = 'Formularz właściwości delegata';
-?>

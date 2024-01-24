@@ -65,8 +65,8 @@ class kolab_storage_dav_cache_event extends kolab_storage_dav_cache
             }
         }
 
-        $sql_data['tags']  = ' ' . join(' ', $this->get_tags($object)) . ' ';  // pad with spaces for strict/prefix search
-        $sql_data['words'] = ' ' . join(' ', $this->get_words($object)) . ' ';
+        $sql_data['tags']  = ' ' . implode(' ', $this->get_tags($object)) . ' ';  // pad with spaces for strict/prefix search
+        $sql_data['words'] = ' ' . implode(' ', $this->get_words($object)) . ' ';
 
         return $sql_data;
     }
@@ -81,7 +81,7 @@ class kolab_storage_dav_cache_event extends kolab_storage_dav_cache
         $data = '';
 
         foreach ($this->fulltext_cols as $colname) {
-            list($col, $field) = strpos($colname, ':') ? explode(':', $colname) : [$colname, null];
+            [$col, $field] = strpos($colname, ':') ? explode(':', $colname) : [$colname, null];
 
             if (empty($object[$col])) {
                 continue;
@@ -94,10 +94,9 @@ class kolab_storage_dav_cache_event extends kolab_storage_dav_cache
                         $a[] = $attr[$field];
                     }
                 }
-                $val = join(' ', $a);
-            }
-            else {
-                $val = is_array($object[$col]) ? join(' ', $object[$col]) : $object[$col];
+                $val = implode(' ', $a);
+            } else {
+                $val = is_array($object[$col]) ? implode(' ', $object[$col]) : $object[$col];
             }
 
             if (is_string($val) && strlen($val)) {
@@ -133,8 +132,9 @@ class kolab_storage_dav_cache_event extends kolab_storage_dav_cache
         // create tags reflecting participant status
         if (is_array($object['attendees'])) {
             foreach ($object['attendees'] as $attendee) {
-                if (!empty($attendee['email']) && !empty($attendee['status']))
+                if (!empty($attendee['email']) && !empty($attendee['status'])) {
                     $tags[] = 'x-partstat:' . $attendee['email'] . ':' . strtolower($attendee['status']);
+                }
             }
         }
 

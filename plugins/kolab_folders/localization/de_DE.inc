@@ -26,4 +26,3 @@ $labels['junkemail'] = 'Spam';
 $labels['confidential'] = 'Vertraulich';
 $labels['private'] = 'Privat';
 $labels['xdays'] = '$x Tage';
-?>

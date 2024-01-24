@@ -8,7 +8,7 @@
  * For translation see https://www.transifex.com/projects/p/kolab/resource/kolab_addressbook/
  */
 
-$labels = array();
+$labels = [];
 $labels['initials'] = 'Initials';
 $labels['profession'] = 'Profession';
 $labels['officelocation'] = 'Office location';
@@ -73,5 +73,3 @@ $messages['bookupdateerror'] = 'An error occured while updating address book.';
 $messages['bookcreateerror'] = 'An error occured while creating address book.';
 $messages['nobooknamewarning'] = 'Please, enter address book name.';
 $messages['noemailnamewarning'] = 'Please, enter email address or contact name.';
-
-?>

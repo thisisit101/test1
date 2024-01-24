@@ -25,4 +25,3 @@ $labels['wastebasket'] = 'Kuka';
 $labels['junkemail'] = 'Kéretlenek';
 $labels['confidential'] = 'Confidential';
 $messages['defaultfolderexists'] = 'Már van megadva egy alapértelmezett mappa ehhez a típushoz';
-?>

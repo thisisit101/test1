@@ -25,15 +25,15 @@
 
 class kolab_storage_config
 {
-    const FOLDER_TYPE   = 'configuration';
-    const MAX_RELATIONS = 499;
+    public const FOLDER_TYPE   = 'configuration';
+    public const MAX_RELATIONS = 499;
 
     /**
      * Singleton instace of kolab_storage_config
      *
      * @var kolab_storage_config
      */
-    static protected $instance;
+    protected static $instance;
 
     private $folders;
     private $default;
@@ -46,7 +46,7 @@ class kolab_storage_config
      *
      * @return kolab_storage_config The one and only instance
      */
-    static function get_instance()
+    public static function get_instance()
     {
         if (!self::$instance) {
             self::$instance = new kolab_storage_config();
@@ -112,9 +112,9 @@ class kolab_storage_config
      *
      * @return array List of objects
      */
-    public function get_objects($filter = array(), $default = false, $limit = 0)
+    public function get_objects($filter = [], $default = false, $limit = 0)
     {
-        $list = array();
+        $list = [];
 
         if (!$this->is_enabled()) {
             return $list;
@@ -251,7 +251,7 @@ class kolab_storage_config
     /**
      * Find folder
      */
-    public function find_folder($object = array())
+    public function find_folder($object = [])
     {
         if (!$this->is_enabled()) {
             return null;
@@ -264,8 +264,7 @@ class kolab_storage_config
                     return $folder;
                 }
             }
-        }
-        else {
+        } else {
             return $this->default;
         }
 
@@ -292,7 +291,7 @@ class kolab_storage_config
 
         $rcube   = rcube::get_instance();
         $storage = $rcube->get_storage();
-        list($username, $domain) = explode('@', $rcube->get_user_name());
+        [$username, $domain] = explode('@', $rcube->get_user_name());
 
         if (strlen($domain)) {
             $domain = '@' . $domain;
@@ -309,18 +308,16 @@ class kolab_storage_config
                     $folder = substr($folder, strlen($prefix));
                 }
             }
-        }
-        else {
+        } else {
             if ($ns == 'other') {
                 // Note: this assumes there's only one other users namespace root
                 if ($ns = $storage->get_namespace('other')) {
                     if ($prefix = $ns[0][0]) {
-                        list($otheruser, $path) = array_pad(explode('/', substr($folder, strlen($prefix)), 2), 2, '');
+                        [$otheruser, $path] = array_pad(explode('/', substr($folder, strlen($prefix)), 2), 2, '');
                         $folder = 'user/' . $otheruser . $domain . '/' . $path;
                     }
                 }
-            }
-            else {
+            } else {
                 $folder = 'user/' . $username . $domain . '/' . $folder;
             }
         }
@@ -376,7 +373,7 @@ class kolab_storage_config
                 $folder   = implode('/', $path);
 
                 if ($username != $rcube->get_user_name()) {
-                    list($user, $domain) = explode('@', $username);
+                    [$user, $domain] = explode('@', $username);
 
                     // Note: this assumes there's only one other users namespace root
                     if ($ns = $storage->get_namespace('other')) {
@@ -384,12 +381,10 @@ class kolab_storage_config
                             $folder = $prefix . $user . '/' . $folder;
                         }
                     }
-                }
-                else if (!strlen($folder)) {
+                } elseif (!strlen($folder)) {
                     $folder = 'INBOX';
                 }
-            }
-            else {
+            } else {
                 $folder = $ns . '/' . implode('/', $path);
                 // Note: this assumes there's only one shared namespace root
                 if ($ns = $storage->get_namespace('shared')) {
@@ -399,11 +394,11 @@ class kolab_storage_config
                 }
             }
 
-            return array(
+            return [
                 'folder' => $folder,
                 'uid'    => $uid,
                 'params' => $params,
-            );
+            ];
         }
 
         return false;
@@ -419,13 +414,13 @@ class kolab_storage_config
      */
     public static function build_members($folder, $messages)
     {
-        $members = array();
+        $members = [];
 
         foreach ((array) $messages as $msg) {
-            $params = array(
+            $params = [
                 'folder' => $folder,
                 'uid'    => $msg->uid,
-            );
+            ];
 
             // add search parameters:
             // we don't want to build "invalid" searches e.g. that
@@ -455,7 +450,7 @@ class kolab_storage_config
      */
     public static function resolve_members(&$tag, $force = true)
     {
-        $result = array();
+        $result = [];
 
         foreach ((array) $tag['members'] as $member) {
             // IMAP URI members
@@ -464,8 +459,7 @@ class kolab_storage_config
 
                 if (!$force) {
                     $result[$folder][] = $url['uid'];
-                }
-                else {
+                } else {
                     $result[$folder]['uid'][]    = $url['uid'];
                     $result[$folder]['params'][] = $url['params'];
                     $result[$folder]['member'][] = $member;
@@ -479,8 +473,8 @@ class kolab_storage_config
 
         $rcube   = rcube::get_instance();
         $storage = $rcube->get_storage();
-        $search  = array();
-        $missing = array();
+        $search  = [];
+        $missing = [];
 
         // first we search messages by Folder+UID
         foreach ($result as $folder => $data) {
@@ -522,7 +516,7 @@ class kolab_storage_config
             $search_str = '';
 
             foreach ($search as $p) {
-                $search_params = array();
+                $search_params = [];
                 foreach ($p as $key => $val) {
                     $key = strtoupper($key);
                     // don't search by subject, we don't want false-positives
@@ -534,7 +528,7 @@ class kolab_storage_config
                 $search_str .= ' (' . implode(' ', $search_params) . ')';
             }
 
-            $search_str = trim(str_repeat(' OR', count($search)-1) . $search_str);
+            $search_str = trim(str_repeat(' OR', count($search) - 1) . $search_str);
 
             // search
             $search = $storage->search_once($folders, $search_str);
@@ -596,7 +590,7 @@ class kolab_storage_config
             }
         }
 
-        $tags = array();
+        $tags = [];
 
         // assign tags to objects
         foreach ($this->get_tags() as $tag) {
@@ -622,9 +616,9 @@ class kolab_storage_config
      */
     public function apply_links(&$records)
     {
-        $links = array();
-        $uids  = array();
-        $ids   = array();
+        $links = [];
+        $uids  = [];
+        $ids   = [];
         $limit = 25;
 
         // get list of object UIDs and UIRs map
@@ -632,7 +626,7 @@ class kolab_storage_config
             $uids[] = $rec['uid'];
             // there can be many objects with the same uid (recurring events)
             $ids[self::build_member_url($rec['uid'])][] = $i;
-            $records[$i]['links'] = array();
+            $records[$i]['links'] = [];
         }
 
         if (!empty($uids)) {
@@ -644,13 +638,13 @@ class kolab_storage_config
 
         while (!empty($uids)) {
             $chunk = array_splice($uids, 0, $limit);
-            $chunk = array_map(function($v) { return array('member', '=', $v); }, $chunk);
+            $chunk = array_map(function ($v) { return ['member', '=', $v]; }, $chunk);
 
-            $filter = array(
-                array('type', '=', 'relation'),
-                array('category', '=', 'generic'),
-                array($chunk, 'OR'),
-            );
+            $filter = [
+                ['type', '=', 'relation'],
+                ['category', '=', 'generic'],
+                [$chunk, 'OR'],
+            ];
 
             $relations = $this->get_objects($filter, true, self::MAX_RELATIONS);
 
@@ -668,7 +662,7 @@ class kolab_storage_config
             // make relation members up-to-date
             kolab_storage_config::resolve_members($relation);
 
-            $members = array();
+            $members = [];
             foreach ((array) $relation['members'] as $member) {
                 if (strpos($member, 'imap://') === 0) {
                     $members[$member] = $member;
@@ -709,7 +703,7 @@ class kolab_storage_config
                 $update = true;
             }
             // add member to the relation
-            else if (!$found && $selected) {
+            elseif (!$found && $selected) {
                 $relation['members'][] = $url;
                 $update = true;
             }
@@ -719,18 +713,18 @@ class kolab_storage_config
             }
 
             if ($selected) {
-                $tags = array_diff($tags, array($relation['name']));
+                $tags = array_diff($tags, [$relation['name']]);
             }
         }
 
         // create new relations
         if (!empty($tags)) {
             foreach ($tags as $tag) {
-                $relation = array(
+                $relation = [
                     'name'     => $tag,
                     'members'  => (array) $url,
                     'category' => 'tag',
-                );
+                ];
 
                 $this->save($relation, 'relation');
             }
@@ -748,21 +742,19 @@ class kolab_storage_config
     {
         if (!isset($this->tags)) {
             $default = true;
-            $filter  = array(
-                array('type', '=', 'relation'),
-                array('category', '=', 'tag')
-            );
+            $filter  = [
+                ['type', '=', 'relation'],
+                ['category', '=', 'tag'],
+            ];
 
             // use faster method
             if ($member && $member != '*') {
-                $filter[] = array('member', '=', $member);
+                $filter[] = ['member', '=', $member];
                 $tags = $this->get_objects($filter, $default, self::MAX_RELATIONS);
-            }
-            else {
+            } else {
                 $this->tags = $tags = $this->get_objects($filter, $default, self::MAX_RELATIONS);
             }
-        }
-        else {
+        } else {
             $tags = $this->tags;
         }
 
@@ -770,20 +762,18 @@ class kolab_storage_config
             return $tags;
         }
 
-        $result = array();
+        $result = [];
 
         if ($member[0] == '<') {
             $search_msg = urlencode($member);
-        }
-        else {
+        } else {
             $search_uid = self::build_member_url($member);
         }
 
         foreach ($tags as $tag) {
             if (!empty($search_uid) && in_array($search_uid, (array) $tag['members'])) {
                 $result[] = $tag;
-            }
-            else if (!empty($search_msg)) {
+            } elseif (!empty($search_msg)) {
                 foreach ($tag['members'] as $m) {
                     if (strpos($m, $search_msg) !== false) {
                         $result[] = $tag;
@@ -805,7 +795,7 @@ class kolab_storage_config
      */
     public function get_object_links($uid)
     {
-        $links = array();
+        $links = [];
         $object_uri = self::build_member_url($uid);
 
         foreach ($this->get_relations_for_member($uid) as $relation) {
@@ -846,7 +836,7 @@ class kolab_storage_config
             kolab_storage_config::resolve_members($relation);
 
             // remove and add links
-            $members = array($object_uri);
+            $members = [$object_uri];
             $members = array_unique(array_merge($members, $links));
 
             // remove relation if no other members remain
@@ -854,24 +844,24 @@ class kolab_storage_config
                 $done = $this->delete($relation);
             }
             // update relation object if members changed
-            else if (count(array_diff($members, $relation['members'])) || count(array_diff($relation['members'], $members))) {
+            elseif (count(array_diff($members, $relation['members'])) || count(array_diff($relation['members'], $members))) {
                 $relation['members'] = $members;
                 $done = $this->save($relation, 'relation');
-                $links = array();
+                $links = [];
             }
             // no changes, we're happy
             else {
                 $done  = true;
-                $links = array();
+                $links = [];
             }
         }
 
         // create a new relation
         if (!$done && !empty($links)) {
-            $relation = array(
-                'members'  => array_merge($links, array($object_uri)),
+            $relation = [
+                'members'  => array_merge($links, [$object_uri]),
                 'category' => 'generic',
-            );
+            ];
 
             $done = $this->save($relation, 'relation');
         }
@@ -885,11 +875,11 @@ class kolab_storage_config
     public function get_relations_for_member($uid, $reltype = 'generic')
     {
         $default = true;
-        $filter  = array(
-            array('type', '=', 'relation'),
-            array('category', '=', $reltype),
-            array('member', '=', $uid),
-        );
+        $filter  = [
+            ['type', '=', 'relation'],
+            ['category', '=', $reltype],
+            ['member', '=', $uid],
+        ];
 
         return $this->get_objects($filter, $default, self::MAX_RELATIONS);
     }
@@ -905,16 +895,16 @@ class kolab_storage_config
      */
     public function get_message_relations($message, $folder, $type)
     {
-        static $_cache = array();
+        static $_cache = [];
 
-        $result  = array();
-        $uids    = array();
+        $result  = [];
+        $uids    = [];
         $default = true;
         $uri     = self::get_message_uri($message, $folder);
-        $filter  = array(
-            array('type', '=', 'relation'),
-            array('category', '=', 'generic'),
-        );
+        $filter  = [
+            ['type', '=', 'relation'],
+            ['category', '=', 'generic'],
+        ];
 
         // query by message-id
         $member_id = $message->get('message-id', false);
@@ -922,7 +912,7 @@ class kolab_storage_config
             // derive message identifier from URI
             $member_id = md5($uri);
         }
-        $filter[] = array('member', '=', $member_id);
+        $filter[] = ['member', '=', $member_id];
 
         if (!isset($_cache[$uri])) {
             // get UIDs of related groupware objects
@@ -947,14 +937,13 @@ class kolab_storage_config
 
             // remember this lookup
             $_cache[$uri] = $uids;
-        }
-        else {
+        } else {
             $uids = $_cache[$uri];
         }
 
         // get kolab objects of specified type
         if (!empty($uids)) {
-            $query  = array(array('uid', '=', array_unique($uids)));
+            $query  = [['uid', '=', array_unique($uids)]];
             $result = kolab_storage::select($query, $type, count($uids));
         }
 
@@ -966,10 +955,10 @@ class kolab_storage_config
      */
     public static function get_message_uri($headers, $folder)
     {
-        $params = array(
+        $params = [
             'folder' => $headers->folder ?: $folder,
             'uid'    => $headers->uid,
-        );
+        ];
 
         if (($messageid = $headers->get('message-id', false)) && ($date = $headers->get('date', false))) {
             $params['message-id'] = $messageid;
@@ -994,13 +983,13 @@ class kolab_storage_config
 
             $rcmail = rcube::get_instance();
             if (method_exists($rcmail, 'url')) {
-                $linkref['mailurl'] = $rcmail->url(array(
+                $linkref['mailurl'] = $rcmail->url([
                     'task'   => 'mail',
                     'action' => 'show',
                     'mbox'   => $linkref['folder'],
                     'uid'    => $linkref['uid'],
                     'rel'    => $rel,
-                ));
+                ]);
             }
 
             unset($linkref['params']);

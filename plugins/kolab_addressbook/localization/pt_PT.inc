@@ -38,4 +38,3 @@ $labels['objectdiff'] = 'Diferenças entre $rev1 e $rev2';
 $labels['objectdiffnotavailable'] = 'Não é possível comparar as versões selecionadas';
 $labels['objectrestoresuccess'] = 'A versão $rev foi reposta com sucesso.';
 $labels['objectrestoreerror'] = 'Não foi possível repor a versão anterior.';
-?>

@@ -63,4 +63,3 @@ $messages['bookupdateerror'] = 'Fallo al actualizar la libreta de direcciones.';
 $messages['bookcreateerror'] = 'Fallo al crear la libreta de direcciones.';
 $messages['nobooknamewarning'] = 'Por favor, ingrese el nombre de la libreta de direcciones.';
 $messages['noemailnamewarning'] = 'Por favor, ingrese la dirección de correo electrónico o el nombre del contacto.';
-?>

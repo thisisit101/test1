@@ -33,4 +33,3 @@ $labels['createsuccess'] = 'Sodelujoči je bil uspešno dodan.';
 $labels['createerror'] = 'Ne morem dodati sodelujočega.';
 $labels['arialabeldelegatedelete'] = 'Izbrisani dogodki s sodelujočim';
 $labels['arialabeldelegateform'] = 'Obrazec za nastavitve sodelujočih';
-?>

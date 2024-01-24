@@ -47,4 +47,3 @@ $messages['bookupdateerror'] = 'A címjegyzék frissítése során hiba lépett 
 $messages['bookcreateerror'] = 'A címjegyzék létrehozása során hiba lépett fel.';
 $messages['nobooknamewarning'] = 'Kérem, adja meg a címjegyzék nevét.';
 $messages['noemailnamewarning'] = 'Kérem, adja meg az e-mail címet vagy a kapcsolat nevét.';
-?>

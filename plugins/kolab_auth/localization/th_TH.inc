@@ -8,4 +8,3 @@
  */
 $labels['loginas'] = 'เข้าระบบด้วยชื่อ..';
 $labels['loginasnotallowed'] = 'ไม่มีสิทธิเข้าระบบด้วยชื่อผู้ใช้ $user';
-?>

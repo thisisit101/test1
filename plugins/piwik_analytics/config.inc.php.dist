@@ -1,18 +1,19 @@
 <?php
-    /* piwik site id */
-    $rcmail_config['piwik_analytics_id'] = 4;
 
-    /* domain of your piwik installation */
-    $rcmail_config['piwik_analytics_url'] = 'noc.kolabsys.com/piwik/';
+/* piwik site id */
+$rcmail_config['piwik_analytics_id'] = 4;
 
-    /* exclude private pages - analytics will works only for non-logged users */
-    $rcmail_config['piwik_analytics_privacy'] = false;
+/* domain of your piwik installation */
+$rcmail_config['piwik_analytics_url'] = 'noc.kolabsys.com/piwik/';
 
-    /* exclude the following templates */
-    $rcmail_config['piwik_analytics_exclude'] = Array(
-        );
+/* exclude private pages - analytics will works only for non-logged users */
+$rcmail_config['piwik_analytics_privacy'] = false;
 
-    //  Possible templates:
+/* exclude the following templates */
+$rcmail_config['piwik_analytics_exclude'] = [
+    ];
+
+//  Possible templates:
 
 //             "message",
 //             "messagepreview",
@@ -21,24 +22,22 @@
 //             "editcontact",
 //             "showcontact"
 
-    //  "message",
-    //  "messagepart",
-    //  "messagepreview",
-    //  "messageerror",
-    //  "showcontact",
-    //  "addcontact",
-    //  "editcontact",
-    //  "importcontacts",
-    //  "addressbook",
-    //  "compose",
-    //  "editidentity",
-    //  "error",
-    //  "identities",
-    //  "login",
-    //  "mail",
-    //  "managefolders",
-    //  "plugin",
-    //  "settingsedit",
-    //  "settings"
-
-?>
+//  "message",
+//  "messagepart",
+//  "messagepreview",
+//  "messageerror",
+//  "showcontact",
+//  "addcontact",
+//  "editcontact",
+//  "importcontacts",
+//  "addressbook",
+//  "compose",
+//  "editidentity",
+//  "error",
+//  "identities",
+//  "login",
+//  "mail",
+//  "managefolders",
+//  "plugin",
+//  "settingsedit",
+//  "settings"

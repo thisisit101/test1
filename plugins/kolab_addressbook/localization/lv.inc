@@ -16,4 +16,3 @@ $labels['objectrestoresuccess'] = 'Versija $rev veiksmīgi atjaunota';
 $labels['objectrestoreerror'] = 'Kļūda atjaunojot veco versiju';
 $messages['nobooknamewarning'] = 'Lūdzu, ievadiet adrešu grāmatas nosaukumu.';
 $messages['noemailnamewarning'] = 'Lūdzu, ievadiet e-pasta adresi vai kontaktpersonas vārdu.';
-?>

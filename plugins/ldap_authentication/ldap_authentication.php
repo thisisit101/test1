@@ -30,25 +30,27 @@ class ldap_authentication extends rcube_plugin
     public $task = 'login';
 
     private $ldap;
-    private $data = array();
+    private $data = [];
 
-    function init()
+    public function init()
     {
-        $this->add_hook('authenticate', array($this, 'authenticate'));
-        $this->add_hook('user_create', array($this, 'user_create'));
+        $this->add_hook('authenticate', [$this, 'authenticate']);
+        $this->add_hook('user_create', [$this, 'user_create']);
     }
 
-    function user_create($args)
+    public function user_create($args)
     {
-        if (!empty($this->data['user_email']))
+        if (!empty($this->data['user_email'])) {
             $args['user_email'] = $this->data['user_email'];
-        if (!empty($this->data['user_name']))
+        }
+        if (!empty($this->data['user_name'])) {
             $args['user_name'] = $this->data['user_name'];
+        }
 
         return $args;
     }
 
-    function authenticate($args)
+    public function authenticate($args)
     {
         if ($this->init_ldap()) {
             $rcmail = rcube::get_instance();
@@ -60,16 +62,17 @@ class ldap_authentication extends rcube_plugin
             $host = rcube_utils::parse_host($args['host']);
 
             if (!empty($domain) && strpos($user, '@') === false) {
-                if (is_array($domain) && isset($domain[$args['host']]))
-                    $user .= '@'.rcube_utils::parse_host($domain[$host], $host);
-                else if (is_string($domain))
-                    $user .= '@'.rcube_utils::parse_host($domain, $host);
+                if (is_array($domain) && isset($domain[$args['host']])) {
+                    $user .= '@' . rcube_utils::parse_host($domain[$host], $host);
+                } elseif (is_string($domain)) {
+                    $user .= '@' . rcube_utils::parse_host($domain, $host);
+                }
             }
 
             // replace variables in filter
-            list($u, $d) = explode('@', $user);
-            $dc = 'dc='.strtr($d, array('.' => ',dc=')); // hierarchal domain string
-            $replaces = array('%dc' => $dc, '%d' => $d, '%fu' => $user, '%u' => $u);
+            [$u, $d] = explode('@', $user);
+            $dc = 'dc=' . strtr($d, ['.' => ',dc=']); // hierarchal domain string
+            $replaces = ['%dc' => $dc, '%d' => $d, '%fu' => $user, '%u' => $u];
 
             $filter = strtr($filter, $replaces);
 
@@ -83,13 +86,16 @@ class ldap_authentication extends rcube_plugin
                 $login_attr = $rcmail->config->get('ldap_authentication_login');
                 $name_attr  = $rcmail->config->get('ldap_authentication_name');
 
-                if ($login_attr)
+                if ($login_attr) {
                     $this->data['user_login'] = is_array($record[$login_attr]) ? $record[$login_attr][0] : $record[$login_attr];
-                if ($name_attr)
+                }
+                if ($name_attr) {
                     $this->data['user_name'] = is_array($record[$name_attr]) ? $record[$name_attr][0] : $record[$name_attr];
+                }
 
-                if ($this->data['user_login'])
+                if ($this->data['user_login']) {
                     $args['user'] = $this->data['user_login'];
+                }
             }
         }
 
@@ -98,8 +104,9 @@ class ldap_authentication extends rcube_plugin
 
     private function init_ldap()
     {
-        if ($this->ldap)
+        if ($this->ldap) {
             return $this->ldap->ready;
+        }
 
         $this->load_config();
         $rcmail = rcube::get_instance();
@@ -127,9 +134,10 @@ class ldap_authentication extends rcube_plugin
 
 class ldap_authentication_ldap_backend extends rcube_ldap
 {
-    function set_filter($filter)
+    public function set_filter($filter)
     {
-        if ($filter)
+        if ($filter) {
             $this->prop['filter'] = $filter;
+        }
     }
 }

@@ -8,4 +8,3 @@
  */
 $labels['objectchangelog'] = 'Change History';
 $labels['objectdiffnotavailable'] = 'No comparison possible for the selected revisions';
-?>

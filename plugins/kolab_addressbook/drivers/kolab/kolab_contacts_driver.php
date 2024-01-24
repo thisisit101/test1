@@ -33,7 +33,7 @@ class kolab_contacts_driver
         $this->plugin = $plugin;
         $this->rc     = rcube::get_instance();
     }
- 
+
     /**
      * List addressbook sources (folders)
      */
@@ -45,11 +45,14 @@ class kolab_contacts_driver
         $folders = kolab_storage::sort_folders(kolab_storage::get_folders('contact'));
 
         if (PEAR::isError($folders)) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Failed to list contact folders from Kolab server:" . $folders->getMessage()
+                    'message' => "Failed to list contact folders from Kolab server:" . $folders->getMessage(),
                 ],
-                true, false);
+                true,
+                false
+            );
 
             return [];
         }
@@ -132,8 +135,7 @@ class kolab_contacts_driver
             $path_imap = explode($delim, $folder);
             $name      = rcube_charset::convert(array_pop($path_imap), 'UTF7-IMAP');
             $path_imap = implode($delim, $path_imap);
-        }
-        else { // create
+        } else { // create
             $path_imap = $folder;
             $name      = '';
             $folder    = '';
@@ -141,46 +143,44 @@ class kolab_contacts_driver
 
         // Store old name, get folder options
         if (strlen($folder)) {
-            $hidden_fields[] = array('name' => '_oldname', 'value' => $folder);
+            $hidden_fields[] = ['name' => '_oldname', 'value' => $folder];
 
             $options = $storage->folder_info($folder);
         }
 
-        $form = array();
+        $form = [];
 
         // General tab
-        $form['properties'] = array(
+        $form['properties'] = [
             'name'   => $rcube->gettext('properties'),
-            'fields' => array(),
-        );
+            'fields' => [],
+        ];
 
         if (!empty($options) && ($options['norename'] || $options['protected'])) {
             $foldername = rcube::Q(str_replace($delim, ' &raquo; ', kolab_storage::object_name($folder)));
-        }
-        else {
-            $foldername = new html_inputfield(array('name' => '_name', 'id' => '_name', 'size' => 30));
+        } else {
+            $foldername = new html_inputfield(['name' => '_name', 'id' => '_name', 'size' => 30]);
             $foldername = $foldername->show($name);
         }
 
-        $form['properties']['fields']['name'] = array(
+        $form['properties']['fields']['name'] = [
             'label' => $rcube->gettext('bookname', 'kolab_addressbook'),
             'value' => $foldername,
             'id'    => '_name',
-        );
+        ];
 
         if (!empty($options) && ($options['norename'] || $options['protected'])) {
             // prevent user from moving folder
-            $hidden_fields[] = array('name' => '_parent', 'value' => $path_imap);
-        }
-        else {
-            $prop   = array('name' => '_parent', 'id' => '_parent');
+            $hidden_fields[] = ['name' => '_parent', 'value' => $path_imap];
+        } else {
+            $prop   = ['name' => '_parent', 'id' => '_parent'];
             $select = kolab_storage::folder_selector('contact', $prop, $folder);
 
-            $form['properties']['fields']['parent'] = array(
+            $form['properties']['fields']['parent'] = [
                 'label' => $rcube->gettext('parentbook', 'kolab_addressbook'),
                 'value' => $select->show(strlen($folder) ? $path_imap : ''),
                 'id'    => '_parent',
-            );
+            ];
         }
 
         return kolab_utils::folder_form($form, $folder, 'calendar', $hidden_fields);
@@ -202,18 +202,16 @@ class kolab_contacts_driver
         $result = $error = false;
         $folder = null;
         $type = strlen($prop['oldname']) ? 'update' : 'create';
-        $prop = $this->rc->plugins->exec_hook('addressbook_'.$type, $prop);
+        $prop = $this->rc->plugins->exec_hook('addressbook_' . $type, $prop);
 
         if (!$prop['abort']) {
             if ($newfolder = kolab_storage::folder_update($prop)) {
                 $folder = $newfolder;
                 $result = true;
-            }
-            else {
+            } else {
                 $error = kolab_storage::$last_error;
             }
-        }
-        else {
+        } else {
             $result = $prop['result'];
             $folder = $prop['name'];
         }
@@ -226,12 +224,11 @@ class kolab_contacts_driver
             $props = $this->abook_prop(kolab_storage::folder_id($folder, true), $abook);
             $props['parent'] = kolab_storage::folder_id($kolab_folder->get_parent(), true);
 
-            $this->rc->output->show_message('kolab_addressbook.book'.$type.'d', 'confirmation');
+            $this->rc->output->show_message('kolab_addressbook.book' . $type . 'd', 'confirmation');
             $this->rc->output->command('book_update', $props, kolab_storage::folder_id($prop['oldname'], true));
-        }
-        else {
+        } else {
             if (!$error) {
-                $error = !empty($prop['message']) ? $prop['message'] : 'kolab_addressbook.book'.$type.'error';
+                $error = !empty($prop['message']) ? $prop['message'] : 'kolab_addressbook.book' . $type . 'error';
             }
 
             $this->rc->output->show_message($error, 'error');

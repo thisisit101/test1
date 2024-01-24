@@ -63,4 +63,3 @@ $messages['bookupdateerror'] = 'Er is een fout opgetreden tijdens het bijwerken 
 $messages['bookcreateerror'] = 'Er is een fout opgetreden tijdens het maken van het adresboek.';
 $messages['nobooknamewarning'] = 'Voer een naam voor het adresboek in.';
 $messages['noemailnamewarning'] = 'Voor een e-mailadres of een naam van een contactpersoon in.';
-?>

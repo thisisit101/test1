@@ -27,8 +27,8 @@
 
 class libkolab extends rcube_plugin
 {
-    static $http_requests = array();
-    static $bonnie_api    = false;
+    public static $http_requests = [];
+    public static $bonnie_api    = false;
 
     /**
      * Required startup method of a Roundcube plugin
@@ -43,18 +43,17 @@ class libkolab extends rcube_plugin
         $include_path = $this->home . '/lib' . PATH_SEPARATOR . ini_get('include_path');
         set_include_path($include_path);
 
-        $this->add_hook('storage_init', array($this, 'storage_init'));
-        $this->add_hook('storage_connect', array($this, 'storage_connect'));
-        $this->add_hook('user_delete', array('kolab_storage', 'delete_user_folders'));
+        $this->add_hook('storage_init', [$this, 'storage_init']);
+        $this->add_hook('storage_connect', [$this, 'storage_connect']);
+        $this->add_hook('user_delete', ['kolab_storage', 'delete_user_folders']);
 
         // For Chwala
-        $this->add_hook('folder_mod', array('kolab_storage', 'folder_mod'));
+        $this->add_hook('folder_mod', ['kolab_storage', 'folder_mod']);
 
         $rcmail = rcube::get_instance();
         try {
             kolab_format::$timezone = new DateTimeZone($rcmail->config->get('timezone', 'GMT'));
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true);
             kolab_format::$timezone = new DateTimeZone('GMT');
         }
@@ -62,44 +61,48 @@ class libkolab extends rcube_plugin
         $this->add_texts('localization/', false);
 
         if (!empty($rcmail->output->type) && $rcmail->output->type == 'html') {
-            $rcmail->output->add_handler('libkolab.folder_search_form', array($this, 'folder_search_form'));
+            $rcmail->output->add_handler('libkolab.folder_search_form', [$this, 'folder_search_form']);
             $this->include_stylesheet($this->local_skin_path() . '/libkolab.css');
         }
 
         // embed scripts and templates for email message audit trail
         if (property_exists($rcmail, 'task') && $rcmail->task == 'mail' && self::get_bonnie_api()) {
             if ($rcmail->output->type == 'html') {
-                $this->add_hook('render_page', array($this, 'bonnie_render_page'));
+                $this->add_hook('render_page', [$this, 'bonnie_render_page']);
                 $this->include_script('libkolab.js');
 
                 // add 'Show history' item to message menu
-                $this->api->add_content(html::tag('li', array('role' => 'menuitem'),
-                    $this->api->output->button(array(
-                        'command'  => 'kolab-mail-history',
-                        'label'    => 'libkolab.showhistory',
-                        'type'     => 'link',
-                        'classact' => 'icon history active',
-                        'class'    => 'icon history disabled',
-                        'innerclass' => 'icon history',
-                    ))),
-                    'messagemenu');
+                $this->api->add_content(
+                    html::tag(
+                        'li',
+                        ['role' => 'menuitem'],
+                        $this->api->output->button([
+                            'command'  => 'kolab-mail-history',
+                            'label'    => 'libkolab.showhistory',
+                            'type'     => 'link',
+                            'classact' => 'icon history active',
+                            'class'    => 'icon history disabled',
+                            'innerclass' => 'icon history',
+                        ])
+                    ),
+                    'messagemenu'
+                );
             }
 
-            $this->register_action('plugin.message-changelog', array($this, 'message_changelog'));
+            $this->register_action('plugin.message-changelog', [$this, 'message_changelog']);
         }
     }
 
     /**
      * Hook into IMAP FETCH HEADER.FIELDS command and request Kolab-specific headers
      */
-    function storage_init($p)
+    public function storage_init($p)
     {
         $kolab_headers = 'X-KOLAB-TYPE X-KOLAB-MIME-VERSION MESSAGE-ID';
 
         if (!empty($p['fetch_headers'])) {
             $p['fetch_headers'] .= ' ' . $kolab_headers;
-        }
-        else {
+        } else {
             $p['fetch_headers'] = $kolab_headers;
         }
 
@@ -109,12 +112,12 @@ class libkolab extends rcube_plugin
     /**
      * Hook into IMAP connection to replace client identity
      */
-    function storage_connect($p)
+    public function storage_connect($p)
     {
         $client_name = 'Roundcube/Kolab';
 
         if (empty($p['ident'])) {
-            $p['ident'] = array(
+            $p['ident'] = [
                 'name'    => $client_name,
                 'version' => RCUBE_VERSION,
 /*
@@ -122,9 +125,8 @@ class libkolab extends rcube_plugin
                 'os'      => PHP_OS,
                 'command' => $_SERVER['REQUEST_URI'],
 */
-            );
-        }
-        else {
+            ];
+        } else {
             $p['ident']['name'] = $client_name;
         }
 
@@ -149,13 +151,14 @@ class libkolab extends rcube_plugin
     /**
      * Hook to append the message history dialog template to the mail view
      */
-    function bonnie_render_page($p)
+    public function bonnie_render_page($p)
     {
         if (($p['template'] === 'mail' || $p['template'] === 'message') && !$p['kolab-audittrail']) {
             // append a template for the audit trail dialog
             $this->api->output->add_footer(
-                html::div(array('id' => 'mailmessagehistory',  'class' => 'uidialog', 'aria-hidden' => 'true', 'style' => 'display:none'),
-                    self::object_changelog_table(array('class' => 'records-table changelog-table'))
+                html::div(
+                    ['id' => 'mailmessagehistory',  'class' => 'uidialog', 'aria-hidden' => 'true', 'style' => 'display:none'],
+                    self::object_changelog_table(['class' => 'records-table changelog-table'])
                 )
             );
             $this->api->output->set_env('kolab_audit_trail', true);
@@ -182,18 +185,17 @@ class libkolab extends rcube_plugin
         if (is_array($result)) {
             if (is_array($result['changes'])) {
                 $dtformat = $rcmail->config->get('date_format') . ' ' . $rcmail->config->get('time_format');
-                array_walk($result['changes'], function(&$change) use ($dtformat, $rcmail) {
-                  if ($change['date']) {
-                      $dt = rcube_utils::anytodatetime($change['date']);
-                      if ($dt instanceof DateTimeInterface) {
-                          $change['date'] = $rcmail->format_date($dt, $dtformat);
-                      }
-                  }
+                array_walk($result['changes'], function (&$change) use ($dtformat, $rcmail) {
+                    if ($change['date']) {
+                        $dt = rcube_utils::anytodatetime($change['date']);
+                        if ($dt instanceof DateTimeInterface) {
+                            $change['date'] = $rcmail->format_date($dt, $dtformat);
+                        }
+                    }
                 });
             }
             $this->api->output->command('plugin.message_render_changelog', $result['changes']);
-        }
-        else {
+        } else {
             $this->api->output->command('plugin.message_render_changelog', false);
         }
 
@@ -210,14 +212,14 @@ class libkolab extends rcube_plugin
      *
      * @return HTTP_Request2 Request object
      */
-    public static function http_request($url = '', $method = 'GET', $config = array())
+    public static function http_request($url = '', $method = 'GET', $config = [])
     {
         $rcube       = rcube::get_instance();
         $http_config = (array) $rcube->config->get('kolab_http_request');
 
         // deprecated configuration options
         if (empty($http_config)) {
-            foreach (array('ssl_verify_peer', 'ssl_verify_host') as $option) {
+            foreach (['ssl_verify_peer', 'ssl_verify_host'] as $option) {
                 $value = $rcube->config->get('kolab_' . $option, true);
                 if (is_bool($value)) {
                     $http_config[$option] = $value;
@@ -237,8 +239,7 @@ class libkolab extends rcube_plugin
 
         if (!empty(self::$http_requests[$key])) {
             $request = self::$http_requests[$key];
-        }
-        else {
+        } else {
             // load HTTP_Request2 (support both composer-installed and system-installed package)
             if (!class_exists('HTTP_Request2')) {
                 require_once 'HTTP/Request2.php';
@@ -247,8 +248,7 @@ class libkolab extends rcube_plugin
             try {
                 $request = new HTTP_Request2();
                 $request->setConfig($http_config);
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 rcube::raise_error($e, true, true);
             }
 
@@ -263,8 +263,7 @@ class libkolab extends rcube_plugin
             $request->setBody('');
             $request->setUrl($url);
             $request->setMethod($method);
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, true);
         }
 
@@ -274,18 +273,18 @@ class libkolab extends rcube_plugin
     /**
      * Table oultine for object changelog display
      */
-    public static function object_changelog_table($attrib = array())
+    public static function object_changelog_table($attrib = [])
     {
         $rcube = rcube::get_instance();
-        $attrib += array('domain' => 'libkolab');
+        $attrib += ['domain' => 'libkolab'];
 
-        $table = new html_table(array('cols' => 5, 'border' => 0, 'cellspacing' => 0));
-        $table->add_header('diff',      '');
-        $table->add_header('revision',  $rcube->gettext('revision', $attrib['domain']));
-        $table->add_header('date',      $rcube->gettext('date', $attrib['domain']));
-        $table->add_header('user',      $rcube->gettext('user', $attrib['domain']));
+        $table = new html_table(['cols' => 5, 'border' => 0, 'cellspacing' => 0]);
+        $table->add_header('diff', '');
+        $table->add_header('revision', $rcube->gettext('revision', $attrib['domain']));
+        $table->add_header('date', $rcube->gettext('date', $attrib['domain']));
+        $table->add_header('user', $rcube->gettext('user', $attrib['domain']));
         $table->add_header('operation', $rcube->gettext('operation', $attrib['domain']));
-        $table->add_header('actions',   '&nbsp;');
+        $table->add_header('actions', '&nbsp;');
 
         $rcube->output->add_label(
             'libkolab.showrevision',
@@ -311,17 +310,17 @@ class libkolab extends rcube_plugin
     {
         // auto-detect text/html format
         if ($is_html === null) {
-            $from_html = (preg_match('/<(html|body)(\s+[a-z]|>)/', $from, $m) && strpos($from, '</'.$m[1].'>') > 0);
-            $to_html   = (preg_match('/<(html|body)(\s+[a-z]|>)/', $to, $m) && strpos($to, '</'.$m[1].'>') > 0);
+            $from_html = (preg_match('/<(html|body)(\s+[a-z]|>)/', $from, $m) && strpos($from, '</' . $m[1] . '>') > 0);
+            $to_html   = (preg_match('/<(html|body)(\s+[a-z]|>)/', $to, $m) && strpos($to, '</' . $m[1] . '>') > 0);
             $is_html   = $from_html || $to_html;
 
             // ensure both parts are of the same format
             if ($is_html && !$from_html) {
-                $converter = new rcube_text2html($from, false, array('wrap' => true));
+                $converter = new rcube_text2html($from, false, ['wrap' => true]);
                 $from = $converter->get_html();
             }
             if ($is_html && !$to_html) {
-                $converter = new rcube_text2html($to, false, array('wrap' => true));
+                $converter = new rcube_text2html($to, false, ['wrap' => true]);
                 $to = $converter->get_html();
             }
         }
@@ -341,8 +340,7 @@ class libkolab extends rcube_plugin
 
             // remove empty inserts (from tables)
             return preg_replace('!<ins class="diff\w+">\s*</ins>!Uims', '', $diffhtml);
-        }
-        else {
+        } else {
             include_once __dir__ . '/vendor/finediff.php';
 
             $diff = new FineDiff($from, $to, FineDiff::$wordGranularity);
@@ -371,13 +369,13 @@ class libkolab extends rcube_plugin
     public function folder_search_form($attrib)
     {
         $rcmail = rcube::get_instance();
-        $attrib += array(
+        $attrib += [
             'gui-object'    => false,
             'wrapper'       => true,
             'form-name'     => 'foldersearchform',
             'command'       => 'non-extsing-command',
             'reset-command' => 'non-existing-command',
-        );
+        ];
 
         if (($attrib['label-domain'] ?? null) && !strpos($attrib['buttontitle'], '.')) {
             $attrib['buttontitle'] = $attrib['label-domain'] . '.' . $attrib['buttontitle'];

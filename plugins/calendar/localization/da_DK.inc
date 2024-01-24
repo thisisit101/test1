@@ -285,4 +285,3 @@ $labels['arialabeleventresources'] = 'Ressourceliste for begivenhed';
 $labels['arialabelresourcesearchform'] = 'Søgeformular for ressourcer';
 $labels['arialabelresourceselection'] = 'Tilgængelige ressourcer';
 $labels['arialabeleventform'] = 'Formular til redigering af begivenhed';
-?>

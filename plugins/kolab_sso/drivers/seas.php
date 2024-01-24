@@ -29,10 +29,10 @@ require_once __DIR__ . '/oauth2.php';
 class kolab_sso_seas extends kolab_sso_oauth2
 {
     protected $id       = 'seas';
-    protected $defaults = array(
+    protected $defaults = [
         'scope'          => 'USER',
         'token_type'     => 'access_token',
         'user_field'     => 'user_name',
-        'validate_items' => array(),
-    );
+        'validate_items' => [],
+    ];
 }

@@ -9,4 +9,3 @@
 $labels['foldertypemail'] = 'E-pasts';
 $labels['foldertypeevent'] = 'Kalendārs';
 $labels['foldertypefile'] = 'Faili';
-?>

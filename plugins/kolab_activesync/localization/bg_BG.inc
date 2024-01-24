@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'Activesync';
 $labels['devices'] = 'Устройства';
 $labels['devicealias'] = 'Име на устройство';
@@ -19,4 +20,3 @@ $labels['notsupported'] = 'Your server does not support metadata/annotations';
 $labels['devicedeleteconfirm'] = 'Наистина ли искате да изтриете конфигурацията за това устройство?';
 $labels['successfullydeleted'] = 'Конфигурацията за устройството беше премахната успешно';
 $labels['devicenotfound'] = 'Невъзможно прочитането на конфигурацията на устройството';
-?>

@@ -2,31 +2,31 @@
 
 class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
 {
-    private $params_personal = array(
+    private $params_personal = [
         'folder'     => 'Archive',
         'uid'        => '9',
         'message-id' => '<1225270@example.org>',
         'date'       => 'Mon, 20 Apr 2015 15:30:30 UTC',
         'subject'    => 'Archived',
-    );
+    ];
     private $url_personal = 'imap:///user/$user/Archive/9?message-id=%3C1225270%40example.org%3E&date=Mon%2C+20+Apr+2015+15%3A30%3A30+UTC&subject=Archived';
 
-    private $params_shared = array(
+    private $params_shared = [
         'folder'     => 'Shared Folders/shared/Collected',
         'uid'        => '4',
         'message-id' => '<5270122@example.org>',
         'date'       => 'Mon, 20 Apr 2015 16:33:03 +0200',
         'subject'    => 'Shared',
-    );
+    ];
     private $url_shared = 'imap:///shared/Collected/4?message-id=%3C5270122%40example.org%3E&date=Mon%2C+20+Apr+2015+16%3A33%3A03+%2B0200&subject=Shared';
 
-    private $params_other = array(
+    private $params_other = [
         'folder'     => 'Other Users/lucy.white/Mailings',
         'uid'        => '378',
         'message-id' => '<22448899@example.org>',
         'date'       => 'Tue, 14 Apr 2015 14:14:30 +0200',
         'subject'    => 'Happy Holidays',
-    );
+    ];
     private $url_other = 'imap:///user/lucy.white%40example.org/Mailings/378?message-id=%3C22448899%40example.org%3E&date=Tue%2C+14+Apr+2015+14%3A14%3A30+%2B0200&subject=Happy+Holidays';
 
     public static function setUpBeforeClass(): void
@@ -57,25 +57,23 @@ class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
             $imap    = $rcube->get_storage();
             $folders = $imap->list_folders('', '*');
 
-            foreach (array('Configuration') as $folder) {
+            foreach (['Configuration'] as $folder) {
                 if (in_array($folder, $folders)) {
                     if (!$imap->clear_folder($folder)) {
                         throw new Exception("Failed to clear folder '$folder'");
                     }
-                }
-                else {
+                } else {
                     throw new Exception("Default folder '$folder' doesn't exits in test user account");
                 }
             }
-        }
-        else {
+        } else {
             throw new Exception('Missing test account username/password in config-test.inc.php');
         }
 
         kolab_storage::setup();
     }
 
-    function test_001_build_member_url()
+    public function test_001_build_member_url()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -98,7 +96,7 @@ class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($this->url_other, $url);
     }
 
-    function test_002_parse_member_url()
+    public function test_002_parse_member_url()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -126,7 +124,7 @@ class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($this->params_other['folder'], $params['folder']);
     }
 
-    function test_003_build_parse_member_url()
+    public function test_003_build_parse_member_url()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -155,31 +153,31 @@ class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
      * Test relation/tag objects creation
      * These objects will be used by following tests
      */
-    function test_save()
+    public function test_save()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
         }
 
         $config = kolab_storage_config::get_instance();
-        $tags   = array(
-            array(
+        $tags   = [
+            [
                 'category' => 'tag',
                 'name'     => 'test1',
-            ),
-            array(
+            ],
+            [
                 'category' => 'tag',
                 'name'     => 'test2',
-            ),
-            array(
+            ],
+            [
                 'category' => 'tag',
                 'name'     => 'test3',
-            ),
-            array(
+            ],
+            [
                 'category' => 'tag',
                 'name'     => 'test4',
-            ),
-        );
+            ],
+        ];
 
         foreach ($tags as $tag) {
             $result = $config->save($tag, 'relation');
@@ -192,7 +190,7 @@ class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
     /**
      * Tests "race condition" in tags handling (T133)
      */
-    function test_T133()
+    public function test_T133()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -205,10 +203,10 @@ class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
         $this->assertCount(4, $tags);
 
         // create a tag
-        $tag = array(
+        $tag = [
             'category' => 'tag',
             'name'     => 'new',
-        );
+        ];
         $result = $config->save($tag, 'relation');
         $this->assertTrue(!empty($result));
 

@@ -35,4 +35,3 @@ $labels['createsuccess'] = 'El delegado fue agregado exitosamente.';
 $labels['createerror'] = 'No se puede agregar el delegado.';
 $labels['arialabeldelegatedelete'] = 'Diálogo de eliminación de delegado';
 $labels['arialabeldelegateform'] = 'Formulario de propiedades del delegado';
-?>

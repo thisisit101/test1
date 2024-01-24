@@ -9,4 +9,3 @@
 $labels['objectchangelog'] = 'Change History';
 $labels['objectdiff'] = 'Changes from revisions $rev';
 $labels['objectdiffnotavailable'] = 'No comparison possible for the selected revisions';
-?>

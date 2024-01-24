@@ -51,7 +51,7 @@ class kolab_format_file extends kolab_format
         if (!empty($object['_attachments'])) {
             $cid         = key($object['_attachments']);
             $attach_attr = $object['_attachments'][$cid];
-            $attach      = new Attachment;
+            $attach      = new Attachment();
 
             $attach->setLabel((string)$attach_attr['name']);
             $attach->setUri('cid:' . $cid, $attach_attr['mimetype']);
@@ -65,12 +65,10 @@ class kolab_format_file extends kolab_format
                     if (is_resource($attach_attr['content'])) {
                         $stat = fstat($attach_attr['content']);
                         $size = $stat ? $stat['size'] : 0;
-                    }
-                    else {
+                    } else {
                         $size = strlen($attach_attr['content']);
                     }
-                }
-                else if (isset($attach_attr['path'])) {
+                } elseif (isset($attach_attr['path'])) {
                     $size = @filesize($attach_attr['path']);
                 }
 

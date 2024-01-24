@@ -23,10 +23,10 @@
 
 class kolab_storage_dav
 {
-    const ERROR_DAV_CONN       = 1;
-    const ERROR_CACHE_DB       = 2;
-    const ERROR_NO_PERMISSION  = 3;
-    const ERROR_INVALID_FOLDER = 4;
+    public const ERROR_DAV_CONN       = 1;
+    public const ERROR_CACHE_DB       = 2;
+    public const ERROR_NO_PERMISSION  = 3;
+    public const ERROR_INVALID_FOLDER = 4;
 
     public static $last_error;
 
@@ -247,8 +247,7 @@ class kolab_storage_dav
         if (!isset($prop['name']) || !is_string($prop['name']) || !strlen($prop['name'])) {
             self::$last_error = 'cannotbeempty';
             return false;
-        }
-        else if (strlen($prop['name']) > 256) {
+        } elseif (strlen($prop['name']) > 256) {
             self::$last_error = 'nametoolong';
             return false;
         }
@@ -325,7 +324,7 @@ class kolab_storage_dav
      *
      * @return array List of folders
      */
-    public function list_folders($root = '', $mbox = '*', $filter = null, $subscribed = null, &$folderdata = array())
+    public function list_folders($root = '', $mbox = '*', $filter = null, $subscribed = null, &$folderdata = [])
     {
         // TODO
         return [];

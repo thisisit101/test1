@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'Activesync';
 $labels['activesynctitle'] = 'Gestion des périphériques Activesync';
 $labels['devices'] = 'Périphériques';
@@ -30,4 +31,3 @@ $labels['os'] = 'Système d\'exploitation';
 $labels['oslanguage'] = 'Langue de l\'OS';
 $labels['phonenumber'] = 'Numéro de téléphone';
 $labels['arialabeldeviceframe'] = 'Paramètres de synchronisation du périphérique';
-?>

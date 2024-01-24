@@ -11,4 +11,3 @@ $labels['event'] = 'Calendários';
 $labels['task'] = 'Tarefas';
 $labels['note'] = 'Notas';
 $labels['savingdata'] = 'Salvando dados...';
-?>

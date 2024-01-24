@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'Activesync';
 $labels['activesynctitle'] = 'Hantera Activesync-enheter';
 $labels['devices'] = 'Enheter';
@@ -30,4 +31,3 @@ $labels['os'] = 'Operativsystem';
 $labels['oslanguage'] = 'OS-språk';
 $labels['phonenumber'] = 'Telefonnummer';
 $labels['arialabeldeviceframe'] = 'Inställningsformulär för enhetssynkronisering';
-?>

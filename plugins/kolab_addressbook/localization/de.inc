@@ -63,4 +63,3 @@ $messages['bookupdateerror'] = 'Fehler beim Aktualisieren des Adressbuchs.';
 $messages['bookcreateerror'] = 'Fehler beim Anlegen des Adressbuchs.';
 $messages['nobooknamewarning'] = 'Bitte den Namen des Adressbuchs angeben.';
 $messages['noemailnamewarning'] = 'Bitte E-Mail-Adresse oder Namen des Kontakts angeben.';
-?>

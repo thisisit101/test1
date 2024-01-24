@@ -8,4 +8,3 @@
  */
 $labels['loginas'] = 'Zaloguj jako';
 $labels['loginasnotallowed'] = 'Brak uprawnień do zalogowania jako $user';
-?>

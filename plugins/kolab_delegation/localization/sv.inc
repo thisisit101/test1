@@ -11,4 +11,3 @@ $labels['event'] = 'Kalendrar';
 $labels['task'] = 'Uppgifter';
 $labels['note'] = 'Anteckningar';
 $labels['savingdata'] = 'Sparar data ...';
-?>

@@ -90,13 +90,13 @@ class kolab_calendar extends kolab_storage_folder_api
                 $this->editable = true;
                 $this->rights = 'lrswikxteav';
                 $this->alarms = true;
-            }
-            else {
+            } else {
                 $rights = $this->storage->get_myrights();
                 if ($rights && !PEAR::isError($rights)) {
                     $this->rights = $rights;
                     if (strpos($rights, 't') !== false || strpos($rights, 'd') !== false) {
-                        $this->editable = strpos($rights, 'i');;
+                        $this->editable = strpos($rights, 'i');
+                        ;
                     }
                 }
             }
@@ -105,8 +105,7 @@ class kolab_calendar extends kolab_storage_folder_api
             $prefs = $this->cal->rc->config->get('kolab_calendars', []);
             if (isset($prefs[$this->id]['showalarms'])) {
                 $this->alarms = $prefs[$this->id]['showalarms'];
-            }
-            else if (isset($prefs[$old_id]['showalarms'])) {
+            } elseif (isset($prefs[$old_id]['showalarms'])) {
                 $this->alarms = $prefs[$old_id]['showalarms'];
             }
         }
@@ -216,10 +215,9 @@ class kolab_calendar extends kolab_storage_folder_api
                     $this->events[$id] = $this->_to_driver_event($instance, false, true, $master);
                 }
                 // check for match on the first instance already
-                else if (!empty($master['_instance']) && $master['_instance'] == $instance_id) {
+                elseif (!empty($master['_instance']) && $master['_instance'] == $instance_id) {
                     $this->events[$id] = $master;
-                }
-                else if (!empty($master['recurrence'])) {
+                } elseif (!empty($master['recurrence'])) {
                     $start_date = $master['start'];
                     // For performance reasons we'll get only the specific instance
                     if (($date = substr($id, strlen($master_id) + 1, 8)) && strlen($date) == 8 && is_numeric($date)) {
@@ -274,14 +272,12 @@ class kolab_calendar extends kolab_storage_folder_api
         // to workaround possible timezone differences
         try {
             $start = new DateTime('@' . ($start - 12 * 3600));
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $start = new DateTime('@0');
         }
         try {
             $end = new DateTime('@' . ($end + 12 * 3600));
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             $end = new DateTime('today +10 years');
         }
 
@@ -373,7 +369,7 @@ class kolab_calendar extends kolab_storage_folder_api
                 $events = array_merge($events, $this->get_recurring_events($record, $start, $end));
             }
             // add top-level exceptions (aka loose single occurrences)
-            else if (!empty($record['exceptions'])) {
+            elseif (!empty($record['exceptions'])) {
                 foreach ($record['exceptions'] as $ex) {
                     $component = $this->_to_driver_event($ex, false, false, $record);
                     if ($component['start'] <= $end && $component['end'] >= $start) {
@@ -385,7 +381,7 @@ class kolab_calendar extends kolab_storage_folder_api
 
         // post-filter all events by fulltext search and partstat values
         $me = $this;
-        $events = array_filter($events, function($event) use ($words, $partstat_exclude, $user_emails, $me) {
+        $events = array_filter($events, function ($event) use ($words, $partstat_exclude, $user_emails, $me) {
             // fulltext search
             if (count($words)) {
                 $hits = 0;
@@ -435,16 +431,14 @@ class kolab_calendar extends kolab_storage_folder_api
     {
         // convert to DateTime for comparisons
         try {
-            $start = new DateTime('@'.$start);
-        }
-        catch (Exception $e) {
+            $start = new DateTime('@' . $start);
+        } catch (Exception $e) {
             $start = new DateTime('@0');
         }
         if ($end) {
             try {
-                $end = new DateTime('@'.$end);
-            }
-            catch (Exception $e) {
+                $end = new DateTime('@' . $end);
+            } catch (Exception $e) {
                 $end = null;
             }
         }
@@ -462,8 +456,7 @@ class kolab_calendar extends kolab_storage_folder_api
                 $query[] = ['tags', '!=', 'x-partstat:' . $email . ':needs-action'];
                 $query[] = ['tags', '!=', 'x-partstat:' . $email . ':declined'];
             }
-        }
-        else if (is_array($filter_query)) {
+        } elseif (is_array($filter_query)) {
             $query = array_merge($query, $filter_query);
         }
 
@@ -493,15 +486,16 @@ class kolab_calendar extends kolab_storage_folder_api
         $saved  = $this->storage->save($object, 'event');
 
         if (!$saved) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error saving event object to Kolab server"
+                    'message' => "Error saving event object to Kolab server",
                 ],
-                true, false
+                true,
+                false
             );
             $saved = false;
-        }
-        else {
+        } else {
             // save links in configuration.relation object
             if ($this->save_links($event['uid'], $links)) {
                 $object['links'] = $links;
@@ -542,14 +536,15 @@ class kolab_calendar extends kolab_storage_folder_api
         $saved  = $this->storage->save($object, 'event', $old['uid']);
 
         if (!$saved) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error saving event object to Kolab server"
+                    'message' => "Error saving event object to Kolab server",
                 ],
-                true, false
+                true,
+                false
             );
-        }
-        else {
+        } else {
             // save links in configuration.relation object
             if ($this->save_links($event['uid'], $links)) {
                 $object['links'] = $links;
@@ -579,11 +574,13 @@ class kolab_calendar extends kolab_storage_folder_api
         $deleted = $this->storage->delete(!empty($event['uid']) ? $event['uid'] : $event['id'], $force);
 
         if (!$deleted) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => sprintf("Error deleting event object '%s' from Kolab server", $event['id'])
+                    'message' => sprintf("Error deleting event object '%s' from Kolab server", $event['id']),
                 ],
-                true, false
+                true,
+                false
             );
         }
 
@@ -606,11 +603,13 @@ class kolab_calendar extends kolab_storage_folder_api
             return true;
         }
 
-        rcube::raise_error([
+        rcube::raise_error(
+            [
                 'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                'message' => sprintf("Error undeleting the event object '%s' from the Kolab server", $event['id'])
+                'message' => sprintf("Error undeleting the event object '%s' from the Kolab server", $event['id']),
             ],
-            true, false
+            true,
+            false
         );
 
         return false;
@@ -650,8 +649,7 @@ class kolab_calendar extends kolab_storage_folder_api
         if (empty($event['_formatobj'])) {
             $rec    = $this->storage->get_object(!empty($event['uid']) ? $event['uid'] : $event['id']);
             $object = $rec['_formatobj'];
-        }
-        else {
+        } else {
             $object = $event['_formatobj'];
         }
 
@@ -778,8 +776,7 @@ class kolab_calendar extends kolab_storage_folder_api
                 if ($limit && count($events) >= $limit) {
                     return $events;
                 }
-            }
-            else if ($next_event['start'] > $end) {
+            } elseif ($next_event['start'] > $end) {
                 // stop loop if out of range
                 break;
             }
@@ -825,14 +822,13 @@ class kolab_calendar extends kolab_storage_folder_api
         $recurrence_id_format = libcalendaring::recurrence_id_format($master_event ? $master_event : $record);
         if (!$noinst && !empty($record['recurrence']) && empty($record['recurrence_id']) && empty($record['_instance'])) {
             $record['_instance'] = $record['start']->format($recurrence_id_format);
-        }
-        else if (isset($record['recurrence_date']) && $record['recurrence_date'] instanceof DateTimeInterface) {
+        } elseif (isset($record['recurrence_date']) && $record['recurrence_date'] instanceof DateTimeInterface) {
             $record['_instance'] = $record['recurrence_date']->format($recurrence_id_format);
         }
 
         // clean up exception data
         if (!empty($record['recurrence']) && !empty($record['recurrence']['EXCEPTIONS'])) {
-            array_walk($record['recurrence']['EXCEPTIONS'], function(&$exception) {
+            array_walk($record['recurrence']['EXCEPTIONS'], function (&$exception) {
                 unset($exception['_mailbox'], $exception['_msguid'], $exception['_formatobj'], $exception['_attachments']);
             });
         }
@@ -883,7 +879,7 @@ class kolab_calendar extends kolab_storage_folder_api
         }
 
         // remove some internal properties which should not be cached
-        $cleanup_fn = function(&$event) {
+        $cleanup_fn = function (&$event) {
             unset($event['_savemode'], $event['_fromcalendar'], $event['_identity'], $event['_folder_id'],
                 $event['calendar'], $event['className'], $event['recurrence_id'],
                 $event['attachments'], $event['deleted_attachments']);
@@ -893,7 +889,7 @@ class kolab_calendar extends kolab_storage_folder_api
 
         // clean up exception data
         if (!empty($event['exceptions'])) {
-            array_walk($event['exceptions'], function(&$exception) use ($cleanup_fn) {
+            array_walk($event['exceptions'], function (&$exception) use ($cleanup_fn) {
                 unset($exception['_mailbox'], $exception['_msguid'], $exception['_formatobj']);
                 $cleanup_fn($exception);
             });
@@ -948,13 +944,11 @@ class kolab_calendar extends kolab_storage_folder_api
             foreach ($prop as $key => $val) {
                 if (is_numeric($key) || is_array($val)) {
                     $out .= self::_complex2string($val);
-                }
-                else if (!in_array($key, $ignorekeys)) {
+                } elseif (!in_array($key, $ignorekeys)) {
                     $out .= $val . ' ';
                 }
             }
-        }
-        else if (is_string($prop) || is_numeric($prop)) {
+        } elseif (is_string($prop) || is_numeric($prop)) {
             $out .= $prop . ' ';
         }
 

@@ -28,37 +28,39 @@ class pdfviewer extends rcube_plugin
 {
     public $task = 'mail|calendar|tasks|logout';
 
-    private $pdf_mimetypes = array(
+    private $pdf_mimetypes = [
         'application/pdf',
         'application/x-pdf',
         'application/acrobat',
         'applications/vnd.pdf',
         'text/pdf',
         'text/x-pdf',
-    );
+    ];
 
     /**
      * Plugin initialization
      */
-    function init()
+    public function init()
     {
         // pdf.js only supports IE9 or higher
-        $ua = new rcube_browser;
-        if ($ua->ie && $ua->ver < 9)
+        $ua = new rcube_browser();
+        if ($ua->ie && $ua->ver < 9) {
             return;
+        }
 
         // extend list of mimetypes that should open in preview
         $rcmail = rcube::get_instance();
         if ($rcmail->action == 'preview' || $rcmail->action == 'show' || $rcmail->task == 'calendar' || $rcmail->task == 'tasks') {
-          $mimetypes = (array)$rcmail->config->get('client_mimetypes');
-          $rcmail->config->set('client_mimetypes', array_merge($mimetypes, $this->pdf_mimetypes));
+            $mimetypes = (array)$rcmail->config->get('client_mimetypes');
+            $rcmail->config->set('client_mimetypes', array_merge($mimetypes, $this->pdf_mimetypes));
         }
 
         // only use pdf.js if the browser doesn't support inline PDF rendering
-        if (empty($_SESSION['browser_caps']['pdf']) || $ua->opera)
-            $this->add_hook('message_part_get', array($this, 'get_part'));
+        if (empty($_SESSION['browser_caps']['pdf']) || $ua->opera) {
+            $this->add_hook('message_part_get', [$this, 'get_part']);
+        }
 
-        $this->add_hook('message_part_structure', array($this, 'part_structure'));
+        $this->add_hook('message_part_structure', [$this, 'part_structure']);
     }
 
     /**
@@ -89,8 +91,7 @@ class pdfviewer extends rcube_plugin
             foreach (array_keys($args['structure']->parts) as $i) {
                 $this->fix_mime_part($args['structure']->parts[$i], $args['object']);
             }
-        }
-        else if ($args['structure']->mimetype != $args['mimetype']) {
+        } elseif ($args['structure']->mimetype != $args['mimetype']) {
             $args['mimetype'] = $args['structure'];
         }
 
@@ -117,6 +118,6 @@ class pdfviewer extends rcube_plugin
             }
         }
 
-        list($part->ctype_primary, $part->ctype_secondary) = explode('/', $part->mimetype);
+        [$part->ctype_primary, $part->ctype_secondary] = explode('/', $part->mimetype);
     }
 }

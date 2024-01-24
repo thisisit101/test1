@@ -25,4 +25,3 @@ $labels['wastebasket'] = 'Cestino';
 $labels['junkemail'] = 'Posta indesiderata';
 $labels['confidential'] = 'Riservato';
 $messages['defaultfolderexists'] = 'Esiste già una cartella predefinita del tipo specificato';
-?>

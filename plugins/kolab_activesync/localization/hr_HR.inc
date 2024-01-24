@@ -1,3 +1,3 @@
 <?php
+
 $labels['event'] = 'Kalendari';
-?>

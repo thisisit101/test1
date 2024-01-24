@@ -33,4 +33,3 @@ $labels['createsuccess'] = 'De gedelegeerde is met succes toegevoegd.';
 $labels['createerror'] = 'De gedelegeerde kon niet worden toegevoegd.';
 $labels['arialabeldelegatedelete'] = 'Dialoogvenster voor verwijdering van gedelegeerde';
 $labels['arialabeldelegateform'] = 'Formulier voor eigenschappen van gedelegeerde';
-?>

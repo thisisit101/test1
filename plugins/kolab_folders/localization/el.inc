@@ -20,4 +20,3 @@ $labels['outbox'] = 'Εξερχόμενα';
 $labels['wastebasket'] = 'Κάδος απορριμάτων';
 $labels['confidential'] = 'Εμπιστευτικό';
 $labels['private'] = 'Ιδιωτικό';
-?>

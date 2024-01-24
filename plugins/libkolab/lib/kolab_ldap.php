@@ -26,15 +26,15 @@
  */
 class kolab_ldap extends rcube_ldap_generic
 {
-    private $conf = array();
+    private $conf = [];
     private $debug = false;
-    private $fieldmap = array();
+    private $fieldmap = [];
     private $parse_replaces = [];
     private $rcache;
     private $ready = false;
 
 
-    function __construct($p)
+    public function __construct($p)
     {
         $rcmail = rcube::get_instance();
 
@@ -58,7 +58,7 @@ class kolab_ldap extends rcube_ldap_generic
         parent::__construct($p);
         $this->_connect();
 
-        $rcmail->add_shutdown_function(array($this, 'close'));
+        $rcmail->add_shutdown_function([$this, 'close']);
     }
 
     /**
@@ -93,13 +93,12 @@ class kolab_ldap extends rcube_ldap_generic
                 $u = null;
                 // Get the pieces needed for variable replacement.
                 if ($fu = ($rcube->get_user_email() ?: ($this->config['username'] ?? null))) {
-                    list($u, $d) = explode('@', $fu);
-                }
-                else {
+                    [$u, $d] = explode('@', $fu);
+                } else {
                     $d = $this->config['mail_domain'] ?? null;
                 }
 
-                $dc = 'dc=' . strtr($d, array('.' => ',dc=')); // hierarchal domain string
+                $dc = 'dc=' . strtr($d, ['.' => ',dc=']); // hierarchal domain string
 
                 // resolve $dc through LDAP
                 if (!empty($this->config['domain_filter']) && !empty($this->config['search_bind_dn'])) {
@@ -107,13 +106,13 @@ class kolab_ldap extends rcube_ldap_generic
                     $dc = $this->domain_root_dn($d);
                 }
 
-                $replaces = array('%dn' => '', '%dc' => $dc, '%d' => $d, '%fu' => $fu, '%u' => $u);
+                $replaces = ['%dn' => '', '%dc' => $dc, '%d' => $d, '%fu' => $fu, '%u' => $u];
 
                 // Search for the dn to use to authenticate
                 if (($this->config['search_base_dn'] ?? false) && ($this->config['search_filter'] ?? false)
                     && (strstr($bind_dn, '%dn') || strstr($base_dn, '%dn') || strstr($groups_base_dn, '%dn'))
                 ) {
-                    $search_attribs = array('uid');
+                    $search_attribs = ['uid'];
                     if ($search_bind_attrib = (array) $this->config['search_bind_attrib']) {
                         foreach ($search_bind_attrib as $r => $attr) {
                             $search_attribs[] = $attr;
@@ -129,15 +128,14 @@ class kolab_ldap extends rcube_ldap_generic
 
                     if ($this->cache && ($dn = $this->cache->get($cache_key))) {
                         $replaces['%dn'] = $dn;
-                    }
-                    else {
+                    } else {
                         $ldap = $this;
                         if (!empty($search_bind_dn) && !empty($this->config['search_bind_pw'])) {
                             // To protect from "Critical extension is unavailable" error
                             // we need to use a separate LDAP connection
                             if (!empty($this->config['vlv'])) {
                                 $ldap = new rcube_ldap_generic($this->config);
-                                $ldap->config_set(array('cache' => $this->cache, 'debug' => $this->debug));
+                                $ldap->config_set(['cache' => $this->cache, 'debug' => $this->debug]);
                                 if (!$ldap->connect($host)) {
                                     continue;
                                 }
@@ -169,13 +167,13 @@ class kolab_ldap extends rcube_ldap_generic
 
                     // DN not found
                     if (empty($replaces['%dn'])) {
-                        if (!empty($this->config['search_dn_default']))
+                        if (!empty($this->config['search_dn_default'])) {
                             $replaces['%dn'] = $this->config['search_dn_default'];
-                        else {
-                            rcube::raise_error(array(
+                        } else {
+                            rcube::raise_error([
                                 'code' => 100, 'type' => 'ldap',
                                 'file' => __FILE__, 'line' => __LINE__,
-                                'message' => "DN not found using LDAP search."), true);
+                                'message' => "DN not found using LDAP search."], true);
                             continue;
                         }
                     }
@@ -195,7 +193,7 @@ class kolab_ldap extends rcube_ldap_generic
                     $this->config['filter'] = strtr($this->config['filter'], $replaces);
                 }
 
-                foreach (array('base_dn', 'filter', 'member_filter') as $k) {
+                foreach (['base_dn', 'filter', 'member_filter'] as $k) {
                     if (!empty($this->config['groups'][$k])) {
                         $this->config['groups'][$k] = strtr($this->config['groups'][$k], $replaces);
                     }
@@ -208,15 +206,12 @@ class kolab_ldap extends rcube_ldap_generic
 
             if (empty($bind_pass)) {
                 $this->ready = true;
-            }
-            else {
+            } else {
                 if (!empty($this->config['auth_cid'])) {
                     $this->ready = $this->sasl_bind($this->config['auth_cid'], $bind_pass, $bind_dn);
-                }
-                else if (!empty($bind_dn)) {
+                } elseif (!empty($bind_dn)) {
                     $this->ready = $this->bind($bind_dn, $bind_pass);
-                }
-                else {
+                } else {
                     $this->ready = $this->sasl_bind($bind_user, $bind_pass);
                 }
             }
@@ -229,9 +224,9 @@ class kolab_ldap extends rcube_ldap_generic
         }  // end foreach hosts
 
         if (!is_resource($this->conn)) {
-            rcube::raise_error(array('code' => 100, 'type' => 'ldap',
+            rcube::raise_error(['code' => 100, 'type' => 'ldap',
                 'file' => __FILE__, 'line' => __LINE__,
-                'message' => "Could not connect to any LDAP server"), true);
+                'message' => "Could not connect to any LDAP server"], true);
 
             $this->ready = false;
         }
@@ -242,7 +237,7 @@ class kolab_ldap extends rcube_ldap_generic
     /**
      * Fetches user data from LDAP addressbook
      */
-    function get_user_record($user, $host)
+    public function get_user_record($user, $host)
     {
         $rcmail  = rcube::get_instance();
         $filter  = $rcmail->config->get('kolab_auth_filter');
@@ -268,10 +263,10 @@ class kolab_ldap extends rcube_ldap_generic
     /**
      * Fetches user data from LDAP addressbook
      */
-    function get_user_groups($dn, $user, $host)
+    public function get_user_groups($dn, $user, $host)
     {
         if (empty($dn) || empty($this->config['groups'])) {
-            return array();
+            return [];
         }
 
         $base_dn     = $this->parse_vars($this->config['groups']['base_dn'], $user, $host);
@@ -279,17 +274,18 @@ class kolab_ldap extends rcube_ldap_generic
         $member_attr = $this->get_group_member_attr();
         $filter      = "(member=$dn)(uniqueMember=$dn)";
 
-        if ($member_attr != 'member' && $member_attr != 'uniqueMember')
+        if ($member_attr != 'member' && $member_attr != 'uniqueMember') {
             $filter .= "($member_attr=$dn)";
-        $filter = strtr("(|$filter)", array("\\" => "\\\\"));
+        }
+        $filter = strtr("(|$filter)", ["\\" => "\\\\"]);
 
-        $result = parent::search($base_dn, $filter, 'sub', array('dn', $name_attr));
+        $result = parent::search($base_dn, $filter, 'sub', ['dn', $name_attr]);
 
         if (!$result) {
-            return array();
+            return [];
         }
 
-        $groups = array();
+        $groups = [];
         foreach ($result as $entry) {
             $dn    = $entry['dn'];
             $entry = rcube_ldap_generic::normalize_entry($entry);
@@ -307,7 +303,7 @@ class kolab_ldap extends rcube_ldap_generic
      *
      * @return array Record data
      */
-    function get_record($dn)
+    public function get_record($dn)
     {
         if (!$this->ready) {
             return;
@@ -329,7 +325,7 @@ class kolab_ldap extends rcube_ldap_generic
      *
      * return bool True on success, False on failure
      */
-    function replace($dn, $entry)
+    public function replace($dn, $entry)
     {
         // fields mapping
         foreach ($this->fieldmap as $field => $attr) {
@@ -359,17 +355,17 @@ class kolab_ldap extends rcube_ldap_generic
      *
      * @return array List of LDAP records found
      */
-    function dosearch($fields, $value, $mode=1, $required = array(), $limit = 0, &$count = 0)
+    public function dosearch($fields, $value, $mode = 1, $required = [], $limit = 0, &$count = 0)
     {
         if (empty($fields)) {
-            return array();
+            return [];
         }
 
         $mode  = intval($mode);
 
         // try to resolve field names into ldap attributes
         $fieldmap = $this->fieldmap;
-        $attrs = array_map(function($f) use ($fieldmap) {
+        $attrs = array_map(function ($f) use ($fieldmap) {
             return array_key_exists($f, $fieldmap) ? $fieldmap[$f] : $f;
         }, (array)$fields);
 
@@ -410,7 +406,7 @@ class kolab_ldap extends rcube_ldap_generic
         $base_dn = $this->parse_vars($this->config['base_dn']);
         $scope   = $this->config['scope'];
         $attrs   = array_values($this->fieldmap);
-        $list    = array();
+        $list    = [];
 
         if ($result = $this->search($base_dn, $filter, $scope, $attrs)) {
             $count = $result->count();
@@ -433,7 +429,7 @@ class kolab_ldap extends rcube_ldap_generic
     /**
      * Set filter used in search()
      */
-    function set_filter($filter)
+    public function set_filter($filter)
     {
         $this->config['filter'] = $filter;
     }
@@ -451,8 +447,7 @@ class kolab_ldap extends rcube_ldap_generic
             $attr_lc = strtolower($attr);
             if (isset($entry[$attr_lc])) {
                 $entry[$field] = $entry[$attr_lc];
-            }
-            else if (isset($entry[$attr])) {
+            } elseif (isset($entry[$attr])) {
                 $entry[$field] = $entry[$attr];
             }
         }
@@ -473,7 +468,7 @@ class kolab_ldap extends rcube_ldap_generic
     /**
      * Detects group member attribute name
      */
-    private function get_group_member_attr($object_classes = array())
+    private function get_group_member_attr($object_classes = [])
     {
         if (empty($object_classes)) {
             $object_classes = $this->config['groups']['object_classes'];
@@ -509,7 +504,7 @@ class kolab_ldap extends rcube_ldap_generic
     /**
      * Prepares filter query for LDAP search
      */
-    function parse_vars($str, $user = null, $host = null)
+    public function parse_vars($str, $user = null, $host = null)
     {
         // When authenticating user $user is always set
         // if not set it means we use this LDAP object for other
@@ -521,9 +516,8 @@ class kolab_ldap extends rcube_ldap_generic
 
         $dc = null;
         if (isset($this->icache[$user])) {
-            list($user, $dc) = $this->icache[$user];
-        }
-        else {
+            [$user, $dc] = $this->icache[$user];
+        } else {
             $orig_user = $user;
             $domain = null;
             $rcmail = rcube::get_instance();
@@ -532,37 +526,35 @@ class kolab_ldap extends rcube_ldap_generic
             if ($username_domain = $rcmail->config->get('username_domain')) {
                 if ($host && is_array($username_domain) && isset($username_domain[$host])) {
                     $domain = rcube_utils::parse_host($username_domain[$host], $host);
-                }
-                else if (is_string($username_domain)) {
+                } elseif (is_string($username_domain)) {
                     $domain = rcube_utils::parse_host($username_domain, $host);
                 }
             }
 
             // realmed username (with domain)
             if ($user && strpos($user, '@')) {
-                list($usr, $dom) = explode('@', $user);
+                [$usr, $dom] = explode('@', $user);
 
                 // unrealm domain, user login can contain a domain alias
                 if ($dom != $domain && ($dc = $this->domain_root_dn($dom))) {
                     // @FIXME: we should replace domain in $user, I suppose
                 }
-            }
-            else if ($domain) {
+            } elseif ($domain) {
                 $user .= '@' . $domain;
             }
 
-            $this->icache[$orig_user] = array($user, $dc);
+            $this->icache[$orig_user] = [$user, $dc];
         }
 
         // replace variables in filter
-        list($u, $d) = explode('@', $user);
+        [$u, $d] = explode('@', $user);
 
         // hierarchal domain string
         if (empty($dc)) {
-            $dc = 'dc=' . strtr($d, array('.' => ',dc='));
+            $dc = 'dc=' . strtr($d, ['.' => ',dc=']);
         }
 
-        $replaces = array('%dc' => $dc, '%d' => $d, '%fu' => $user, '%u' => $u);
+        $replaces = ['%dc' => $dc, '%d' => $d, '%fu' => $user, '%u' => $u];
 
         $this->parse_replaces = $replaces;
 
@@ -599,7 +591,7 @@ class kolab_ldap extends rcube_ldap_generic
      *
      * @return string Encoded HTML identifier string
      */
-    static function dn_encode($str)
+    public static function dn_encode($str)
     {
         return rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
     }
@@ -611,7 +603,7 @@ class kolab_ldap extends rcube_ldap_generic
      *
      * @return string DN string
      */
-    static function dn_decode($str)
+    public static function dn_decode($str)
     {
         $str = str_pad(strtr($str, '-_', '+/'), strlen($str) % 4, '=', STR_PAD_RIGHT);
         return base64_decode($str);

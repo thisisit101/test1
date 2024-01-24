@@ -24,4 +24,3 @@ $labels['wastebasket'] = 'ถ้งขยะ';
 $labels['junkemail'] = 'ขยะ';
 $labels['confidential'] = 'ลับเฉพาะ';
 $messages['defaultfolderexists'] = 'มีแฟ้มสำหรับเก็บข้อมูลขนิดดังกล่าวแล้ว';
-?>

@@ -23,4 +23,3 @@ $labels['outbox'] = 'Изходящи';
 $labels['wastebasket'] = 'Кошче';
 $labels['junkemail'] = 'Нежелани';
 $messages['defaultfolderexists'] = 'Вече има папка по подразбиране за въпросният тип';
-?>

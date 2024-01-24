@@ -244,4 +244,3 @@ $labels['arialabeleventattendees'] = 'รายชื่อผู้เข้า
 $labels['arialabeleventresources'] = 'รายการทรัพยากรที่ใช้ในเหตุการณ์';
 $labels['arialabelresourcesearchform'] = 'ฟอร์มค้นหาทรัพยากร';
 $labels['arialabelresourceselection'] = 'ทรัพยากรที่ยังว่าง';
-?>

@@ -27,7 +27,7 @@ class kolab_files extends rcube_plugin
     // all task excluding 'login' and 'logout'
     public $task = '?(?!login|logout).*';
 
-    public $allowed_prefs = array('kolab_files_collapsed_folders');
+    public $allowed_prefs = ['kolab_files_collapsed_folders'];
     public $rc;
     public $home;
     private $engine;
@@ -37,30 +37,30 @@ class kolab_files extends rcube_plugin
         $this->rc = rcube::get_instance();
 
         // Register hooks
-        $this->add_hook('refresh', array($this, 'refresh'));
+        $this->add_hook('refresh', [$this, 'refresh']);
 
         // Plugin actions for other tasks
-        $this->register_action('plugin.kolab_files', array($this, 'actions'));
+        $this->register_action('plugin.kolab_files', [$this, 'actions']);
 
         // Register task
         $this->register_task('files');
 
         // Register plugin task actions
-        $this->register_action('index', array($this, 'actions'));
-        $this->register_action('prefs', array($this, 'actions'));
-        $this->register_action('open',  array($this, 'actions'));
-        $this->register_action('edit',  array($this, 'actions'));
-        $this->register_action('share',  array($this, 'actions'));
-        $this->register_action('reset',  array($this, 'actions'));
-        $this->register_action('autocomplete', array($this, 'autocomplete'));
+        $this->register_action('index', [$this, 'actions']);
+        $this->register_action('prefs', [$this, 'actions']);
+        $this->register_action('open', [$this, 'actions']);
+        $this->register_action('edit', [$this, 'actions']);
+        $this->register_action('share', [$this, 'actions']);
+        $this->register_action('reset', [$this, 'actions']);
+        $this->register_action('autocomplete', [$this, 'autocomplete']);
 
         // we use libkolab::http_request() from libkolab with its configuration
         $this->require_plugin('libkolab');
 
         // Load UI from startup hook
-        $this->add_hook('startup', array($this, 'startup'));
+        $this->add_hook('startup', [$this, 'startup']);
 
-        $this->add_hook('preferences_save', array($this, 'preferences_save'));
+        $this->add_hook('preferences_save', [$this, 'preferences_save']);
     }
 
     /**
@@ -142,7 +142,7 @@ class kolab_files extends rcube_plugin
     /**
      * Handler for user autocomplete request
      */
-    function autocomplete()
+    public function autocomplete()
     {
         $this->load_config();
 
@@ -158,9 +158,9 @@ class kolab_files extends rcube_plugin
     {
         if ($props['section'] == 'general') {
             $dont_override = (array) $this->rc->config->get('dont_override');
-            $prefs         = array();
+            $prefs         = [];
 
-            foreach (array('timezone', 'date_long') as $idx) {
+            foreach (['timezone', 'date_long'] as $idx) {
                 if (isset($props['prefs'][$idx]) && !in_array($idx, $dont_override)) {
                     $prefs[$idx] = $props['prefs'][$idx];
                 }

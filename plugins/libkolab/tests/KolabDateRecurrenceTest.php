@@ -23,7 +23,7 @@
 
 class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
 {
-    function setUp(): void
+    public function setUp(): void
     {
         $rcube = rcube::get_instance();
         $rcube->plugins->load_plugin('libkolab', true, true);
@@ -33,14 +33,14 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
     /**
      * Data for test_end()
      */
-    function data_end()
+    public function data_end()
     {
         return [
             // non-recurring
             [
                 [
                     'recurrence' => [],
-                    'start' => new DateTime('2017-08-31 11:00:00')
+                    'start' => new DateTime('2017-08-31 11:00:00'),
                 ],
                 '2117-08-31 11:00:00',                             // expected result
             ],
@@ -48,7 +48,7 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
             [
                 [
                     'recurrence' => ['FREQ' => 'DAILY', 'INTERVAL' => '1', 'COUNT' => 2],
-                    'start' => new DateTime('2017-08-31 11:00:00')
+                    'start' => new DateTime('2017-08-31 11:00:00'),
                 ],
                 '2017-09-01 11:00:00',
             ],
@@ -84,159 +84,159 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
     /**
      * Data for test_first_occurrence()
      */
-    function data_first_occurrence()
+    public function data_first_occurrence()
     {
         // TODO: BYYEARDAY, BYWEEKNO, BYSETPOS, WKST
 
-        return array(
+        return [
             // non-recurring
-            array(
-                array(),                                     // recurrence data
+            [
+                [],                                     // recurrence data
                 '2017-08-31 11:00:00',                       // start date
                 '2017-08-31 11:00:00',                       // expected result
-            ),
+            ],
             // daily
-            array(
-                array('FREQ' => 'DAILY', 'INTERVAL' => '1'), // recurrence data
+            [
+                ['FREQ' => 'DAILY', 'INTERVAL' => '1'], // recurrence data
                 '2017-08-31 11:00:00',                       // start date
                 '2017-08-31 11:00:00',                       // expected result
-            ),
+            ],
             // TODO: this one is not supported by the Calendar UI
-            array(
-                array('FREQ' => 'DAILY', 'INTERVAL' => '1', 'BYMONTH' => 1),
+            [
+                ['FREQ' => 'DAILY', 'INTERVAL' => '1', 'BYMONTH' => 1],
                 '2017-08-31 11:00:00',
                 '2018-01-01 11:00:00',
-            ),
+            ],
             // weekly
-            array(
-                array('FREQ' => 'WEEKLY', 'INTERVAL' => '1'),
+            [
+                ['FREQ' => 'WEEKLY', 'INTERVAL' => '1'],
                 '2017-08-31 11:00:00', // Thursday
                 '2017-08-31 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'WE'),
+            ],
+            [
+                ['FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'WE'],
                 '2017-08-31 11:00:00', // Thursday
                 '2017-09-06 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'TH'),
+            ],
+            [
+                ['FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'TH'],
                 '2017-08-31 11:00:00', // Thursday
                 '2017-08-31 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'FR'),
+            ],
+            [
+                ['FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'FR'],
                 '2017-08-31 11:00:00', // Thursday
                 '2017-09-01 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'WEEKLY', 'INTERVAL' => '2'),
+            ],
+            [
+                ['FREQ' => 'WEEKLY', 'INTERVAL' => '2'],
                 '2017-08-31 11:00:00', // Thursday
                 '2017-08-31 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'WEEKLY', 'INTERVAL' => '3', 'BYDAY' => 'WE'),
+            ],
+            [
+                ['FREQ' => 'WEEKLY', 'INTERVAL' => '3', 'BYDAY' => 'WE'],
                 '2017-08-31 11:00:00', // Thursday
                 '2017-09-20 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'WE', 'COUNT' => 1),
+            ],
+            [
+                ['FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'WE', 'COUNT' => 1],
                 '2017-08-31 11:00:00', // Thursday
                 '2017-09-06 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'WE', 'UNTIL' => '2017-09-01'),
+            ],
+            [
+                ['FREQ' => 'WEEKLY', 'INTERVAL' => '1', 'BYDAY' => 'WE', 'UNTIL' => '2017-09-01'],
                 '2017-08-31 11:00:00', // Thursday
                 '',
-            ),
+            ],
             // monthly
-            array(
-                array('FREQ' => 'MONTHLY', 'INTERVAL' => '1'),
+            [
+                ['FREQ' => 'MONTHLY', 'INTERVAL' => '1'],
                 '2017-09-08 11:00:00',
                 '2017-09-08 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'MONTHLY', 'INTERVAL' => '1', 'BYMONTHDAY' => '8,9'),
+            ],
+            [
+                ['FREQ' => 'MONTHLY', 'INTERVAL' => '1', 'BYMONTHDAY' => '8,9'],
                 '2017-08-31 11:00:00',
                 '2017-09-08 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'MONTHLY', 'INTERVAL' => '1', 'BYMONTHDAY' => '8,9'),
+            ],
+            [
+                ['FREQ' => 'MONTHLY', 'INTERVAL' => '1', 'BYMONTHDAY' => '8,9'],
                 '2017-09-08 11:00:00',
                 '2017-09-08 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'MONTHLY', 'INTERVAL' => '1', 'BYDAY' => '1WE'),
+            ],
+            [
+                ['FREQ' => 'MONTHLY', 'INTERVAL' => '1', 'BYDAY' => '1WE'],
                 '2017-08-16 11:00:00',
                 '2017-09-06 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'MONTHLY', 'INTERVAL' => '1', 'BYDAY' => '-1WE'),
+            ],
+            [
+                ['FREQ' => 'MONTHLY', 'INTERVAL' => '1', 'BYDAY' => '-1WE'],
                 '2017-08-16 11:00:00',
                 '2017-08-30 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'MONTHLY', 'INTERVAL' => '2'),
+            ],
+            [
+                ['FREQ' => 'MONTHLY', 'INTERVAL' => '2'],
                 '2017-09-08 11:00:00',
                 '2017-09-08 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'MONTHLY', 'INTERVAL' => '2', 'BYMONTHDAY' => '8'),
+            ],
+            [
+                ['FREQ' => 'MONTHLY', 'INTERVAL' => '2', 'BYMONTHDAY' => '8'],
                 '2017-08-31 11:00:00',
                 '2017-09-08 11:00:00', // ??????
-            ),
+            ],
             // yearly
-            array(
-                array('FREQ' => 'YEARLY', 'INTERVAL' => '1'),
+            [
+                ['FREQ' => 'YEARLY', 'INTERVAL' => '1'],
                 '2017-08-16 12:00:00',
                 '2017-08-16 12:00:00',
-            ),
-            array(
-                array('FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYMONTH' => '8'),
+            ],
+            [
+                ['FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYMONTH' => '8'],
                 '2017-08-16 12:00:00',
                 '2017-08-16 12:00:00',
-            ),
-            array(
-                array('FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYDAY' => '-1MO'),
+            ],
+            [
+                ['FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYDAY' => '-1MO'],
                 '2017-08-16 11:00:00',
                 '2017-12-25 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYMONTH' => '8', 'BYDAY' => '-1MO'),
+            ],
+            [
+                ['FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYMONTH' => '8', 'BYDAY' => '-1MO'],
                 '2017-08-16 11:00:00',
                 '2017-08-28 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYMONTH' => '1', 'BYDAY' => '1MO'),
+            ],
+            [
+                ['FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYMONTH' => '1', 'BYDAY' => '1MO'],
                 '2017-08-16 11:00:00',
                 '2018-01-01 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYMONTH' => '1,9', 'BYDAY' => '1MO'),
+            ],
+            [
+                ['FREQ' => 'YEARLY', 'INTERVAL' => '1', 'BYMONTH' => '1,9', 'BYDAY' => '1MO'],
                 '2017-08-16 11:00:00',
                 '2017-09-04 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'YEARLY', 'INTERVAL' => '2'),
+            ],
+            [
+                ['FREQ' => 'YEARLY', 'INTERVAL' => '2'],
                 '2017-08-16 11:00:00',
                 '2017-08-16 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'YEARLY', 'INTERVAL' => '2', 'BYMONTH' => '8'),
+            ],
+            [
+                ['FREQ' => 'YEARLY', 'INTERVAL' => '2', 'BYMONTH' => '8'],
                 '2017-08-16 11:00:00',
                 '2017-08-16 11:00:00',
-            ),
-            array(
-                array('FREQ' => 'YEARLY', 'INTERVAL' => '2', 'BYDAY' => '-1MO'),
+            ],
+            [
+                ['FREQ' => 'YEARLY', 'INTERVAL' => '2', 'BYDAY' => '-1MO'],
                 '2017-08-16 11:00:00',
                 '2017-12-25 11:00:00',
-            ),
+            ],
             // on dates (FIXME: do we really expect the first occurrence to be on the start date?)
-            array(
-                array('RDATE' => array (new DateTime('2017-08-10 11:00:00 Europe/Warsaw'))),
+            [
+                ['RDATE' =>  [new DateTime('2017-08-10 11:00:00 Europe/Warsaw')]],
                 '2017-08-01 11:00:00',
                 '2017-08-01 11:00:00',
-            ),
-        );
+            ],
+        ];
     }
 
     /**
@@ -244,7 +244,7 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
      *
      * @dataProvider data_end
      */
-    function test_end($event, $expected)
+    public function test_end($event, $expected)
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -264,7 +264,7 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
      *
      * @dataProvider data_first_occurrence
      */
-    function test_first_occurrence($recurrence_data, $start, $expected)
+    public function test_first_occurrence($recurrence_data, $start, $expected)
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -275,7 +275,7 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
             $recurrence_data['UNTIL'] = new DateTime($recurrence_data['UNTIL']);
         }
 
-        $event  = array('start' => $start, 'recurrence' => $recurrence_data);
+        $event  = ['start' => $start, 'recurrence' => $recurrence_data];
         $object = kolab_format::factory('event', 3.0);
         $object->set($event);
 
@@ -290,7 +290,7 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
      *
      * @dataProvider data_first_occurrence
      */
-    function test_first_occurrence_allday($recurrence_data, $start, $expected)
+    public function test_first_occurrence_allday($recurrence_data, $start, $expected)
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');
@@ -301,7 +301,7 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
             $recurrence_data['UNTIL'] = new DateTime($recurrence_data['UNTIL']);
         }
 
-        $event  = array('start' => $start, 'recurrence' => $recurrence_data, 'allday' => true);
+        $event  = ['start' => $start, 'recurrence' => $recurrence_data, 'allday' => true];
         $object = kolab_format::factory('event', 3.0);
         $object->set($event);
 
@@ -314,7 +314,7 @@ class KolabDateRecurrenceTest extends PHPUnit\Framework\TestCase
     /**
      * kolab_date_recurrence::next_instance()
      */
-    function test_next_instance()
+    public function test_next_instance()
     {
         if (!kolab_format::supports(3)) {
             $this->markTestSkipped('No Kolab support');

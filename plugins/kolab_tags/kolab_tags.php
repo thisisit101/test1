@@ -38,17 +38,17 @@ class kolab_tags extends rcube_plugin
         $this->rc = rcube::get_instance();
 
         // Register hooks to display tags in message subject
-        $this->add_hook('messages_list', array($this, 'messages_list'));
-        $this->add_hook('message_headers_output', array($this, 'message_headers_output'));
+        $this->add_hook('messages_list', [$this, 'messages_list']);
+        $this->add_hook('message_headers_output', [$this, 'message_headers_output']);
 
         // Searching by tags
-        $this->add_hook('imap_search_before', array($this, 'imap_search_before'));
+        $this->add_hook('imap_search_before', [$this, 'imap_search_before']);
 
         // Plugin actions for tag management
-        $this->register_action('plugin.kolab_tags', array($this, 'actions'));
+        $this->register_action('plugin.kolab_tags', [$this, 'actions']);
 
         // Load UI from startup hook
-        $this->add_hook('startup', array($this, 'startup'));
+        $this->add_hook('startup', [$this, 'startup']);
     }
 
     /**
@@ -62,7 +62,7 @@ class kolab_tags extends rcube_plugin
                 return $this->engine = false;
             }
 
-//            $this->load_config();
+            //            $this->load_config();
 
             require_once $this->home . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'kolab_tags_engine.php';
 

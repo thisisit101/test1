@@ -12,4 +12,3 @@ $labels['event'] = 'Календари';
 $labels['task'] = 'Задачи';
 $labels['note'] = 'Бележки';
 $labels['savingdata'] = 'Запазване на данни...';
-?>

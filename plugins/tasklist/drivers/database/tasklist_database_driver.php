@@ -24,16 +24,16 @@
 
 class tasklist_database_driver extends tasklist_driver
 {
-    const IS_COMPLETE_SQL = "(`status` = 'COMPLETED' OR (`complete` = 1 AND `status` = ''))";
+    public const IS_COMPLETE_SQL = "(`status` = 'COMPLETED' OR (`complete` = 1 AND `status` = ''))";
 
     public $undelete    = true; // yes, we can
     public $sortable    = false;
-    public $alarm_types = array('DISPLAY');
+    public $alarm_types = ['DISPLAY'];
 
     private $rc;
     private $plugin;
-    private $lists    = array();
-    private $tags     = array();
+    private $lists    = [];
+    private $tags     = [];
     private $list_ids = '';
     private $db_tasks = 'tasks';
     private $db_lists = 'tasklists';
@@ -63,7 +63,7 @@ class tasklist_database_driver extends tasklist_driver
         $hidden = array_filter(explode(',', $this->rc->config->get('hidden_tasklists', '')));
 
         if (!empty($this->rc->user->ID)) {
-            $list_ids = array();
+            $list_ids = [];
             $result = $this->rc->db->query(
                 "SELECT *, `tasklist_id` AS id FROM " . $this->db_lists
                 . " WHERE `user_id` = ?"
@@ -83,7 +83,7 @@ class tasklist_database_driver extends tasklist_driver
                 $list_ids[] = $this->rc->db->quote($arr['id']);
             }
 
-            $this->list_ids = join(',', $list_ids);
+            $this->list_ids = implode(',', $list_ids);
         }
     }
 
@@ -94,7 +94,7 @@ class tasklist_database_driver extends tasklist_driver
     {
         // attempt to create a default list for this user
         if (empty($this->lists)) {
-            $prop = array('name' => 'Default', 'color' => '000000');
+            $prop = ['name' => 'Default', 'color' => '000000'];
             if ($this->create_list($prop)) {
                 $this->_read_lists();
             }
@@ -165,12 +165,11 @@ class tasklist_database_driver extends tasklist_driver
 
         if (!empty($prop['active'])) {
             unset($hidden[$prop['id']]);
-        }
-        else {
+        } else {
             $hidden[$prop['id']] = 1;
         }
 
-        return $this->rc->user->save_prefs(array('hidden_tasklists' => join(',', array_keys($hidden))));
+        return $this->rc->user->save_prefs(['hidden_tasklists' => implode(',', array_keys($hidden))]);
     }
 
     /**
@@ -207,7 +206,7 @@ class tasklist_database_driver extends tasklist_driver
      */
     public function search_lists($query, $source)
     {
-        return array();
+        return [];
     }
 
     /**
@@ -227,17 +226,16 @@ class tasklist_database_driver extends tasklist_driver
      * @return array Hash array with counts grouped by status (all|flagged|today|tomorrow|overdue|nodate)
      * @see tasklist_driver::count_tasks()
      */
-    function count_tasks($lists = null)
+    public function count_tasks($lists = null)
     {
         if (empty($lists)) {
             $lists = array_keys($this->lists);
-        }
-        else if (!is_array($lists)) {
+        } elseif (!is_array($lists)) {
             $lists = explode(',', (string) $lists);
         }
 
         // only allow to select from lists of this user
-        $list_ids = array_map(array($this->rc->db, 'quote'), array_intersect($lists, array_keys($this->lists)));
+        $list_ids = array_map([$this->rc->db, 'quote'], array_intersect($lists, array_keys($this->lists)));
 
         $today_date    = new DateTime('now', $this->plugin->timezone);
         $today         = $today_date->format('Y-m-d');
@@ -247,22 +245,23 @@ class tasklist_database_driver extends tasklist_driver
         $result = $this->rc->db->query(sprintf(
             "SELECT `task_id`, `flagged`, `date` FROM " . $this->db_tasks
              . " WHERE `tasklist_id` IN (%s) AND `del` = 0 AND NOT " . self::IS_COMPLETE_SQL,
-            join(',', $list_ids)
+            implode(',', $list_ids)
         ));
 
-        $counts = array('all' => 0, 'today' => 0, 'tomorrow' => 0, 'overdue' => 0, 'later' => 0);
+        $counts = ['all' => 0, 'today' => 0, 'tomorrow' => 0, 'overdue' => 0, 'later' => 0];
         while ($result && ($rec = $this->rc->db->fetch_assoc($result))) {
             $counts['all']++;
-            if (empty($rec['date']))
+            if (empty($rec['date'])) {
                 $counts['later']++;
-            else if ($rec['date'] == $today)
+            } elseif ($rec['date'] == $today) {
                 $counts['today']++;
-            else if ($rec['date'] == $tomorrow)
+            } elseif ($rec['date'] == $tomorrow) {
                 $counts['tomorrow']++;
-            else if ($rec['date'] < $today)
+            } elseif ($rec['date'] < $today) {
                 $counts['overdue']++;
-            else if ($rec['date'] > $tomorrow)
+            } elseif ($rec['date'] > $tomorrow) {
                 $counts['later']++;
+            }
         }
 
         return $counts;
@@ -277,17 +276,16 @@ class tasklist_database_driver extends tasklist_driver
      * @return array List of tasks records matchin the criteria
      * @see tasklist_driver::list_tasks()
      */
-    function list_tasks($filter, $lists = null)
+    public function list_tasks($filter, $lists = null)
     {
         if (empty($lists)) {
             $lists = array_keys($this->lists);
-        }
-        else if (!is_array($lists)) {
+        } elseif (!is_array($lists)) {
             $lists = explode(',', (string) $lists);
         }
 
         // only allow to select from lists of this user
-        $list_ids = array_map(array($this->rc->db, 'quote'), array_intersect($lists, array_keys($this->lists)));
+        $list_ids = array_map([$this->rc->db, 'quote'], array_intersect($lists, array_keys($this->lists)));
         $sql_add  = '';
 
         // add filter criteria
@@ -299,8 +297,7 @@ class tasklist_database_driver extends tasklist_driver
             if (!empty($filter['to'])) {
                 if ($filter['mask'] & tasklist::FILTER_MASK_OVERDUE) {
                     $sql_add .= " AND (`date` IS NOT NULL AND `date` <= " . $this->rc->db->quote($filter['to']) . ")";
-                }
-                else {
+                } else {
                     $sql_add .= " AND (`date` IS NULL OR `date` <= " . $this->rc->db->quote($filter['to']) . ")";
                 }
             }
@@ -311,8 +308,7 @@ class tasklist_database_driver extends tasklist_driver
 
             if ($filter['mask'] & tasklist::FILTER_MASK_COMPLETE) {
                 $sql_add .= " AND " . self::IS_COMPLETE_SQL;
-            }
-            else if (empty($filter['since'])) {
+            } elseif (empty($filter['since'])) {
                 // don't show complete tasks by default
                 $sql_add .= " AND NOT " . self::IS_COMPLETE_SQL;
             }
@@ -324,11 +320,11 @@ class tasklist_database_driver extends tasklist_driver
             // compose (slow) SQL query for searching
             // FIXME: improve searching using a dedicated col and normalized values
             if ($filter['search']) {
-                $sql_query = array();
-                foreach (array('title', 'description', 'organizer', 'attendees') as $col) {
+                $sql_query = [];
+                foreach (['title', 'description', 'organizer', 'attendees'] as $col) {
                     $sql_query[] = $this->rc->db->ilike($col, '%' . $filter['search'] . '%');
                 }
-                $sql_add = " AND (" . join(" OR ", $sql_query) . ")";
+                $sql_add = " AND (" . implode(" OR ", $sql_query) . ")";
             }
 
             if (!empty($filter['since']) && is_numeric($filter['since'])) {
@@ -336,14 +332,15 @@ class tasklist_database_driver extends tasklist_driver
             }
 
             if (!empty($filter['uid'])) {
-                $sql_add .= " AND `uid` IN (" . implode(',', array_map(array($this->rc->db, 'quote'), $filter['uid'])) . ")";
+                $sql_add .= " AND `uid` IN (" . implode(',', array_map([$this->rc->db, 'quote'], $filter['uid'])) . ")";
             }
         }
 
-        $tasks = array();
+        $tasks = [];
         if (!empty($list_ids)) {
-            $result = $this->rc->db->query("SELECT * FROM " . $this->db_tasks
-                . " WHERE `tasklist_id` IN (" . join(',', $list_ids) . ")"
+            $result = $this->rc->db->query(
+                "SELECT * FROM " . $this->db_tasks
+                . " WHERE `tasklist_id` IN (" . implode(',', $list_ids) . ")"
                     . " AND `del` = 0" . $sql_add
                 . " ORDER BY `parent_id`, `task_id` ASC"
             );
@@ -373,14 +370,15 @@ class tasklist_database_driver extends tasklist_driver
 
         $query_col = !empty($prop['id']) ? 'task_id' : 'uid';
 
-        $result = $this->rc->db->query("SELECT * FROM " . $this->db_tasks
+        $result = $this->rc->db->query(
+            "SELECT * FROM " . $this->db_tasks
             . " WHERE `tasklist_id` IN (" . $this->list_ids . ")"
             . " AND `$query_col` = ? AND `del` = 0",
             !empty($prop['id']) ? $prop['id'] : $prop['uid']
         );
 
         if ($result && ($rec = $this->rc->db->fetch_assoc($result))) {
-             return $this->_read_postprocess($rec);
+            return $this->_read_postprocess($rec);
         }
 
         return false;
@@ -408,19 +406,19 @@ class tasklist_database_driver extends tasklist_driver
             $prop = $this->rc->db->fetch_assoc($result);
         }
 
-        $childs   = array();
-        $task_ids = array($prop['id']);
+        $childs   = [];
+        $task_ids = [$prop['id']];
 
         // query for childs (recursively)
         while (!empty($task_ids)) {
             $result = $this->rc->db->query(
                 "SELECT `task_id` AS id FROM " . $this->db_tasks
                 . " WHERE `tasklist_id` IN (" . $this->list_ids . ")"
-                    . " AND `parent_id` IN (" . join(',', array_map(array($this->rc->db, 'quote'), $task_ids)) . ")"
+                    . " AND `parent_id` IN (" . implode(',', array_map([$this->rc->db, 'quote'], $task_ids)) . ")"
                     . " AND `del` = 0"
             );
 
-            $task_ids = array();
+            $task_ids = [];
             while ($result && ($rec = $this->rc->db->fetch_assoc($result))) {
                 $childs[]   = $rec['id'];
                 $task_ids[] = $rec['id'];
@@ -447,24 +445,24 @@ class tasklist_database_driver extends tasklist_driver
     {
         if (empty($lists)) {
             $lists = array_keys($this->lists);
-        }
-        else if (!is_array($lists)) {
+        } elseif (!is_array($lists)) {
             $lists = explode(',', (string) $lists);
         }
 
         // only allow to select from calendars with activated alarms
-        $list_ids = array();
+        $list_ids = [];
         foreach ($lists as $lid) {
             if ($this->lists[$lid] && $this->lists[$lid]['showalarms']) {
                 $list_ids[] = $lid;
             }
         }
-        $list_ids = array_map(array($this->rc->db, 'quote'), $list_ids);
+        $list_ids = array_map([$this->rc->db, 'quote'], $list_ids);
 
-        $alarms = array();
+        $alarms = [];
         if (!empty($list_ids)) {
-            $result = $this->rc->db->query("SELECT * FROM " . $this->db_tasks
-                . " WHERE `tasklist_id` IN (" . join(',', $list_ids) . ")"
+            $result = $this->rc->db->query(
+                "SELECT * FROM " . $this->db_tasks
+                . " WHERE `tasklist_id` IN (" . implode(',', $list_ids) . ")"
                     . " AND `notify` <= " . $this->rc->db->fromunixtime($time)
                     . " AND NOT " . self::IS_COMPLETE_SQL
             );
@@ -487,7 +485,8 @@ class tasklist_database_driver extends tasklist_driver
         // set new notifyat time or unset if not snoozed
         $notify_at = $snooze > 0 ? date('Y-m-d H:i:s', time() + $snooze) : null;
 
-        $query = $this->rc->db->query("UPDATE " . $this->db_tasks
+        $query = $this->rc->db->query(
+            "UPDATE " . $this->db_tasks
             . " SET `changed` = " . $this->rc->db->now() . ", `notify` = ?"
             . " WHERE `task_id` = ? AND `tasklist_id` IN (" . $this->list_ids . ")",
             $notify_at,
@@ -570,7 +569,7 @@ class tasklist_database_driver extends tasklist_driver
             $prop['complete'] = number_format($prop['complete'], 2, '.', '');
         }
 
-        foreach (array('parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms', 'recurrence', 'status', 'complete') as $col) {
+        foreach (['parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms', 'recurrence', 'status', 'complete'] as $col) {
             if (empty($prop[$col])) {
                 $prop[$col] = null;
             }
@@ -579,7 +578,8 @@ class tasklist_database_driver extends tasklist_driver
         $notify_at = $this->_get_notification($prop);
         $now       = $this->rc->db->now();
 
-        $result = $this->rc->db->query("INSERT INTO " . $this->db_tasks
+        $result = $this->rc->db->query(
+            "INSERT INTO " . $this->db_tasks
             . " (`tasklist_id`, `uid`, `parent_id`, `created`, `changed`, `title`, `date`, `time`,"
                 . " `startdate`, `starttime`, `description`, `tags`, `flagged`, `complete`, `status`,"
                 . " `alarms`, `recurrence`, `notify`)"
@@ -593,12 +593,12 @@ class tasklist_database_driver extends tasklist_driver
             $prop['startdate'],
             $prop['starttime'],
             isset($prop['description']) ? strval($prop['description']) : '',
-            !empty($prop['tags']) ? join(',', (array)$prop['tags']) : '',
+            !empty($prop['tags']) ? implode(',', (array)$prop['tags']) : '',
             !empty($prop['flagged']) ? 1 : 0,
             $prop['complete'] ?: 0,
             strval($prop['status']),
-            isset($prop['alarms']) ? $prop['alarms'] : '',
-            isset($prop['recurrence']) ? $prop['recurrence'] : '',
+            $prop['alarms'] ?? '',
+            $prop['recurrence'] ?? '',
             $notify_at
         );
 
@@ -629,13 +629,13 @@ class tasklist_database_driver extends tasklist_driver
             $prop['complete'] = number_format($prop['complete'], 2, '.', '');
         }
 
-        $sql_set = array();
-        foreach (array('title', 'description', 'flagged', 'complete') as $col) {
+        $sql_set = [];
+        foreach (['title', 'description', 'flagged', 'complete'] as $col) {
             if (isset($prop[$col])) {
                 $sql_set[] = $this->rc->db->quote_identifier($col) . '=' . $this->rc->db->quote($prop[$col]);
             }
         }
-        foreach (array('parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms', 'recurrence') as $col) {
+        foreach (['parent_id', 'date', 'time', 'startdate', 'starttime', 'alarms', 'recurrence'] as $col) {
             if (isset($prop[$col])) {
                 $sql_set[] = $this->rc->db->quote_identifier($col) . '=' . (empty($prop[$col]) ? 'NULL' : $this->rc->db->quote($prop[$col]));
             }
@@ -644,7 +644,7 @@ class tasklist_database_driver extends tasklist_driver
             $sql_set[] = $this->rc->db->quote_identifier('status') . '=' . $this->rc->db->quote($prop['status']);
         }
         if (isset($prop['tags'])) {
-            $sql_set[] = $this->rc->db->quote_identifier('tags') . '=' . $this->rc->db->quote(join(',', (array)$prop['tags']));
+            $sql_set[] = $this->rc->db->quote_identifier('tags') . '=' . $this->rc->db->quote(implode(',', (array)$prop['tags']));
         }
 
         if (isset($prop['date']) || isset($prop['time']) || isset($prop['alarms'])) {
@@ -657,8 +657,9 @@ class tasklist_database_driver extends tasklist_driver
             $sql_set[] = $this->rc->db->quote_identifier('tasklist_id') . '=' . $this->rc->db->quote($newlist);
         }
 
-        $result = $this->rc->db->query("UPDATE " . $this->db_tasks
-            . " SET `changed` = " . $this->rc->db->now() . ($sql_set ? ', ' . join(', ', $sql_set) : '')
+        $result = $this->rc->db->query(
+            "UPDATE " . $this->db_tasks
+            . " SET `changed` = " . $this->rc->db->now() . ($sql_set ? ', ' . implode(', ', $sql_set) : '')
             . " WHERE `task_id` = ? AND `tasklist_id` IN (" . $this->list_ids . ")",
             $prop['id']
         );
@@ -697,13 +698,14 @@ class tasklist_database_driver extends tasklist_driver
         $task_id = $prop['id'];
 
         if ($force) {
-            $result = $this->rc->db->query("DELETE FROM " . $this->db_tasks
+            $result = $this->rc->db->query(
+                "DELETE FROM " . $this->db_tasks
                 . " WHERE `task_id` = ? AND `tasklist_id` IN (" . $this->list_ids . ")",
                 $task_id
             );
-        }
-        else {
-            $result = $this->rc->db->query("UPDATE " . $this->db_tasks
+        } else {
+            $result = $this->rc->db->query(
+                "UPDATE " . $this->db_tasks
                 . " SET `changed` = " . $this->rc->db->now() . ", `del` = 1"
                 . " WHERE `task_id` = ? AND `tasklist_id` IN (" . $this->list_ids . ")",
                 $task_id
@@ -723,7 +725,8 @@ class tasklist_database_driver extends tasklist_driver
      */
     public function undelete_task($prop)
     {
-        $result = $this->rc->db->query("UPDATE " . $this->db_tasks
+        $result = $this->rc->db->query(
+            "UPDATE " . $this->db_tasks
             . " SET `changed` = " . $this->rc->db->now() . ", `del` = 0"
             . " WHERE `task_id` = ? AND `tasklist_id` IN (" . $this->list_ids . ")",
             $prop['id']
@@ -772,18 +775,17 @@ class tasklist_database_driver extends tasklist_driver
                 if ($alarm['trigger'][0] == '@') {
                     try {
                         $valarms[$i]['trigger'] = new DateTime(substr($alarm['trigger'], 1));
-                    }
-                    catch (Exception $e) {
+                    } catch (Exception $e) {
                         unset($valarms[$i]);
                     }
                 }
             }
         }
         // convert legacy alarms data
-        else if (strlen($alarms)) {
-            list($trigger, $action) = explode(':', $alarms, 2);
+        elseif (strlen($alarms)) {
+            [$trigger, $action] = explode(':', $alarms, 2);
             if ($trigger = libcalendaring::parse_alarm_value($trigger)) {
-                $valarms = array(array('action' => $action, 'trigger' => $trigger[3] ?: $trigger[0]));
+                $valarms = [['action' => $action, 'trigger' => $trigger[3] ?: $trigger[0]]];
             }
         }
 
@@ -815,14 +817,12 @@ class tasklist_database_driver extends tasklist_driver
                 if ($val[0] == '@') {
                     try {
                         $recurrence[$k] = new DateTime(substr($val, 1));
-                    }
-                    catch (Exception $e) {
+                    } catch (Exception $e) {
                         unset($recurrence[$k]);
                     }
                 }
             }
-        }
-        else {
+        } else {
             $recurrence = '';
         }
 
@@ -838,14 +838,14 @@ class tasklist_database_driver extends tasklist_driver
 
         $lists = $db->query("SELECT `tasklist_id` FROM " . $this->db_lists . " WHERE `user_id` = ?", $args['user']->ID);
 
-        $list_ids = array();
+        $list_ids = [];
         while ($row = $db->fetch_assoc($lists)) {
             $list_ids[] = $row['tasklist_id'];
         }
 
         if (!empty($list_ids)) {
-            foreach (array($this->db_tasks, $this->db_lists) as $table) {
-                $db->query(sprintf("DELETE FROM $table WHERE `tasklist_id` IN (%s)", join(',', $list_ids)));
+            foreach ([$this->db_tasks, $this->db_lists] as $table) {
+                $db->query(sprintf("DELETE FROM $table WHERE `tasklist_id` IN (%s)", implode(',', $list_ids)));
             }
         }
 

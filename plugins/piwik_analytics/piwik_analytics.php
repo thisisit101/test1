@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 
+ *
  * piwik_analytics
  *
  * Bind piwik analytics script - based on: http://github.com/igloonet/roundcube_google_analytics
@@ -18,7 +18,7 @@
 
 class piwik_analytics extends rcube_plugin
 {
-    function init()
+    public function init()
     {
         if (file_exists(dirname(__FILE__) . "/config.inc.php")) {
             $this->load_config('config.inc.php');
@@ -28,22 +28,23 @@ class piwik_analytics extends rcube_plugin
             $this->load_config('config/config.inc.php');
         } elseif (file_exists(dirname(__FILE__) . "/config/config.inc.php.dist")) {
             $this->load_config('config/config.inc.php.dist');
-        /* } else {
-            error_log("Cannot find / load configuration for plugin piwik_analytics"); */
+            /* } else {
+                error_log("Cannot find / load configuration for plugin piwik_analytics"); */
         }
 
-        $this->add_hook('render_page', array($this, 'add_script'));
+        $this->add_hook('render_page', [$this, 'add_script']);
     }
 
-    function add_script($args) {
+    public function add_script($args)
+    {
         $rcmail = rcube::get_instance();
 
         $exclude = $rcmail->config->get('piwik_analytics_exclude');
 
         if (empty($exclude) || !is_array($exclude)) {
-            $exclude = Array();
+            $exclude = [];
         }
-    
+
         if (isset($exclude[$args['template']])) {
             return $args;
         }
@@ -53,7 +54,7 @@ class piwik_analytics extends rcube_plugin
                 return $args;
             }
         }
-    
+
         if (!$rcmail->config->get('piwik_analytics_url', false)) {
             return $args;
         }
@@ -72,12 +73,10 @@ class piwik_analytics extends rcube_plugin
   } catch( err ) {}
 </script><noscript><p><img src="http://' . $rcmail->config->get('piwik_analytics_url') . '/piwik.php?idsite=' . $rcmail->config->get('piwik_analytics_id') . '" style="border:0" alt="" /></p></noscript>
 <!-- End Piwik Tag -->';
-    
+
         // add script to end of page
         $rcmail->output->add_footer($script);
-     
+
         return $args;
     }
 }
-
-?>

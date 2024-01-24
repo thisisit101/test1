@@ -20,4 +20,3 @@ $labels['adddelegate'] = 'Додати представника';
 $labels['deletedelegate'] = 'Вилучити представника';
 $labels['savingdata'] = 'Збереження даних...';
 $labels['deleteconfirm'] = 'Підтвердження';
-?>

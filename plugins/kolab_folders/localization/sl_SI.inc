@@ -25,4 +25,3 @@ $labels['wastebasket'] = 'Koš';
 $labels['junkemail'] = 'Smeti';
 $labels['confidential'] = 'Zaupno';
 $messages['defaultfolderexists'] = 'Privzeta mapa izbranega tipa že obstaja';
-?>

@@ -63,4 +63,3 @@ $messages['bookupdateerror'] = 'Ett fel uppstod vid uppdatering av adressbok.';
 $messages['bookcreateerror'] = 'Ett fel uppstod vid skapandet av adressbok.';
 $messages['nobooknamewarning'] = 'Vänligen ange adressbokens namn.';
 $messages['noemailnamewarning'] = 'Vänligen ange e-postadress eller kontaktnamn.';
-?>

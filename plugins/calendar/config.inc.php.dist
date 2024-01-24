@@ -81,12 +81,12 @@ $config['calendar_default_alarm_offset'] = '-15M';
 $config['calendar_event_coloring'] = 0;
 
 // event categories
-$config['calendar_categories'] = array(
+$config['calendar_categories'] = [
   'Personal' => 'c0c0c0',
       'Work' => 'ff0000',
     'Family' => '00ff00',
    'Holiday' => 'ff6600',
-);
+];
 
 // enable users to invite/edit attendees for shared events organized by others
 $config['calendar_allow_invite_shared'] = false;

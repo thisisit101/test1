@@ -219,4 +219,3 @@ $labels['arialabelcalendarview'] = '캘린더 보기';
 $labels['arialabelsearchform'] = '일정 검색 폼';
 $labels['arialabelquicksearchbox'] = '일정 검색 항목';
 $labels['arialabelcalsearchform'] = '캘린더 검색 폼';
-?>

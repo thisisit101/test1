@@ -40,10 +40,10 @@ class kolab_sso extends rcube_plugin
         if (defined('RCMAIL_VERSION') || defined('FILE_API_START')) {
             $this->rc = rcube::get_instance();
 
-            $this->add_hook('startup', array($this, 'startup'));
-            $this->add_hook('authenticate', array($this, 'authenticate'));
+            $this->add_hook('startup', [$this, 'startup']);
+            $this->add_hook('authenticate', [$this, 'authenticate']);
 
-            $this->rc->add_shutdown_function(array($this, 'shutdown'));
+            $this->rc->add_shutdown_function([$this, 'shutdown']);
         }
     }
 
@@ -68,13 +68,12 @@ class kolab_sso extends rcube_plugin
                         $this->data['timezone'] = $_SESSION['sso_timezone'];
                         $this->data['url']      = $_SESSION['sso_url'];
                         $this->data['mode']     = $mode;
-                    }
-                    else {
+                    } else {
                         $this->logon_error = $driver->response_error();
                     }
                 }
                 // This is where we handle clicking one of "Login by SSO" buttons
-                else if ($_SESSION['temp'] && $this->rc->check_request()) {
+                elseif ($_SESSION['temp'] && $this->rc->check_request()) {
                     // Remember some logon params for use on SSO response above
                     $_SESSION['sso_timezone'] = rcube_utils::get_input_value('_timezone', rcube_utils::INPUT_POST);
                     $_SESSION['sso_url']      = rcube_utils::get_input_value('_url', rcube_utils::INPUT_POST);
@@ -88,7 +87,7 @@ class kolab_sso extends rcube_plugin
             }
         }
         // On valid session...
-        else if (isset($_SESSION['user_id'])
+        elseif (isset($_SESSION['user_id'])
             && ($data = $_SESSION['sso_data'])
             && ($data = json_decode($this->rc->decrypt($data), true))
             && ($mode = $data['mode'])
@@ -100,9 +99,8 @@ class kolab_sso extends rcube_plugin
             // Session validation, token refresh, etc.
             if ($this->data = $driver->validate_session($data)) {
                 // register storage connection hooks
-                $this->authenticate(array(), true);
-            }
-            else {
+                $this->authenticate([], true);
+            } else {
                 // Destroy the session
                 $this->rc->kill_session();
                 // TODO: error message beter explaining the reason
@@ -111,7 +109,7 @@ class kolab_sso extends rcube_plugin
         }
 
         // Register login form modifications
-        $this->add_hook('template_object_loginform', array($this, 'login_form'));
+        $this->add_hook('template_object_loginform', [$this, 'login_form']);
 
         return $args;
     }
@@ -124,7 +122,7 @@ class kolab_sso extends rcube_plugin
         // Chwala
         if (defined('FILE_API_START') && !$internal && empty($args['pass']) && strpos($args['user'], 'RC:') === 0) {
             // extract session ID and username from the token
-            list(, $sess_id, $user) = explode(':', $args['user']);
+            [, $sess_id, $user] = explode(':', $args['user']);
 
             // unset user, set invalid state
             $args['valid'] = false;
@@ -149,13 +147,13 @@ class kolab_sso extends rcube_plugin
                         $args['user']  = $user;
                         $args['pass']  = 'fake-sso-password';
                         $args['valid'] = true;
-                        $this->authenticate(array(), true);
+                        $this->authenticate([], true);
                     }
                 }
             }
         }
         // Roundcube
-        else if (!empty($this->data) && ($email = $this->data['email'])) {
+        elseif (!empty($this->data) && ($email = $this->data['email'])) {
             if (!$internal) {
                 $args['user']        = $email;
                 $args['pass']        = 'fake-sso-password';
@@ -166,13 +164,12 @@ class kolab_sso extends rcube_plugin
                 $_POST['_url']      = $this->data['url'];
             }
 
-            $this->add_hook('storage_connect', array($this, 'storage_connect'));
-            $this->add_hook('managesieve_connect', array($this, 'storage_connect'));
-            $this->add_hook('smtp_connect', array($this, 'smtp_connect'));
-            $this->add_hook('ldap_connected', array($this, 'ldap_connected'));
-            $this->add_hook('chwala_authenticate', array($this, 'chwala_authenticate'));
-        }
-        else if ($this->logon_error) {
+            $this->add_hook('storage_connect', [$this, 'storage_connect']);
+            $this->add_hook('managesieve_connect', [$this, 'storage_connect']);
+            $this->add_hook('smtp_connect', [$this, 'smtp_connect']);
+            $this->add_hook('ldap_connected', [$this, 'ldap_connected']);
+            $this->add_hook('chwala_authenticate', [$this, 'chwala_authenticate']);
+        } elseif ($this->logon_error) {
             $args['valid'] = false;
             $args['error'] = $this->logon_error;
         }
@@ -217,7 +214,7 @@ class kolab_sso extends rcube_plugin
      */
     public function smtp_connect($args)
     {
-        foreach (array('smtp_server', 'smtp_user', 'smtp_pass') as $prop) {
+        foreach (['smtp_server', 'smtp_user', 'smtp_pass'] as $prop) {
             $args[$prop] = $this->rc->config->get("kolab_sso_$prop", $args[$prop]);
         }
 
@@ -290,19 +287,19 @@ class kolab_sso extends rcube_plugin
         }
 
         // Add SSO form elements
-        $form = $doc->createNode('p', null, array('id' => 'sso-form', 'class' => 'formbuttons'), $body);
+        $form = $doc->createNode('p', null, ['id' => 'sso-form', 'class' => 'formbuttons'], $body);
 
         foreach ($options as $idx => $option) {
-            $label = array('name' => 'loginby', 'vars' => array('provider' => $option['name'] ?: $this->gettext('sso')));
-            $doc->createNode('button', $this->gettext($label), array(
+            $label = ['name' => 'loginby', 'vars' => ['provider' => $option['name'] ?: $this->gettext('sso')]];
+            $doc->createNode('button', $this->gettext($label), [
                     'type'    => 'button',
                     'value'   => $idx,
                     'class'   => 'button sso w-100 mb-1',
                     'onclick' => 'kolab_sso_submit(this)',
-                ), $form);
+                ], $form);
         }
 
-        $doc->createNode('input', null, array('name' => '_sso', 'type' => 'hidden'), $form);
+        $doc->createNode('input', null, ['name' => '_sso', 'type' => 'hidden'], $form);
 
         // Save the form content back and append script
         $args['content'] = $doc->saveHTML($body)
@@ -345,10 +342,10 @@ class kolab_sso extends rcube_plugin
         $class   = "kolab_sso_$driver";
 
         if (empty($options) || !file_exists($this->home . "/drivers/$driver.php")) {
-            rcube::raise_error(array(
+            rcube::raise_error([
                     'line' => __LINE__, 'file' => __FILE__,
-                    'message' => "Unable to find SSO driver"
-                ), true, true);
+                    'message' => "Unable to find SSO driver",
+                ], true, true);
         }
 
         // Add /lib to include_path
@@ -380,7 +377,7 @@ class DOMDocumentHelper extends DOMDocument
         return preg_replace('|</?body>|', '', parent::saveHTML($node));
     }
 
-    public function createNode($name, $value = null, $args = array(), $parent = null, $prepend = false)
+    public function createNode($name, $value = null, $args = [], $parent = null, $prepend = false)
     {
         $node = parent::createElement($name);
 
@@ -395,8 +392,7 @@ class DOMDocumentHelper extends DOMDocument
         if ($parent) {
             if ($prepend && $parent->firstChild) {
                 $parent->insertBefore($node, $parent->firstChild);
-            }
-            else {
+            } else {
                 $parent->appendChild($node);
             }
         }

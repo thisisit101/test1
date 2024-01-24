@@ -33,4 +33,3 @@ $labels['createsuccess'] = 'Zástupce byl úspěšně přidán.';
 $labels['createerror'] = 'Zástupce se nepodařilo přidat.';
 $labels['arialabeldelegatedelete'] = 'Dialog pro smazání zástupce';
 $labels['arialabeldelegateform'] = 'Vlastnosti zástupce';
-?>

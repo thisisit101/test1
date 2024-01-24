@@ -25,19 +25,19 @@
 
 class kolab_storage
 {
-    const CTYPE_KEY         = '/shared/vendor/kolab/folder-type';
-    const CTYPE_KEY_PRIVATE = '/private/vendor/kolab/folder-type';
-    const COLOR_KEY_SHARED  = '/shared/vendor/kolab/color';
-    const COLOR_KEY_PRIVATE = '/private/vendor/kolab/color';
-    const NAME_KEY_SHARED   = '/shared/vendor/kolab/displayname';
-    const NAME_KEY_PRIVATE  = '/private/vendor/kolab/displayname';
-    const UID_KEY_SHARED    = '/shared/vendor/kolab/uniqueid';
-    const UID_KEY_CYRUS     = '/shared/vendor/cmu/cyrus-imapd/uniqueid';
+    public const CTYPE_KEY         = '/shared/vendor/kolab/folder-type';
+    public const CTYPE_KEY_PRIVATE = '/private/vendor/kolab/folder-type';
+    public const COLOR_KEY_SHARED  = '/shared/vendor/kolab/color';
+    public const COLOR_KEY_PRIVATE = '/private/vendor/kolab/color';
+    public const NAME_KEY_SHARED   = '/shared/vendor/kolab/displayname';
+    public const NAME_KEY_PRIVATE  = '/private/vendor/kolab/displayname';
+    public const UID_KEY_SHARED    = '/shared/vendor/kolab/uniqueid';
+    public const UID_KEY_CYRUS     = '/shared/vendor/cmu/cyrus-imapd/uniqueid';
 
-    const ERROR_IMAP_CONN      = 1;
-    const ERROR_CACHE_DB       = 2;
-    const ERROR_NO_PERMISSION  = 3;
-    const ERROR_INVALID_FOLDER = 4;
+    public const ERROR_IMAP_CONN      = 1;
+    public const ERROR_CACHE_DB       = 2;
+    public const ERROR_NO_PERMISSION  = 3;
+    public const ERROR_INVALID_FOLDER = 4;
 
     public static $version = '3.0';
     public static $last_error;
@@ -46,15 +46,15 @@ class kolab_storage
     private static $ready = false;
     private static $with_tempsubs = true;
     private static $subscriptions;
-    private static $ldapcache = array();
-    private static $ldap = array();
+    private static $ldapcache = [];
+    private static $ldap = [];
     private static $states;
     private static $config;
     private static $imap;
 
 
     // Default folder names
-    private static $default_folders = array(
+    private static $default_folders = [
         'event'         => 'Calendar',
         'contact'       => 'Contacts',
         'task'          => 'Tasks',
@@ -68,7 +68,7 @@ class kolab_storage
         'mail.wastebasket' => 'Trash',
         'mail.outbox'      => 'Outbox',
         'mail.junkemail'   => 'Junk',
-    );
+    ];
 
 
     /**
@@ -76,8 +76,9 @@ class kolab_storage
      */
     public static function setup()
     {
-        if (self::$ready)
+        if (self::$ready) {
             return true;
+        }
 
         $rcmail = rcube::get_instance();
         self::$config  = $rcmail->config;
@@ -88,17 +89,15 @@ class kolab_storage
 
         if (self::$ready) {
             // do nothing
-        }
-        else if (!class_exists('kolabformat')) {
-            rcube::raise_error(array(
+        } elseif (!class_exists('kolabformat')) {
+            rcube::raise_error([
                 'code' => 900, 'type' => 'php',
-                'message' => "required kolabformat module not found"
-            ), true);
-        }
-        else if (self::$imap->get_error_code()) {
-            rcube::raise_error(array(
-                'code' => 900, 'type' => 'php', 'message' => "IMAP error"
-            ), true);
+                'message' => "required kolabformat module not found",
+            ], true);
+        } elseif (self::$imap->get_error_code()) {
+            rcube::raise_error([
+                'code' => 900, 'type' => 'php', 'message' => "IMAP error",
+            ], true);
         }
 
         // adjust some configurable settings
@@ -157,7 +156,7 @@ class kolab_storage
         }
 
         if ($user_field && $user_attrib) {
-            $ldap->extend_fieldmap(array($user_field => $user_attrib));
+            $ldap->extend_fieldmap([$user_field => $user_attrib]);
         }
 
         self::$ldap[$name] = $ldap;
@@ -175,7 +174,7 @@ class kolab_storage
      */
     public static function get_folders($type, $subscribed = null)
     {
-        $folders = $folderdata = array();
+        $folders = $folderdata = [];
 
         if (self::setup()) {
             foreach ((array)self::list_folders('', '*', $type, $subscribed, $folderdata) as $foldername) {
@@ -229,13 +228,15 @@ class kolab_storage
         self::setup();
         $folder = null;
         foreach ((array)self::list_folders('', '*', $type, null, $folderdata) as $foldername) {
-            if (!$folder)
+            if (!$folder) {
                 $folder = new kolab_storage_folder($foldername, $type, $folderdata[$foldername]);
-            else
+            } else {
                 $folder->set_folder($foldername, $type, $folderdata[$foldername]);
+            }
 
-            if ($object = $folder->get_object($uid))
+            if ($object = $folder->get_object($uid)) {
                 return $object;
+            }
         }
 
         return false;
@@ -255,7 +256,7 @@ class kolab_storage
     {
         self::setup();
         $folder = null;
-        $result = array();
+        $result = [];
 
         foreach ((array)self::list_folders('', '*', $type, null, $folderdata) as $foldername) {
             $folder = new kolab_storage_folder($foldername, $type, $folderdata[$foldername]);
@@ -305,7 +306,7 @@ class kolab_storage
         }
 
         $query = '';
-        $param = array();
+        $param = [];
         $utc = new \DateTimeZone('UTC');
 
         // https://www.calconnect.org/pubdocs/CD0903%20Freebusy%20Read%20URL.pdf
@@ -328,8 +329,7 @@ class kolab_storage
             // Expected configured full URL, just replace the %u variable
             // Note: Cyrus v3 Free-Busy service does not use .ifb extension
             $url = str_replace('%u', rawurlencode($email), $url);
-        }
-        else {
+        } else {
             $url .= '/' . $email . '.ifb';
         }
 
@@ -371,7 +371,7 @@ class kolab_storage
      */
     public static function id_decode($id)
     {
-      return base64_decode(str_pad(strtr($id, '-_', '+/'), strlen($id) % 4, '=', STR_PAD_RIGHT));
+        return base64_decode(str_pad(strtr($id, '-_', '+/'), strlen($id) % 4, '=', STR_PAD_RIGHT));
     }
 
     /**
@@ -403,11 +403,12 @@ class kolab_storage
     public static function folder_delete($name)
     {
         // clear cached entries first
-        if ($folder = self::get_folder($name))
+        if ($folder = self::get_folder($name)) {
             $folder->cache->purge();
+        }
 
         $rcmail = rcube::get_instance();
-        $plugin = $rcmail->plugins->exec_hook('folder_delete', array('name' => $name));
+        $plugin = $rcmail->plugins->exec_hook('folder_delete', ['name' => $name]);
 
         $success = self::$imap->delete_folder($name);
         self::$last_error = self::$imap->get_error_str();
@@ -430,10 +431,10 @@ class kolab_storage
         self::setup();
 
         $rcmail = rcube::get_instance();
-        $plugin = $rcmail->plugins->exec_hook('folder_create', array('record' => array(
+        $plugin = $rcmail->plugins->exec_hook('folder_create', ['record' => [
             'name' => $name,
             'subscribe' => $subscribed,
-        )));
+        ]]);
 
         if ($saved = self::$imap->create_folder($name, $subscribed)) {
             // set metadata for folder type
@@ -445,7 +446,7 @@ class kolab_storage
                     self::$imap->delete_folder($name);
                 }
                 // activate folder
-                else if ($active) {
+                elseif ($active) {
                     self::set_state($name, true);
                 }
             }
@@ -472,8 +473,8 @@ class kolab_storage
         self::setup();
 
         $rcmail = rcube::get_instance();
-        $plugin = $rcmail->plugins->exec_hook('folder_rename', array(
-            'oldname' => $oldname, 'newname' => $newname));
+        $plugin = $rcmail->plugins->exec_hook('folder_rename', [
+            'oldname' => $oldname, 'newname' => $newname]);
 
         $oldfolder = self::get_folder($oldname);
         $active    = self::folder_is_active($oldname);
@@ -527,17 +528,15 @@ class kolab_storage
         if (!empty($options) && ($options['norename'] || $options['protected'])) {
         }
         // sanity checks (from steps/settings/save_folder.inc)
-        else if (!strlen($folder)) {
+        elseif (!strlen($folder)) {
             self::$last_error = 'cannotbeempty';
             return false;
-        }
-        else if (strlen($folder) > 128) {
+        } elseif (strlen($folder) > 128) {
             self::$last_error = 'nametoolong';
             return false;
-        }
-        else {
+        } else {
             // these characters are problematic e.g. when used in LIST/LSUB
-            foreach (array($delimiter, '%', '*') as $char) {
+            foreach ([$delimiter, '%', '*'] as $char) {
                 if (strpos($folder, $char) !== false) {
                     self::$last_error = 'forbiddencharacter';
                     return false;
@@ -547,11 +546,9 @@ class kolab_storage
 
         if (!empty($options) && (!empty($options['protected']) || !empty($options['norename']))) {
             $folder = $oldfolder;
-        }
-        else if (strlen($parent)) {
+        } elseif (strlen($parent)) {
             $folder = $parent . $delimiter . $folder;
-        }
-        else {
+        } else {
             // add namespace prefix (when needed)
             $folder = self::$imap->mod_folder($folder, 'in');
         }
@@ -560,7 +557,7 @@ class kolab_storage
         if (strlen($parent) && (!strlen($oldfolder) || $oldfolder != $folder)) {
             $parent_opts = self::$imap->folder_info($parent);
             if ($parent_opts['namespace'] != 'personal'
-                && (empty($parent_opts['rights']) || !preg_match('/[ck]/', implode($parent_opts['rights'])))
+                && (empty($parent_opts['rights']) || !preg_match('/[ck]/', implode('', $parent_opts['rights'])))
             ) {
                 self::$last_error = 'No permission to create folder';
                 return false;
@@ -571,8 +568,7 @@ class kolab_storage
         if (strlen($oldfolder)) {
             if ($oldfolder != $folder) {
                 $result = self::folder_rename($oldfolder, $folder);
-            }
-            else {
+            } else {
                 $result = true;
             }
         }
@@ -598,7 +594,7 @@ class kolab_storage
      *
      * @return string Name of the folder-object
      */
-    public static function object_name($folder, &$folder_ns=null)
+    public static function object_name($folder, &$folder_ns = null)
     {
         // find custom display name in folder METADATA
         if ($name = self::custom_displayname($folder)) {
@@ -619,8 +615,7 @@ class kolab_storage
         if (self::$config->get('kolab_custom_display_names', true) && self::setup()) {
             if ($_metadata !== null) {
                 $metadata = $_metadata;
-            }
-            else {
+            } else {
                 // For performance reasons ask for all folders, it will be cached as one cache entry
                 $metadata = self::$imap->get_metadata("*", [self::NAME_KEY_PRIVATE, self::NAME_KEY_SHARED]);
 
@@ -735,7 +730,7 @@ class kolab_storage
         $name = $origname;
 
         // find folder prefix to truncate
-        for ($i = count($names)-1; $i >= 0; $i--) {
+        for ($i = count($names) - 1; $i >= 0; $i--) {
             if (strpos($name, $names[$i] . ' &raquo; ') === 0) {
                 $length = strlen($names[$i] . ' &raquo; ');
                 $prefix = substr($name, 0, $length);
@@ -743,7 +738,7 @@ class kolab_storage
                 $diff   = 1;
 
                 // check if prefix folder is in other users namespace
-                for ($n = count($names)-1; $n >= 0; $n--) {
+                for ($n = count($names) - 1; $n >= 0; $n--) {
                     if (strpos($prefix, '(' . $names[$n] . ') ') === 0) {
                         $diff = 0;
                         break;
@@ -754,7 +749,7 @@ class kolab_storage
                 break;
             }
             // other users namespace and parent folder exists
-            else if (strpos($name, '(' . $names[$i] . ') ') === 0) {
+            elseif (strpos($name, '(' . $names[$i] . ') ') === 0) {
                 $length = strlen('(' . $names[$i] . ') ');
                 $prefix = substr($name, 0, $length);
                 $count  = count(explode(' &raquo; ', $prefix));
@@ -783,7 +778,7 @@ class kolab_storage
         $folders = self::get_folders($type, true);
 
         $delim = self::$imap->get_hierarchy_delimiter();
-        $names = array();
+        $names = [];
         $len   = strlen($current);
         $parent = '';
         $p_len = 0;
@@ -806,15 +801,14 @@ class kolab_storage
                     }
                     continue;
                 }
-                if (strpos($name, $current.$delim) === 0) {
+                if (strpos($name, $current . $delim) === 0) {
                     continue;
                 }
             }
 
             if ($p_len && $name == $parent) {
                 // always show the parent of current folder
-            }
-            else if ($c_folder->get_owner() != $_SESSION['username']) {
+            } elseif ($c_folder->get_owner() != $_SESSION['username']) {
                 // skip folders where user have no rights to create subfolders
                 $rights = $c_folder->get_myrights();
                 if (!preg_match('/[ck]/', $rights)) {
@@ -830,17 +824,17 @@ class kolab_storage
         $select = new html_select($attrs);
         $select->add('---', '');
 
-        $listnames = array();
+        $listnames = [];
         foreach (array_keys($names) as $imap_name) {
             $name = $origname = $names[$imap_name];
 
             // find folder prefix to truncate
-            for ($i = count($listnames)-1; $i >= 0; $i--) {
-                if (strpos($name, $listnames[$i].' &raquo; ') === 0) {
-                    $length = strlen($listnames[$i].' &raquo; ');
+            for ($i = count($listnames) - 1; $i >= 0; $i--) {
+                if (strpos($name, $listnames[$i] . ' &raquo; ') === 0) {
+                    $length = strlen($listnames[$i] . ' &raquo; ');
                     $prefix = substr($name, 0, $length);
                     $count  = count(explode(' &raquo; ', $prefix));
-                    $name   = str_repeat('&nbsp;&nbsp;', $count-1) . '&raquo; ' . substr($name, $length);
+                    $name   = str_repeat('&nbsp;&nbsp;', $count - 1) . '&raquo; ' . substr($name, $length);
                     break;
                 }
             }
@@ -863,7 +857,7 @@ class kolab_storage
      *
      * @return array List of folders
      */
-    public static function list_folders($root = '', $mbox = '*', $filter = null, $subscribed = null, &$folderdata = array())
+    public static function list_folders($root = '', $mbox = '*', $filter = null, $subscribed = null, &$folderdata = [])
     {
         if (!self::setup()) {
             return null;
@@ -878,8 +872,7 @@ class kolab_storage
             // Get ALL folders list, standard way
             if ($subscribed) {
                 $folders = self::_imap_list_subscribed($root, $mbox, $filter);
-            }
-            else {
+            } else {
                 $folders = self::_imap_list_folders($root, $mbox);
             }
 
@@ -892,7 +885,7 @@ class kolab_storage
         $folderdata = self::folders_typedata($prefix);
 
         if (!is_array($folderdata)) {
-            return array();
+            return [];
         }
 
         // If we only want groupware folders and don't care about the subscription state,
@@ -910,14 +903,13 @@ class kolab_storage
         // Get folders list
         if ($subscribed) {
             $folders = self::_imap_list_subscribed($root, $mbox, $filter);
-        }
-        else {
+        } else {
             $folders = self::_imap_list_folders($root, $mbox);
         }
 
         // In case of an error, return empty list (?)
         if (!is_array($folders)) {
-            return array();
+            return [];
         }
 
         // Filter folders list
@@ -945,7 +937,7 @@ class kolab_storage
 
         // compose a post-filter expression for the excluded namespaces
         if ($root . $mbox == '*' && ($skip_ns = self::$config->get('kolab_skip_namespace'))) {
-            $excludes = array();
+            $excludes = [];
             foreach ((array)$skip_ns as $ns) {
                 if ($ns_root = self::namespace_root($ns)) {
                     $excludes[] = $ns_root;
@@ -953,7 +945,7 @@ class kolab_storage
             }
 
             if (count($excludes)) {
-                $postfilter = '!^(' . join(')|(', array_map('preg_quote', $excludes)) . ')!';
+                $postfilter = '!^(' . implode(')|(', array_map('preg_quote', $excludes)) . ')!';
             }
         }
 
@@ -961,7 +953,7 @@ class kolab_storage
         $folders = self::$imap->list_folders($root, $mbox, null, null, !empty($postfilter));
 
         if (!empty($postfilter)) {
-            $folders = array_filter($folders, function($folder) use ($postfilter) { return !preg_match($postfilter, $folder); });
+            $folders = array_filter($folders, function ($folder) use ($postfilter) { return !preg_match($postfilter, $folder); });
             $folders = self::$imap->sort_folder_list($folders);
         }
 
@@ -993,13 +985,13 @@ class kolab_storage
      *
      * @return array List of matching kolab_storage_folder objects
      */
-    public static function search_folders($type, $query, $exclude_ns = array())
+    public static function search_folders($type, $query, $exclude_ns = [])
     {
         if (!self::setup()) {
-            return array();
+            return [];
         }
 
-        $folders = array();
+        $folders = [];
         $query = str_replace('*', '', $query);
 
         // find unsubscribed IMAP folders of the given type
@@ -1009,7 +1001,7 @@ class kolab_storage
             if (($query == '' || strpos($realname, $query) !== false) &&
                 !self::folder_is_subscribed($foldername, true) &&
                 !in_array(self::$imap->folder_namespace($foldername), (array)$exclude_ns)
-              ) {
+            ) {
                 $folders[] = new kolab_storage_folder($foldername, $type, $folderdata[$foldername]);
             }
         }
@@ -1026,9 +1018,9 @@ class kolab_storage
     public static function sort_folders($folders)
     {
         $pad     = '  ';
-        $out     = array();
-        $nsnames = array('personal' => array(), 'shared' => array(), 'other' => array());
-        $_folders = array();
+        $out     = [];
+        $nsnames = ['personal' => [], 'shared' => [], 'other' => []];
+        $_folders = [];
 
         foreach ($folders as $folder) {
             $_folders[$folder->name] = $folder;
@@ -1058,42 +1050,39 @@ class kolab_storage
     public static function folder_hierarchy($folders, &$tree = null)
     {
         if (!self::setup()) {
-            return array();
+            return [];
         }
 
-        $_folders = array();
+        $_folders = [];
         $delim    = self::$imap->get_hierarchy_delimiter();
         $other_ns = rtrim(self::namespace_root('other'), $delim);
         $tree     = new kolab_storage_folder_virtual('', '<root>', '');  // create tree root
-        $refs     = array('' => $tree);
+        $refs     = ['' => $tree];
 
         foreach ($folders as $idx => $folder) {
             $path = explode($delim, $folder->name);
             array_pop($path);
-            $folder->parent = join($delim, $path);
-            $folder->children = array();  // reset list
+            $folder->parent = implode($delim, $path);
+            $folder->children = [];  // reset list
 
             // skip top folders or ones with a custom displayname
             if (count($path) < 1 || kolab_storage::custom_displayname($folder->name)) {
                 $tree->children[] = $folder;
-            }
-            else {
-                $parents = array();
+            } else {
+                $parents = [];
                 $depth = $folder->get_namespace() == 'personal' ? 1 : 2;
 
-                while (count($path) >= $depth && ($parent = join($delim, $path))) {
+                while (count($path) >= $depth && ($parent = implode($delim, $path))) {
                     array_pop($path);
-                    $parent_parent = join($delim, $path);
+                    $parent_parent = implode($delim, $path);
 
                     if (empty($refs[$parent])) {
                         if ($folder->type && self::folder_type($parent) == $folder->type) {
                             $refs[$parent] = new kolab_storage_folder($parent, $folder->type, $folder->type);
                             $refs[$parent]->parent = $parent_parent;
-                        }
-                        else if ($parent_parent == $other_ns) {
+                        } elseif ($parent_parent == $other_ns) {
                             $refs[$parent] = new kolab_storage_folder_user($parent, $parent_parent);
-                        }
-                        else {
+                        } else {
                             $name = kolab_storage::object_name($parent);
                             $refs[$parent] = new kolab_storage_folder_virtual($parent, $name, $folder->get_namespace(), $parent_parent);
                         }
@@ -1136,18 +1125,18 @@ class kolab_storage
             return false;
         }
 
-        $type_keys = array(self::CTYPE_KEY, self::CTYPE_KEY_PRIVATE);
+        $type_keys = [self::CTYPE_KEY, self::CTYPE_KEY_PRIVATE];
 
         // fetch metadata from *some* folders only
         if (($prefix == '*' || $prefix == '') && ($skip_ns = self::$config->get('kolab_skip_namespace'))) {
             $delimiter = self::$imap->get_hierarchy_delimiter();
-            $folderdata = $blacklist = array();
+            $folderdata = $blacklist = [];
             foreach ((array)$skip_ns as $ns) {
                 if ($ns_root = rtrim(self::namespace_root($ns), $delimiter)) {
                     $blacklist[] = $ns_root;
                 }
             }
-            foreach (array('personal','other','shared') as $ns) {
+            foreach (['personal','other','shared'] as $ns) {
                 if (!in_array($ns, (array)$skip_ns)) {
                     $ns_root = rtrim(self::namespace_root($ns), $delimiter);
 
@@ -1158,19 +1147,17 @@ class kolab_storage
                             if (!in_array($folder, $blacklist)) {
                                 $folderdata[$folder] = $metadata;
                                 $opts = self::$imap->folder_attributes($folder);
-                                if (!in_array('\\HasNoChildren', $opts) && ($data = self::$imap->get_metadata($folder.$delimiter.'*', $type_keys))) {
+                                if (!in_array('\\HasNoChildren', $opts) && ($data = self::$imap->get_metadata($folder . $delimiter . '*', $type_keys))) {
                                     $folderdata += $data;
                                 }
                             }
                         }
-                    }
-                    else if ($data = self::$imap->get_metadata($ns_root.$delimiter.'*', $type_keys)) {
+                    } elseif ($data = self::$imap->get_metadata($ns_root . $delimiter . '*', $type_keys)) {
                         $folderdata += $data;
                     }
                 }
             }
-        }
-        else {
+        } else {
             $folderdata = self::$imap->get_metadata($prefix, $type_keys);
         }
 
@@ -1178,7 +1165,7 @@ class kolab_storage
             return false;
         }
 
-        return array_map(array('kolab_storage', 'folder_select_metadata'), $folderdata);
+        return array_map(['kolab_storage', 'folder_select_metadata'], $folderdata);
     }
 
     /**
@@ -1188,9 +1175,8 @@ class kolab_storage
     {
         if (!empty($types[self::CTYPE_KEY_PRIVATE])) {
             return $types[self::CTYPE_KEY_PRIVATE];
-        }
-        else if (!empty($types[self::CTYPE_KEY])) {
-            list($ctype, ) = explode('.', $types[self::CTYPE_KEY]);
+        } elseif (!empty($types[self::CTYPE_KEY])) {
+            [$ctype, ] = explode('.', $types[self::CTYPE_KEY]);
             return $ctype;
         }
         return null;
@@ -1207,7 +1193,7 @@ class kolab_storage
     {
         self::setup();
 
-        $metadata = self::$imap->get_metadata($folder, array(self::CTYPE_KEY, self::CTYPE_KEY_PRIVATE));
+        $metadata = self::$imap->get_metadata($folder, [self::CTYPE_KEY, self::CTYPE_KEY_PRIVATE]);
 
         if (!is_array($metadata)) {
             return null;
@@ -1232,13 +1218,13 @@ class kolab_storage
     {
         self::setup();
 
-        list($ctype, $subtype) = strpos($type, '.') !== false ? explode('.', $type) : array($type, null);
+        [$ctype, $subtype] = strpos($type, '.') !== false ? explode('.', $type) : [$type, null];
 
-        $success = self::$imap->set_metadata($folder, array(self::CTYPE_KEY => $ctype, self::CTYPE_KEY_PRIVATE => $subtype ? $type : null));
+        $success = self::$imap->set_metadata($folder, [self::CTYPE_KEY => $ctype, self::CTYPE_KEY_PRIVATE => $subtype ? $type : null]);
 
         if (!$success) {
             // fallback: only set private annotation
-            $success |= self::$imap->set_metadata($folder, array(self::CTYPE_KEY_PRIVATE => $type));
+            $success |= self::$imap->set_metadata($folder, [self::CTYPE_KEY_PRIVATE => $type]);
         }
 
         return $success;
@@ -1281,13 +1267,11 @@ class kolab_storage
         if ($temp) {
             if (self::folder_is_subscribed($folder)) {
                 return true;
-            }
-            else if (empty($_SESSION['kolab_subscribed_folders']) || !in_array($folder, $_SESSION['kolab_subscribed_folders'])) {
+            } elseif (empty($_SESSION['kolab_subscribed_folders']) || !in_array($folder, $_SESSION['kolab_subscribed_folders'])) {
                 $_SESSION['kolab_subscribed_folders'][] = $folder;
                 return true;
             }
-        }
-        else if (self::$imap->subscribe($folder)) {
+        } elseif (self::$imap->subscribe($folder)) {
             self::$subscriptions = null;
             return true;
         }
@@ -1313,8 +1297,7 @@ class kolab_storage
                 unset($_SESSION['kolab_subscribed_folders'][$i]);
             }
             return true;
-        }
-        else if (self::$imap->unsubscribe($folder)) {
+        } elseif (self::$imap->unsubscribe($folder)) {
             self::$subscriptions = null;
             return true;
         }
@@ -1378,7 +1361,7 @@ class kolab_storage
         $folders = $rcube->config->get('kolab_active_folders');
 
         if ($folders !== null) {
-            self::$states = !empty($folders) ? explode('**', $folders) : array();
+            self::$states = !empty($folders) ? explode('**', $folders) : [];
         }
         // for backward-compatibility copy server-side subscriptions to activation states
         else {
@@ -1390,7 +1373,7 @@ class kolab_storage
             }
             self::$states = (array) self::$subscriptions;
             $folders = implode('**', self::$states);
-            $rcube->user->save_prefs(array('kolab_active_folders' => $folders));
+            $rcube->user->save_prefs(['kolab_active_folders' => $folders]);
         }
 
         return self::$states;
@@ -1407,15 +1390,14 @@ class kolab_storage
         $idx = array_search($folder, self::$states);
         if ($state && $idx === false) {
             self::$states[] = $folder;
-        }
-        else if (!$state && $idx !== false) {
+        } elseif (!$state && $idx !== false) {
             unset(self::$states[$idx]);
         }
 
         // update user preferences
         $folders = implode('**', self::$states);
 
-        return rcube::get_instance()->user->save_prefs(array('kolab_active_folders' => $folders));
+        return rcube::get_instance()->user->save_prefs(['kolab_active_folders' => $folders]);
     }
 
     /**
@@ -1427,13 +1409,13 @@ class kolab_storage
      *
      * @return string Folder name
      */
-    public static function create_default_folder($type, $props = array())
+    public static function create_default_folder($type, $props = [])
     {
         if (!self::setup()) {
             return;
         }
 
-        $folders = self::$imap->get_metadata('*', array(kolab_storage::CTYPE_KEY_PRIVATE));
+        $folders = self::$imap->get_metadata('*', [kolab_storage::CTYPE_KEY_PRIVATE]);
 
         // from kolab_folders config
         $folder_type  = strpos($type, '.') ? str_replace('.', '_', $type) : $type . '_default';
@@ -1502,20 +1484,23 @@ class kolab_storage
 
         // TODO: also save 'showalarams' and other properties here
         $ns        = self::$imap->folder_namespace($folder);
-        $supported = array(
-            'color'       => array(self::COLOR_KEY_SHARED, self::COLOR_KEY_PRIVATE),
-            'displayname' => array(self::NAME_KEY_SHARED, self::NAME_KEY_PRIVATE),
-        );
+        $supported = [
+            'color'       => [self::COLOR_KEY_SHARED, self::COLOR_KEY_PRIVATE],
+            'displayname' => [self::NAME_KEY_SHARED, self::NAME_KEY_PRIVATE],
+        ];
 
         foreach ($supported as $key => $metakeys) {
             if (array_key_exists($key, $prop)) {
                 $meta_saved = false;
-                if ($ns == 'personal')  // save in shared namespace for personal folders
-                    $meta_saved = self::$imap->set_metadata($folder, array($metakeys[0] => $prop[$key]));
-                if (!$meta_saved)    // try in private namespace
-                    $meta_saved = self::$imap->set_metadata($folder, array($metakeys[1] => $prop[$key]));
-                if ($meta_saved)
-                    unset($prop[$key]);  // unsetting will prevent fallback to local user prefs
+                if ($ns == 'personal') {  // save in shared namespace for personal folders
+                    $meta_saved = self::$imap->set_metadata($folder, [$metakeys[0] => $prop[$key]]);
+                }
+                if (!$meta_saved) {    // try in private namespace
+                    $meta_saved = self::$imap->set_metadata($folder, [$metakeys[1] => $prop[$key]]);
+                }
+                if ($meta_saved) {
+                    unset($prop[$key]);
+                }  // unsetting will prevent fallback to local user prefs
             }
         }
     }
@@ -1531,18 +1516,18 @@ class kolab_storage
      *
      * @return array List of users
      */
-    public static function search_users($query, $mode = 1, $required = array(), $limit = 0, &$count = 0)
+    public static function search_users($query, $mode = 1, $required = [], $limit = 0, &$count = 0)
     {
         $query = str_replace('*', '', $query);
 
         // requires a working LDAP setup
         if (!strlen($query) || !($ldap = self::ldap())) {
-            return array();
+            return [];
         }
 
         $root          = self::namespace_root('other');
         $user_attrib   = self::$config->get('kolab_users_id_attrib', self::$config->get('kolab_auth_login', 'mail'));
-        $search_attrib = self::$config->get('kolab_users_search_attrib', array('cn','mail','alias'));
+        $search_attrib = self::$config->get('kolab_users_search_attrib', ['cn','mail','alias']);
 
         // search users using the configured attributes
         $results = $ldap->dosearch($search_attrib, $query, $mode, $required, $limit, $count);
@@ -1553,8 +1538,8 @@ class kolab_storage
         }
 
         // resolve to IMAP folder name
-        array_walk($results, function(&$user, $dn) use ($root, $user_attrib) {
-            list($localpart, ) = explode('@', $user[$user_attrib]);
+        array_walk($results, function (&$user, $dn) use ($root, $user_attrib) {
+            [$localpart, ] = explode('@', $user[$user_attrib]);
             $user['kolabtargetfolder'] = $root . $localpart;
         });
 
@@ -1571,16 +1556,16 @@ class kolab_storage
      *
      * @return array List of folders
      */
-    public static function list_user_folders($user, $type, $subscribed = 0, &$folderdata = array())
+    public static function list_user_folders($user, $type, $subscribed = 0, &$folderdata = [])
     {
         self::setup();
 
-        $folders = array();
+        $folders = [];
 
         // use localpart of user attribute as root for folder listing
         $user_attrib = self::$config->get('kolab_users_id_attrib', self::$config->get('kolab_auth_login', 'mail'));
         if (!empty($user[$user_attrib])) {
-            list($mbox) = explode('@', $user[$user_attrib]);
+            [$mbox] = explode('@', $user[$user_attrib]);
 
             $delimiter  = self::$imap->get_hierarchy_delimiter();
             $other_ns   = self::namespace_root('other');
@@ -1610,7 +1595,7 @@ class kolab_storage
      */
     public static function get_user_folders($type, $subscribed)
     {
-        $folders = $folderdata = array();
+        $folders = $folderdata = [];
 
         if (self::setup()) {
             $delimiter = self::$imap->get_hierarchy_delimiter();
@@ -1618,8 +1603,9 @@ class kolab_storage
             $path_len = count(explode($delimiter, $other_ns));
 
             foreach ((array) self::list_folders($other_ns . $delimiter, '*', '', $subscribed) as $foldername) {
-                if ($foldername == 'INBOX')  // skip INBOX which is added by default
+                if ($foldername == 'INBOX') {  // skip INBOX which is added by default
                     continue;
+                }
 
                 $path = explode($delimiter, $foldername);
 
@@ -1629,7 +1615,7 @@ class kolab_storage
                 }
 
                 // truncate folder path to top-level folders of the 'other' namespace
-                $foldername = join($delimiter, array_slice($path, 0, $path_len + 1));
+                $foldername = implode($delimiter, array_slice($path, 0, $path_len + 1));
 
                 if (empty($folders[$foldername])) {
                     $folders[$foldername] = new kolab_storage_folder_user($foldername, $other_ns);
@@ -1670,7 +1656,7 @@ class kolab_storage
     public static function folder_metadata($folder)
     {
         if (self::setup()) {
-            $keys = array(
+            $keys = [
                 // For better performance we skip displayname here, see (self::custom_displayname())
                 // self::NAME_KEY_PRIVATE,
                 // self::NAME_KEY_SHARED,
@@ -1680,7 +1666,7 @@ class kolab_storage
                 self::COLOR_KEY_SHARED,
                 self::UID_KEY_SHARED,
                 self::UID_KEY_CYRUS,
-            );
+            ];
 
             $metadata = self::$imap->get_metadata($folder, $keys);
 
@@ -1704,7 +1690,7 @@ class kolab_storage
         $rcube = rcube::get_instance();
 
         if ($domain === null) {
-            list(, $domain) = explode('@', $rcube->get_user_name());
+            [, $domain] = explode('@', $rcube->get_user_name());
         }
 
         if ($name_attr === null) {
@@ -1733,14 +1719,13 @@ class kolab_storage
             $user = $ldap->get_user_record($token, $_SESSION['imap_host'] ?? '');
 
             if (!empty($user)) {
-                $keys = array('displayname', 'name', 'mail'); // supported keys
+                $keys = ['displayname', 'name', 'mail']; // supported keys
                 $user = array_intersect_key($user, array_flip($keys));
 
                 if (!empty($user)) {
                     if ($cache) {
                         $cache->set($token, $user);
-                    }
-                    else {
+                    } else {
                         self::$ldapcache[$token] = $user;
                     }
                 }
@@ -1803,8 +1788,7 @@ class kolab_storage
                     break;
                 }
             }
-        }
-        else { // dir == 'out'
+        } else { // dir == 'out'
             foreach ((array) $roots as $root) {
                 if (strpos($args['folder'], $root[0]) === 0) {
                     // remove root and explode folder

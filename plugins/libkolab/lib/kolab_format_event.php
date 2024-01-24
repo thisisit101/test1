@@ -26,7 +26,7 @@ class kolab_format_event extends kolab_format_xcal
 {
     public $CTYPEv2 = 'application/x-vnd.kolab.event';
 
-    public static $scheduling_properties = array('start', 'end', 'allday', 'recurrence', 'location', 'status', 'cancelled');
+    public static $scheduling_properties = ['start', 'end', 'allday', 'recurrence', 'location', 'status', 'cancelled'];
 
     protected $objclass = 'Event';
     protected $read_func = 'readEvent';
@@ -35,7 +35,7 @@ class kolab_format_event extends kolab_format_xcal
     /**
      * Default constructor
      */
-    function __construct($data = null, $version = 3.0)
+    public function __construct($data = null, $version = 3.0)
     {
         parent::__construct(is_string($data) ? $data : null, $version);
 
@@ -70,8 +70,7 @@ class kolab_format_event extends kolab_format_xcal
         }
         if (!empty($object['cancelled'])) {
             $status = kolabformat::StatusCancelled;
-        }
-        else if (!empty($object['status']) && array_key_exists($object['status'], $this->status_map)) {
+        } elseif (!empty($object['status']) && array_key_exists($object['status'], $this->status_map)) {
             $status = $this->status_map[$object['status']];
         }
         $this->obj->setStatus($status);
@@ -82,9 +81,9 @@ class kolab_format_event extends kolab_format_xcal
         }
 
         $recurrence_id_format = libkolab::recurrence_id_format($object);
-        $vexceptions = new vectorevent;
+        $vexceptions = new vectorevent();
         foreach (($object['exceptions'] ?? []) as $i => $exception) {
-            $exevent = new kolab_format_event;
+            $exevent = new kolab_format_event();
             $compacted = $this->compact_exception($exception, $object);
             $exevent->set($compacted);  // only save differing values
 
@@ -93,13 +92,12 @@ class kolab_format_event extends kolab_format_xcal
             if (!empty($exception['recurrence_date']) && $exception['recurrence_date'] instanceof DateTimeInterface) {
                 $recurrence_id = $exception['recurrence_date'];
                 $compacted['_instance'] = $recurrence_id->format($recurrence_id_format);
-            }
-            else if (!empty($exception['_instance']) && strlen($exception['_instance']) > 4) {
+            } elseif (!empty($exception['_instance']) && strlen($exception['_instance']) > 4) {
                 $recurrence_id = rcube_utils::anytodatetime($exception['_instance'], $object['start']->getTimezone());
                 $compacted['recurrence_date'] = $recurrence_id;
             }
 
-            $ex_dt = self::get_datetime($recurrence_id ?: $exception['start'], null,  !empty($object['allday']));
+            $ex_dt = self::get_datetime($recurrence_id ?: $exception['start'], null, !empty($object['allday']));
             $exevent->obj->setRecurrenceID($ex_dt, !empty($exception['thisandfuture']));
 
             $vexceptions->push($exevent->obj);
@@ -145,22 +143,23 @@ class kolab_format_event extends kolab_format_xcal
      *
      * @return array  Event data as hash array
      */
-    public function to_array($data = array())
+    public function to_array($data = [])
     {
         // return cached result
-        if (!empty($this->data))
+        if (!empty($this->data)) {
             return $this->data;
+        }
 
         // read common xcal props
         $object = parent::to_array($data);
 
         // read object properties
-        $object += array(
+        $object += [
             'end'         => self::php_datetime($this->obj->end()),
             'allday'      => $this->obj->start()->isDateOnly(),
             'free_busy'   => $this->obj->transparency() ? 'free' : 'busy',  // TODO: transparency is only boolean
-            'attendees'   => array(),
-        );
+            'attendees'   => [],
+        ];
 
         // derive event end from duration (#1916)
         if (!$object['end'] && $object['start'] && ($duration = $this->obj->duration()) && $duration->isValid()) {
@@ -173,7 +172,7 @@ class kolab_format_event extends kolab_format_xcal
             $object['end']->add($interval);
         }
         // make sure end date is specified (#5307) RFC5545 3.6.1
-        else if (!$object['end'] && $object['start']) {
+        elseif (!$object['end'] && $object['start']) {
             $object['end'] = clone $object['start'];
         }
 
@@ -185,10 +184,11 @@ class kolab_format_event extends kolab_format_xcal
 
         // status defines different event properties...
         $status = $this->obj->status();
-        if ($status == kolabformat::StatusTentative)
+        if ($status == kolabformat::StatusTentative) {
             $object['free_busy'] = 'tentative';
-        else if ($status == kolabformat::StatusCancelled)
+        } elseif ($status == kolabformat::StatusCancelled) {
             $object['cancelled'] = true;
+        }
 
         // this is an exception object
         if ($this->obj->recurrenceID()->isValid()) {
@@ -197,9 +197,9 @@ class kolab_format_event extends kolab_format_xcal
         }
         // read exception event objects
         if (($exceptions = $this->obj->exceptions()) && is_object($exceptions) && $exceptions->size()) {
-            $recurrence_exceptions = array();
+            $recurrence_exceptions = [];
             $recurrence_id_format = libkolab::recurrence_id_format($object);
-            for ($i=0; $i < $exceptions->size(); $i++) {
+            for ($i = 0; $i < $exceptions->size(); $i++) {
                 if (($exobj = $exceptions->get($i))) {
                     $exception = new kolab_format_event($exobj);
                     if ($exception->is_valid()) {
@@ -286,7 +286,7 @@ class kolab_format_event extends kolab_format_xcal
      */
     private function compact_exception($exception, $master)
     {
-        $forbidden = array('recurrence','exceptions','organizer','_attachments');
+        $forbidden = ['recurrence','exceptions','organizer','_attachments'];
 
         foreach ($forbidden as $prop) {
             if (array_key_exists($prop, $exception)) {
@@ -310,13 +310,13 @@ class kolab_format_event extends kolab_format_xcal
         // Note: If an exception has no attendees it means there's "no attendees
         // for this occurrence", not "attendees are the same as in the event" (#5300)
 
-        $forbidden    = array('exceptions', 'attendees', 'allday');
+        $forbidden    = ['exceptions', 'attendees', 'allday'];
         $is_recurring = !empty($master['recurrence']);
 
         foreach ($master as $prop => $value) {
             if (empty($exception[$prop]) && !empty($value) && $prop[0] != '_'
                 && !in_array($prop, $forbidden)
-                && ($is_recurring || in_array($prop, array('uid','organizer')))
+                && ($is_recurring || in_array($prop, ['uid','organizer']))
             ) {
                 $exception[$prop] = $value;
                 if ($prop == 'recurrence') {

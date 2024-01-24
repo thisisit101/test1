@@ -10,4 +10,3 @@ $labels['searchterms'] = 'Termes de cerca';
 $labels['foldersubscribe'] = 'Llista permanentment';
 $labels['objectchangelog'] = 'Canvia historial';
 $labels['objectdiffnotavailable'] = 'No és possible comparar les revisions seleccionades';
-?>

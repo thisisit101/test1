@@ -30,7 +30,7 @@ class nextcloud_link extends rcube_plugin
     /**
      * Plugin initialization.
      */
-    function init()
+    public function init()
     {
         $this->rc = rcube::get_instance();
 
@@ -52,7 +52,7 @@ class nextcloud_link extends rcube_plugin
             'classsel'   => 'button-nextcloud button-selected',
             'innerclass' => 'button-inner',
             'label'      => '',
-            'type'       => 'link'
+            'type'       => 'link',
         ], 'taskbar');
 
         $this->rc->output->add_footer("

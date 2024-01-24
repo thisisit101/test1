@@ -25,19 +25,19 @@ class kolab_folders extends rcube_plugin
 {
     public $task = '?(?!login).*';
 
-    public $types      = array('mail', 'event', 'journal', 'task', 'note', 'contact', 'configuration', 'file', 'freebusy');
-    public $subtypes   = array(
-        'mail'          => array('inbox', 'drafts', 'sentitems', 'outbox', 'wastebasket', 'junkemail'),
-        'event'         => array('default'),
-        'task'          => array('default'),
-        'journal'       => array('default'),
-        'note'          => array('default'),
-        'contact'       => array('default'),
-        'configuration' => array('default'),
-        'file'          => array('default'),
-        'freebusy'      => array('default'),
-    );
-    public $act_types  = array('event', 'task');
+    public $types      = ['mail', 'event', 'journal', 'task', 'note', 'contact', 'configuration', 'file', 'freebusy'];
+    public $subtypes   = [
+        'mail'          => ['inbox', 'drafts', 'sentitems', 'outbox', 'wastebasket', 'junkemail'],
+        'event'         => ['default'],
+        'task'          => ['default'],
+        'journal'       => ['default'],
+        'note'          => ['default'],
+        'contact'       => ['default'],
+        'configuration' => ['default'],
+        'file'          => ['default'],
+        'freebusy'      => ['default'],
+    ];
+    public $act_types  = ['event', 'task'];
 
     private $rc;
     private static $instance;
@@ -48,7 +48,7 @@ class kolab_folders extends rcube_plugin
     /**
      * Plugin initialization.
      */
-    function init()
+    public function init()
     {
         self::$instance = $this;
         $this->rc = rcube::get_instance();
@@ -57,33 +57,33 @@ class kolab_folders extends rcube_plugin
         $this->require_plugin('libkolab');
 
         // Folder listing hooks
-        $this->add_hook('storage_folders', array($this, 'mailboxes_list'));
+        $this->add_hook('storage_folders', [$this, 'mailboxes_list']);
 
         // Folder manager hooks
-        $this->add_hook('folder_form', array($this, 'folder_form'));
-        $this->add_hook('folder_update', array($this, 'folder_save'));
-        $this->add_hook('folder_create', array($this, 'folder_save'));
-        $this->add_hook('folder_delete', array($this, 'folder_save'));
-        $this->add_hook('folder_rename', array($this, 'folder_save'));
-        $this->add_hook('folders_list', array($this, 'folders_list'));
+        $this->add_hook('folder_form', [$this, 'folder_form']);
+        $this->add_hook('folder_update', [$this, 'folder_save']);
+        $this->add_hook('folder_create', [$this, 'folder_save']);
+        $this->add_hook('folder_delete', [$this, 'folder_save']);
+        $this->add_hook('folder_rename', [$this, 'folder_save']);
+        $this->add_hook('folders_list', [$this, 'folders_list']);
 
         // Special folders setting
-        $this->add_hook('preferences_save', array($this, 'prefs_save'));
+        $this->add_hook('preferences_save', [$this, 'prefs_save']);
 
         // ACL plugin hooks
-        $this->add_hook('acl_rights_simple', array($this, 'acl_rights_simple'));
-        $this->add_hook('acl_rights_supported', array($this, 'acl_rights_supported'));
+        $this->add_hook('acl_rights_simple', [$this, 'acl_rights_simple']);
+        $this->add_hook('acl_rights_supported', [$this, 'acl_rights_supported']);
 
         // Resolving other user folder names
-        $this->add_hook('render_mailboxlist', array($this, 'render_folderlist'));
-        $this->add_hook('render_folder_selector', array($this, 'render_folderlist'));
-        $this->add_hook('folders_list', array($this, 'render_folderlist'));
+        $this->add_hook('render_mailboxlist', [$this, 'render_folderlist']);
+        $this->add_hook('render_folder_selector', [$this, 'render_folderlist']);
+        $this->add_hook('folders_list', [$this, 'render_folderlist']);
     }
 
     /**
      * Handler for mailboxes_list hook. Enables type-aware lists filtering.
      */
-    function mailboxes_list($args)
+    public function mailboxes_list($args)
     {
         // infinite loop prevention
         if ($this->is_processing) {
@@ -118,7 +118,7 @@ class kolab_folders extends rcube_plugin
     /**
      * Handler for folders_list hook. Add css classes to folder rows.
      */
-    function folders_list($args)
+    public function folders_list($args)
     {
         if (!$this->metadata_support()) {
             return $args;
@@ -136,7 +136,7 @@ class kolab_folders extends rcube_plugin
         }
 
         $skip_namespace = $this->rc->config->get('kolab_skip_namespace');
-        $skip_roots     = array();
+        $skip_roots     = [];
 
         if (!empty($skip_namespace)) {
             $storage = $this->rc->get_storage();
@@ -162,7 +162,7 @@ class kolab_folders extends rcube_plugin
         if (!empty($args['table'])) {
             $table = $args['table'];
 
-            for ($i=1, $cnt=$table->size(); $i<=$cnt; $i++) {
+            for ($i = 1, $cnt = $table->size(); $i <= $cnt; $i++) {
                 $attrib = $table->get_row_attribs($i);
                 $folder = $attrib['foldername']; // UTF7-IMAP
                 $type   = $folderdata[$folder];
@@ -199,7 +199,7 @@ class kolab_folders extends rcube_plugin
      * Handler for folder info/edit form (folder_form hook).
      * Adds folder type selector.
      */
-    function folder_form($args)
+    public function folder_form($args)
     {
         if (!$this->metadata_support()) {
             return $args;
@@ -209,10 +209,10 @@ class kolab_folders extends rcube_plugin
 
         // INBOX folder is of type mail.inbox and this cannot be changed
         if ($args['name'] == 'INBOX') {
-            $args['form']['props']['fieldsets']['settings']['content']['foldertype'] = array(
+            $args['form']['props']['fieldsets']['settings']['content']['foldertype'] = [
                 'label' => $this->gettext('folderctype'),
                 'value' => sprintf('%s (%s)', $this->gettext('foldertypemail'), $this->gettext('inbox')),
-            );
+            ];
 
             $this->add_expire_input($args['form'], 'INBOX');
 
@@ -233,7 +233,7 @@ class kolab_folders extends rcube_plugin
         // Get type of the folder or the parent
         $subtype = '';
         if (strlen($mbox)) {
-            list($ctype, $subtype) = $this->get_folder_type($mbox);
+            [$ctype, $subtype] = $this->get_folder_type($mbox);
             if (isset($args['parent_name']) && strlen($args['parent_name']) && $subtype == 'default') {
                 $subtype = ''; // there can be only one
             }
@@ -250,19 +250,18 @@ class kolab_folders extends rcube_plugin
             $options = $storage->folder_info($mbox);
             if ($options['namespace'] != 'personal' && !in_array('a', (array)$options['rights'])) {
                 if (in_array($ctype, $this->types)) {
-                    $value = $this->gettext('foldertype'.$ctype);
-                }
-                else {
+                    $value = $this->gettext('foldertype' . $ctype);
+                } else {
                     $value = $ctype;
                 }
                 if ($subtype) {
-                    $value .= ' ('. ($subtype == 'default' ? $this->gettext('default') : $subtype) .')';
+                    $value .= ' (' . ($subtype == 'default' ? $this->gettext('default') : $subtype) . ')';
                 }
 
-                $args['form']['props']['fieldsets']['settings']['content']['foldertype'] = array(
+                $args['form']['props']['fieldsets']['settings']['content']['foldertype'] = [
                     'label' => $this->gettext('folderctype'),
                     'value' => $value,
-                );
+                ];
 
                 return $args;
             }
@@ -272,23 +271,23 @@ class kolab_folders extends rcube_plugin
         $this->include_script('kolab_folders.js');
 
         // build type SELECT fields
-        $type_select = new html_select(array('name' => '_ctype', 'id' => '_folderctype',
-            'onchange' => "\$('[name=\"_expire\"]').attr('disabled', \$(this).val() != 'mail')"
-        ));
-        $sub_select  = new html_select(array('name' => '_subtype', 'id' => '_subtype'));
+        $type_select = new html_select(['name' => '_ctype', 'id' => '_folderctype',
+            'onchange' => "\$('[name=\"_expire\"]').attr('disabled', \$(this).val() != 'mail')",
+        ]);
+        $sub_select  = new html_select(['name' => '_subtype', 'id' => '_subtype']);
         $sub_select->add('', '');
 
         foreach ($this->types as $type) {
-            $type_select->add($this->gettext('foldertype'.$type), $type);
+            $type_select->add($this->gettext('foldertype' . $type), $type);
         }
         // add non-supported type
         if (!in_array($ctype, $this->types)) {
             $type_select->add($ctype, $ctype);
         }
 
-        $sub_types = array();
+        $sub_types = [];
         foreach ($this->subtypes as $ftype => $subtypes) {
-            $sub_types[$ftype] = array_combine($subtypes, array_map(array($this, 'gettext'), $subtypes));
+            $sub_types[$ftype] = array_combine($subtypes, array_map([$this, 'gettext'], $subtypes));
 
             // fill options for the current folder type
             if ($ftype == $ctype || (isset($new_ctype) && $ftype == $new_ctype)) {
@@ -296,13 +295,14 @@ class kolab_folders extends rcube_plugin
             }
         }
 
-        $args['form']['props']['fieldsets']['settings']['content']['folderctype'] = array(
+        $args['form']['props']['fieldsets']['settings']['content']['folderctype'] = [
             'label' => $this->gettext('folderctype'),
-            'value' => html::div('input-group',
+            'value' => html::div(
+                'input-group',
                 $type_select->show($new_ctype ?? $ctype)
                 . $sub_select->show($new_subtype ?? $subtype)
             ),
-        );
+        ];
 
         $this->rc->output->set_env('kolab_folder_subtypes', $sub_types);
         $this->rc->output->set_env('kolab_folder_subtype', $new_subtype ?? $subtype);
@@ -315,7 +315,7 @@ class kolab_folders extends rcube_plugin
     /**
      * Handler for folder update/create action (folder_update/folder_create hook).
      */
-    function folder_save($args)
+    public function folder_save($args)
     {
         // Folder actions from folders list
         if (empty($args['record'])) {
@@ -352,11 +352,11 @@ class kolab_folders extends rcube_plugin
             }
         }
         // Subtype sanity-checks
-        else if ($subtype && (!($subtypes = $this->subtypes[$ctype]) || !in_array($subtype, $subtypes))) {
+        elseif ($subtype && (!($subtypes = $this->subtypes[$ctype]) || !in_array($subtype, $subtypes))) {
             $subtype = '';
         }
 
-        $ctype .= $subtype ? '.'.$subtype : '';
+        $ctype .= $subtype ? '.' . $subtype : '';
 
         $storage = $this->rc->get_storage();
 
@@ -373,14 +373,13 @@ class kolab_folders extends rcube_plugin
         else {
             if ($old_mbox != $mbox) {
                 $result = $storage->rename_folder($old_mbox, $mbox);
-            }
-            else {
+            } else {
                 $result = true;
             }
 
             if ($result) {
-                list($oldtype, $oldsubtype) = $this->get_folder_type($mbox);
-                $oldtype .= $oldsubtype ? '.'.$oldsubtype : '';
+                [$oldtype, $oldsubtype] = $this->get_folder_type($mbox);
+                $oldtype .= $oldsubtype ? '.' . $oldsubtype : '';
 
                 if ($ctype != $oldtype) {
                     $this->set_folder_type($mbox, $ctype);
@@ -393,7 +392,7 @@ class kolab_folders extends rcube_plugin
             $expire = trim(rcube_utils::get_input_value('_expire', rcube_utils::INPUT_POST));
             $expire = intval($expire) && preg_match('/^mail/', $ctype) ? intval($expire) : null;
 
-            $storage->set_metadata($mbox, array($this->expire_annotation => $expire));
+            $storage->set_metadata($mbox, [$this->expire_annotation => $expire]);
         }
 
         $args['record']['class']     = self::folder_class_name($ctype);
@@ -416,15 +415,15 @@ class kolab_folders extends rcube_plugin
             return $args;
         }
 
-        $dont_override = (array) $this->rc->config->get('dont_override', array());
+        $dont_override = (array) $this->rc->config->get('dont_override', []);
 
         // map config option name to kolab folder type annotation
-        $opts = array(
+        $opts = [
             'drafts_mbox' => 'mail.drafts',
             'sent_mbox'   => 'mail.sentitems',
             'junk_mbox'   => 'mail.junkemail',
             'trash_mbox'  => 'mail.wastebasket',
-        );
+        ];
 
         // check if any of special folders has been changed
         foreach ($opts as $opt_name => $type) {
@@ -442,14 +441,14 @@ class kolab_folders extends rcube_plugin
         $folderdata = kolab_storage::folders_typedata();
 
         if (!is_array($folderdata)) {
-             return $args;
+            return $args;
         }
 
         foreach ($opts as $opt_name => $type) {
             $foldername = $args['prefs'][$opt_name];
 
             // get all folders of specified type
-            $folders = array_intersect($folderdata, array($type));
+            $folders = array_intersect($folderdata, [$type]);
 
             // folder already annotated with specified type
             if (!empty($folders[$foldername])) {
@@ -460,7 +459,7 @@ class kolab_folders extends rcube_plugin
             $this->set_folder_type($foldername, $type);
 
             // unset old folder(s) type annotation
-            list($maintype, $subtype) = explode('.', $type);
+            [$maintype, $subtype] = explode('.', $type);
             foreach (array_keys($folders) as $folder) {
                 $this->set_folder_type($folder, $maintype);
             }
@@ -482,7 +481,7 @@ class kolab_folders extends rcube_plugin
     public function acl_rights_simple($args)
     {
         if ($args['folder']) {
-            list($type,) = $this->get_folder_type($args['folder']);
+            [$type, ] = $this->get_folder_type($args['folder']);
 
             // we're dealing with a groupware folder here...
             if ($type && $type !== 'mail') {
@@ -494,12 +493,12 @@ class kolab_folders extends rcube_plugin
                     $args['rights']['other'] = preg_replace("/[$rw_perms]/", '', $args['rights']['other']);
 
                     // add localized labels and titles for the altered items
-                    $args['labels'] = array(
-                        'other'  => $this->rc->gettext('shortacla','acl'),
-                    );
-                    $args['titles'] = array(
-                        'other'  => $this->rc->gettext('longaclother','acl'),
-                    );
+                    $args['labels'] = [
+                        'other'  => $this->rc->gettext('shortacla', 'acl'),
+                    ];
+                    $args['titles'] = [
+                        'other'  => $this->rc->gettext('longaclother', 'acl'),
+                    ];
                 }
             }
         }
@@ -517,12 +516,12 @@ class kolab_folders extends rcube_plugin
     public function acl_rights_supported($args)
     {
         if ($args['folder']) {
-            list($type,) = $this->get_folder_type($args['folder']);
+            [$type, ] = $this->get_folder_type($args['folder']);
 
             // we're dealing with a groupware folder here...
             if ($type && $type !== 'mail') {
                 // remove some irrelevant (for groupware objects) rights
-                $args['rights'] = str_split(preg_replace('/[p]/', '', join('', $args['rights'])));
+                $args['rights'] = str_split(preg_replace('/[p]/', '', implode('', $args['rights'])));
             }
         }
 
@@ -534,7 +533,7 @@ class kolab_folders extends rcube_plugin
      *
      * @return bool
      */
-    function metadata_support()
+    public function metadata_support()
     {
         $storage = $this->rc->get_storage();
 
@@ -550,7 +549,7 @@ class kolab_folders extends rcube_plugin
      *
      * @return array Folder content-type
      */
-    function get_folder_type($folder)
+    public function get_folder_type($folder)
     {
         $type = explode('.', (string)kolab_storage::folder_type($folder));
 
@@ -569,7 +568,7 @@ class kolab_folders extends rcube_plugin
      *
      * @return bool True on success
      */
-    function set_folder_type($folder, $type = 'mail')
+    public function set_folder_type($folder, $type = 'mail')
     {
         return kolab_storage::set_folder_type($folder, $type);
     }
@@ -581,7 +580,7 @@ class kolab_folders extends rcube_plugin
      *
      * @return string Folder name
      */
-    function get_default_folder($type)
+    public function get_default_folder($type)
     {
         $folderdata = kolab_storage::folders_typedata();
 
@@ -590,7 +589,7 @@ class kolab_folders extends rcube_plugin
         }
 
         // get all folders of specified type
-        $folderdata = array_intersect($folderdata, array($type.'.default'));
+        $folderdata = array_intersect($folderdata, [$type . '.default']);
 
         return key($folderdata);
     }
@@ -602,10 +601,10 @@ class kolab_folders extends rcube_plugin
      *
      * @return string Class name
      */
-    static function folder_class_name($type)
+    public static function folder_class_name($type)
     {
         if ($type && strpos($type, '.')) {
-            list($ctype, $subtype) = explode('.', $type);
+            [$ctype, $subtype] = explode('.', $type);
 
             return 'type-' . $ctype . ' subtype-' . $subtype;
         }
@@ -620,7 +619,7 @@ class kolab_folders extends rcube_plugin
     {
         $storage     = $this->rc->get_storage();
         $namespace   = $storage->get_namespace();
-        $defaults    = array();
+        $defaults    = [];
         $prefix      = '';
 
         // Find personal namespace prefix
@@ -661,14 +660,14 @@ class kolab_folders extends rcube_plugin
         // find default folders
         foreach ($defaults as $type => $foldername) {
             // get all folders of specified type
-            $_folders = array_intersect($folderdata, array($type));
+            $_folders = array_intersect($folderdata, [$type]);
 
             // default folder found
             if (!empty($_folders)) {
                 continue;
             }
 
-            list($type1, $type2) = explode('.', $type);
+            [$type1, $type2] = explode('.', $type);
 
             $activate = in_array($type1, $this->act_types);
             $exists   = false;
@@ -678,12 +677,10 @@ class kolab_folders extends rcube_plugin
             // check if folder exists
             if (!empty($folderdata[$foldername]) || $foldername == 'INBOX') {
                 $exists = true;
-            }
-            else if ((!$filter || $filter == $type1) && in_array($foldername, $folders)) {
+            } elseif ((!$filter || $filter == $type1) && in_array($foldername, $folders)) {
                 // this assumes also that subscribed folder exists
                 $exists = true;
-            }
-            else {
+            } else {
                 $exists = $storage->folder_exists($foldername);
             }
 
@@ -699,8 +696,7 @@ class kolab_folders extends rcube_plugin
                     if ((!$filter || $filter == $type1) && $lsub && in_array($foldername, $folders)) {
                         // already subscribed
                         $subscribed = true;
-                    }
-                    else {
+                    } else {
                         $subscribed = $storage->subscribe($foldername);
                     }
 
@@ -767,12 +763,12 @@ class kolab_folders extends rcube_plugin
             $post    = trim(rcube_utils::get_input_value('_expire', rcube_utils::INPUT_POST));
             $is_mail = empty($type) || preg_match('/^mail/i', $type);
             $label   = $this->gettext('xdays');
-            $input   = new html_inputfield(array(
+            $input   = new html_inputfield([
                     'id'       => '_kolabexpire',
                     'name'     => '_expire',
                     'size'     => 3,
-                    'disabled' => !$is_mail
-            ));
+                    'disabled' => !$is_mail,
+            ]);
 
             if ($post && $is_mail) {
                 $expire = (int) $post;
@@ -782,17 +778,16 @@ class kolab_folders extends rcube_plugin
                 $label = str_replace('$x', '', $label);
                 $html  = $input->show($expire ?: '')
                     . html::span('input-group-append', html::span('input-group-text', rcube::Q($label)));
-            }
-            else {
+            } else {
                 $label = str_replace('$x', '', $label);
                 $html  = html::span('input-group-prepend', html::span('input-group-text', rcube::Q($label)))
                     . $input->show($expire ?: '');
             }
 
-            $form['props']['fieldsets']['settings']['content']['kolabexpire'] = array(
+            $form['props']['fieldsets']['settings']['content']['kolabexpire'] = [
                 'label' => $this->gettext('folderexpire'),
                 'value' => html::div('input-group', $html),
-            );
+            ];
         }
     }
 
@@ -821,8 +816,8 @@ class kolab_folders extends rcube_plugin
             // folders_list hook mode
             if ($is_fl) {
                 foreach ((array) $args['list'] as $folder_name => $folder) {
-                    if (strpos($folder_name, $root[0]) === 0 && !substr_count($folder_name, $root[1], $length+1)) {
-                        if ($name = kolab_storage::folder_id2user(substr($folder_name, $length+1), true)) {
+                    if (strpos($folder_name, $root[0]) === 0 && !substr_count($folder_name, $root[1], $length + 1)) {
+                        if ($name = kolab_storage::folder_id2user(substr($folder_name, $length + 1), true)) {
                             $old     = $args['list'][$folder_name]['display'];
                             $content = $args['list'][$folder_name]['content'];
 
@@ -838,8 +833,8 @@ class kolab_folders extends rcube_plugin
                 // TODO: Re-sort the list
             }
             // render_* hooks mode
-            else if (!empty($args['list'][$prefix]) && !empty($args['list'][$prefix]['folders'])) {
-                $map = array();
+            elseif (!empty($args['list'][$prefix]) && !empty($args['list'][$prefix]['folders'])) {
+                $map = [];
                 foreach ($args['list'][$prefix]['folders'] as $folder_name => $folder) {
                     if ($name = kolab_storage::folder_id2user($folder_name, true)) {
                         $args['list'][$prefix]['folders'][$folder_name]['name'] = $name;

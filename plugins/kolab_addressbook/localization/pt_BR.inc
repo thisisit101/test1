@@ -55,4 +55,3 @@ $messages['bookupdateerror'] = 'Ocorreu um erro ao atualizar o catálogo de ende
 $messages['bookcreateerror'] = 'Ocorreu um erro ao criar o catálogo de endereço.';
 $messages['nobooknamewarning'] = 'Por favor, insira um nome para o catálogo de endereço.';
 $messages['noemailnamewarning'] = 'Por favor, insira um e-mail ou nome para o contato.';
-?>

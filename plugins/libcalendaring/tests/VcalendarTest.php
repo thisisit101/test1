@@ -25,7 +25,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
 {
     private $attachment_data;
 
-    function setUp(): void
+    public function setUp(): void
     {
         require_once __DIR__ . '/../libcalendaring.php';
         require_once __DIR__ . '/../lib/libcalendaring_vcalendar.php';
@@ -35,7 +35,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * Simple iCal parsing test
      */
-    function test_import()
+    public function test_import()
     {
         $ical = new libcalendaring_vcalendar();
         $ics = file_get_contents(__DIR__ . '/resources/snd.ics');
@@ -66,7 +66,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * Test parsing from files
      */
-    function test_import_from_file()
+    public function test_import_from_file()
     {
         $ical = new libcalendaring_vcalendar();
 
@@ -80,7 +80,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * Test parsing from files with multiple VCALENDAR blocks (#2884)
      */
-    function test_import_from_file_multiple()
+    public function test_import_from_file_multiple()
     {
         $ical = new libcalendaring_vcalendar();
         $ical->fopen(__DIR__ . '/resources/multiple-rdate.ics', 'UTF-8');
@@ -94,7 +94,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("AAAA1C572093EC3FC125799C004AFFFF-Lotus_Notes_Generated", $events[1]['uid']);
     }
 
-    function test_invalid_dates()
+    public function test_invalid_dates()
     {
         $ical = new libcalendaring_vcalendar();
         $events = $ical->import_from_file(__DIR__ . '/resources/invalid-dates.ics', 'UTF-8');
@@ -108,7 +108,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * Test some extended ical properties such as attendees, recurrence rules, alarms and attachments
      */
-    function test_extended()
+    public function test_extended()
     {
         $ical = new libcalendaring_vcalendar();
 
@@ -130,19 +130,19 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $this->assertTrue($attendee['rsvp'], 'Attendee RSVP');
 
         $delegator = $event['attendees'][2];
-        $this->assertEquals('NON-PARTICIPANT',   $delegator['role'], 'Delegator ROLE');
-        $this->assertEquals('DELEGATED',         $delegator['status'], 'Delegator STATUS');
-        $this->assertEquals('INDIVIDUAL',        $delegator['cutype'], 'Delegator CUTYPE');
-        $this->assertEquals('carl@mykolab.com',  $delegator['email'], 'Delegator mailto:');
+        $this->assertEquals('NON-PARTICIPANT', $delegator['role'], 'Delegator ROLE');
+        $this->assertEquals('DELEGATED', $delegator['status'], 'Delegator STATUS');
+        $this->assertEquals('INDIVIDUAL', $delegator['cutype'], 'Delegator CUTYPE');
+        $this->assertEquals('carl@mykolab.com', $delegator['email'], 'Delegator mailto:');
         $this->assertEquals('rolf2@mykolab.com', $delegator['delegated-to'], 'Delegator delegated-to');
-        $this->assertFalse($delegator['rsvp'],   'Delegator RSVP');
+        $this->assertFalse($delegator['rsvp'], 'Delegator RSVP');
 
         // attachments
         $this->assertEquals(1, count($event['attachments']), "Embedded attachments");
         $attachment = $event['attachments'][0];
-        $this->assertEquals('text/html',                 $attachment['mimetype'], "Attachment mimetype attribute");
-        $this->assertEquals('calendar.html',             $attachment['name'],     "Attachment filename (X-LABEL) attribute");
-        $this->assertStringContainsString('<title>Kalender</title>', $attachment['data'],     "Attachment content (decoded)");
+        $this->assertEquals('text/html', $attachment['mimetype'], "Attachment mimetype attribute");
+        $this->assertEquals('calendar.html', $attachment['name'], "Attachment filename (X-LABEL) attribute");
+        $this->assertStringContainsString('<title>Kalender</title>', $attachment['data'], "Attachment content (decoded)");
 
         // recurrence rules
         $events = $ical->import_from_file(__DIR__ . '/resources/recurring.ics', 'UTF-8');
@@ -150,24 +150,24 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
 
         $this->assertTrue(is_array($event['recurrence']), 'Recurrences rule as hash array');
         $rrule = $event['recurrence'];
-        $this->assertEquals('MONTHLY',      $rrule['FREQ'],     "Recurrence frequency");
-        $this->assertEquals('1',            $rrule['INTERVAL'], "Recurrence interval");
-        $this->assertEquals('3WE',          $rrule['BYDAY'],    "Recurrence frequency");
-        $this->assertInstanceOf('DateTimeInterface', $rrule['UNTIL'],    "Recurrence end date");
+        $this->assertEquals('MONTHLY', $rrule['FREQ'], "Recurrence frequency");
+        $this->assertEquals('1', $rrule['INTERVAL'], "Recurrence interval");
+        $this->assertEquals('3WE', $rrule['BYDAY'], "Recurrence frequency");
+        $this->assertInstanceOf('DateTimeInterface', $rrule['UNTIL'], "Recurrence end date");
 
-        $this->assertEquals(2, count($rrule['EXDATE']),          "Recurrence EXDATEs");
+        $this->assertEquals(2, count($rrule['EXDATE']), "Recurrence EXDATEs");
         $this->assertInstanceOf('DateTimeInterface', $rrule['EXDATE'][0], "Recurrence EXDATE as DateTime");
 
         $this->assertTrue(is_array($rrule['EXCEPTIONS']));
         $this->assertEquals(1, count($rrule['EXCEPTIONS']), "Recurrence Exceptions");
 
         $exception = $rrule['EXCEPTIONS'][0];
-        $this->assertEquals($event['uid'],  $event['uid'], "Exception UID");
-        $this->assertEquals('Recurring Test (Exception)',  $exception['title'], "Exception title");
+        $this->assertEquals($event['uid'], $event['uid'], "Exception UID");
+        $this->assertEquals('Recurring Test (Exception)', $exception['title'], "Exception title");
         $this->assertInstanceOf('DateTimeInterface', $exception['start'], "Exception start");
 
         // categories, class
-        $this->assertEquals('libcalendaring tests', join(',', (array)$event['categories']), "Event categories");
+        $this->assertEquals('libcalendaring tests', implode(',', (array)$event['categories']), "Event categories");
 
         // parse a recurrence chain instance
         $events = $ical->import_from_file(__DIR__ . '/resources/recurrence-id.ics', 'UTF-8');
@@ -181,9 +181,9 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     }
 
     /**
-     * 
+     *
      */
-    function test_alarms()
+    public function test_alarms()
     {
         $ical = new libcalendaring_vcalendar();
 
@@ -195,9 +195,9 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $this->assertEquals('12', $alarm[0], "Alarm value");
         $this->assertEquals('-H', $alarm[1], "Alarm unit");
 
-        $this->assertEquals('DISPLAY', $event['valarms'][0]['action'],  "Full alarm item (action)");
-        $this->assertEquals('-PT12H',  $event['valarms'][0]['trigger'], "Full alarm item (trigger)");
-        $this->assertEquals('END',  $event['valarms'][0]['related'], "Full alarm item (related)");
+        $this->assertEquals('DISPLAY', $event['valarms'][0]['action'], "Full alarm item (action)");
+        $this->assertEquals('-PT12H', $event['valarms'][0]['trigger'], "Full alarm item (trigger)");
+        $this->assertEquals('END', $event['valarms'][0]['related'], "Full alarm item (related)");
 
         // alarm trigger with 0 values
         $events = $ical->import_from_file(__DIR__ . '/resources/alarms.ics', 'UTF-8');
@@ -210,33 +210,33 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $this->assertEquals('-30M', $alarm[2], "Alarm string");
         $this->assertEquals('-PT30M', $alarm[3], "Unified alarm string (stripped zero-values)");
 
-        $this->assertEquals('DISPLAY', $event['valarms'][0]['action'],  "First alarm action");
-        $this->assertTrue(empty($event['valarms'][0]['related']),  "First alarm related property");
-        $this->assertEquals('This is the first event reminder', $event['valarms'][0]['description'],  "First alarm text");
+        $this->assertEquals('DISPLAY', $event['valarms'][0]['action'], "First alarm action");
+        $this->assertTrue(empty($event['valarms'][0]['related']), "First alarm related property");
+        $this->assertEquals('This is the first event reminder', $event['valarms'][0]['description'], "First alarm text");
 
         $this->assertEquals(3, count($event['valarms']), "List all VALARM blocks");
 
         $valarm = $event['valarms'][1];
         $this->assertEquals(1, count($valarm['attendees']), "Email alarm attendees");
-        $this->assertEquals('EMAIL', $valarm['action'],  "Second alarm item (action)");
-        $this->assertEquals('-P1D',  $valarm['trigger'], "Second alarm item (trigger)");
-        $this->assertEquals('This is the reminder message',  $valarm['summary'], "Email alarm text");
+        $this->assertEquals('EMAIL', $valarm['action'], "Second alarm item (action)");
+        $this->assertEquals('-P1D', $valarm['trigger'], "Second alarm item (trigger)");
+        $this->assertEquals('This is the reminder message', $valarm['summary'], "Email alarm text");
         $this->assertInstanceOf('DateTimeInterface', $event['valarms'][2]['trigger'], "Absolute trigger date/time");
 
         // test alarms export
         $ics = $ical->export([$event]);
-        $this->assertStringContainsString('ACTION:DISPLAY',   $ics, "Display alarm block");
-        $this->assertStringContainsString('ACTION:EMAIL',     $ics, "Email alarm block");
-        $this->assertStringContainsString('DESCRIPTION:This is the first event reminder',    $ics, "Alarm description");
-        $this->assertStringContainsString('SUMMARY:This is the reminder message',            $ics, "Email alarm summary");
-        $this->assertStringContainsString('ATTENDEE:mailto:reminder-recipient@example.org',  $ics, "Email alarm recipient");
-        $this->assertStringContainsString('TRIGGER;VALUE=DATE-TIME:20130812',  $ics, "Date-Time trigger");
+        $this->assertStringContainsString('ACTION:DISPLAY', $ics, "Display alarm block");
+        $this->assertStringContainsString('ACTION:EMAIL', $ics, "Email alarm block");
+        $this->assertStringContainsString('DESCRIPTION:This is the first event reminder', $ics, "Alarm description");
+        $this->assertStringContainsString('SUMMARY:This is the reminder message', $ics, "Email alarm summary");
+        $this->assertStringContainsString('ATTENDEE:mailto:reminder-recipient@example.org', $ics, "Email alarm recipient");
+        $this->assertStringContainsString('TRIGGER;VALUE=DATE-TIME:20130812', $ics, "Date-Time trigger");
     }
 
     /**
      * @depends test_import_from_file
      */
-    function test_attachment()
+    public function test_attachment()
     {
         $ical = new libcalendaring_vcalendar();
 
@@ -252,7 +252,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * @depends test_import
      */
-    function test_apple_alarms()
+    public function test_apple_alarms()
     {
         $ical = new libcalendaring_vcalendar();
         $events = $ical->import_from_file(__DIR__ . '/resources/apple-alarms.ics', 'UTF-8');
@@ -265,15 +265,15 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $this->assertEquals('-M', $alarm[1], "Alarm unit");
 
         $this->assertEquals(1, count($event['valarms']), "Ignore invalid alarm blocks");
-        $this->assertEquals('AUDIO', $event['valarms'][0]['action'],   "Full alarm item (action)");
+        $this->assertEquals('AUDIO', $event['valarms'][0]['action'], "Full alarm item (action)");
         $this->assertEquals('-PT45M', $event['valarms'][0]['trigger'], "Full alarm item (trigger)");
-        $this->assertEquals('Basso',  $event['valarms'][0]['uri'],     "Full alarm item (attachment)");
+        $this->assertEquals('Basso', $event['valarms'][0]['uri'], "Full alarm item (attachment)");
     }
 
     /**
-     * 
+     *
      */
-    function test_escaped_values()
+    public function test_escaped_values()
     {
         $ical = new libcalendaring_vcalendar();
         $events = $ical->import_from_file(__DIR__ . '/resources/escaped.ics', 'UTF-8');
@@ -290,7 +290,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * Parse RDATE properties (#2885)
      */
-    function test_rdate()
+    public function test_rdate()
     {
         $ical = new libcalendaring_vcalendar();
         $events = $ical->import_from_file(__DIR__ . '/resources/multiple-rdate.ics', 'UTF-8');
@@ -304,7 +304,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * @depends test_import
      */
-    function test_freebusy()
+    public function test_freebusy()
     {
         $ical = new libcalendaring_vcalendar();
         $ical->import_from_file(__DIR__ . '/resources/freebusy.ifb', 'UTF-8');
@@ -321,7 +321,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * @depends test_import
      */
-    function test_freebusy_dummy()
+    public function test_freebusy_dummy()
     {
         $ical = new libcalendaring_vcalendar();
         $ical->import_from_file(__DIR__ . '/resources/dummy.ifb', 'UTF-8');
@@ -331,17 +331,17 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $this->assertStringContainsString('dummy', $freebusy['comment'], "Parse comment");
     }
 
-    function test_vtodo()
+    public function test_vtodo()
     {
         $ical = new libcalendaring_vcalendar();
         $tasks = $ical->import_from_file(__DIR__ . '/resources/vtodo.ics', 'UTF-8', true);
         $task = $tasks[0];
 
-        $this->assertInstanceOf('DateTimeInterface', $task['start'],   "'start' property is DateTime object");
-        $this->assertInstanceOf('DateTimeInterface', $task['due'],     "'due' property is DateTime object");
-        $this->assertEquals('-1D:DISPLAY',  $task['alarms'],  "Taks alarm value");
-        $this->assertEquals('IN-PROCESS',   $task['status'],  "Task status property");
-        $this->assertEquals(1, count($task['x-custom']),      "Custom properties");
+        $this->assertInstanceOf('DateTimeInterface', $task['start'], "'start' property is DateTime object");
+        $this->assertInstanceOf('DateTimeInterface', $task['due'], "'due' property is DateTime object");
+        $this->assertEquals('-1D:DISPLAY', $task['alarms'], "Taks alarm value");
+        $this->assertEquals('IN-PROCESS', $task['status'], "Task status property");
+        $this->assertEquals(1, count($task['x-custom']), "Custom properties");
         $this->assertEquals(4, count($task['categories']));
         $this->assertEquals('1234567890-12345678-PARENT', $task['parent_id'], "Parent Relation");
 
@@ -356,7 +356,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * Test for iCal export from internal hash array representation
      */
-    function test_export()
+    public function test_export()
     {
         $ical = new libcalendaring_vcalendar();
 
@@ -375,7 +375,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
 
         $ics = $ical->export([$event], 'REQUEST', false, [$this, 'get_attachment_data'], true);
 
-        $this->assertStringContainsString('BEGIN:VCALENDAR',    $ics, "VCALENDAR encapsulation BEGIN");
+        $this->assertStringContainsString('BEGIN:VCALENDAR', $ics, "VCALENDAR encapsulation BEGIN");
 
         $this->assertStringContainsString('BEGIN:VTIMEZONE', $ics, "VTIMEZONE encapsulation BEGIN");
         $this->assertStringContainsString('TZID:Europe/Berlin', $ics, "Timezone ID");
@@ -385,41 +385,41 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $this->assertStringContainsString('TZOFFSETTO:-0500', $ics, "TZOFFSETTO with negative offset (Bug T428)");
         $this->assertStringContainsString('END:VTIMEZONE', $ics, "VTIMEZONE encapsulation END");
 
-        $this->assertStringContainsString('BEGIN:VEVENT',       $ics, "VEVENT encapsulation BEGIN");
+        $this->assertStringContainsString('BEGIN:VEVENT', $ics, "VEVENT encapsulation BEGIN");
         $this->assertSame(2, substr_count($ics, 'DTSTAMP'), "Duplicate DTSTAMP (T1148)");
         $this->assertStringContainsString('UID:ac6b0aee-2519-4e5c-9a25-48c57064c9f0', $ics, "Event UID");
-        $this->assertStringContainsString('SEQUENCE:' . $event['sequence'],           $ics, "Export Sequence number");
-        $this->assertStringContainsString('DESCRIPTION:*Exported by',                 $ics, "Export Description");
-        $this->assertStringContainsString('ORGANIZER;CN=Rolf Test:mailto:rolf@',      $ics, "Export organizer");
-        $this->assertMatchesRegularExpression('/ATTENDEE.*;ROLE=REQ-PARTICIPANT/',  $ics, "Export Attendee ROLE");
+        $this->assertStringContainsString('SEQUENCE:' . $event['sequence'], $ics, "Export Sequence number");
+        $this->assertStringContainsString('DESCRIPTION:*Exported by', $ics, "Export Description");
+        $this->assertStringContainsString('ORGANIZER;CN=Rolf Test:mailto:rolf@', $ics, "Export organizer");
+        $this->assertMatchesRegularExpression('/ATTENDEE.*;ROLE=REQ-PARTICIPANT/', $ics, "Export Attendee ROLE");
         $this->assertMatchesRegularExpression('/ATTENDEE.*;PARTSTAT=NEEDS-ACTION/', $ics, "Export Attendee Status");
-        $this->assertMatchesRegularExpression('/ATTENDEE.*;RSVP=TRUE/',             $ics, "Export Attendee RSVP");
-        $this->assertMatchesRegularExpression('/:mailto:rolf2@/',                   $ics, "Export Attendee mailto:");
+        $this->assertMatchesRegularExpression('/ATTENDEE.*;RSVP=TRUE/', $ics, "Export Attendee RSVP");
+        $this->assertMatchesRegularExpression('/:mailto:rolf2@/', $ics, "Export Attendee mailto:");
 
         $rrule = $event['recurrence'];
-        $this->assertMatchesRegularExpression('/RRULE:.*FREQ='.$rrule['FREQ'].'/',          $ics, "Export Recurrence Frequence");
-        $this->assertMatchesRegularExpression('/RRULE:.*INTERVAL='.$rrule['INTERVAL'].'/',  $ics, "Export Recurrence Interval");
-        $this->assertMatchesRegularExpression('/RRULE:.*UNTIL=20140718T215959Z/',           $ics, "Export Recurrence End date");
-        $this->assertMatchesRegularExpression('/RRULE:.*BYDAY='.$rrule['BYDAY'].'/',        $ics, "Export Recurrence BYDAY");
-        $this->assertMatchesRegularExpression('/EXDATE.*:20131218/',     $ics, "Export Recurrence EXDATE");
+        $this->assertMatchesRegularExpression('/RRULE:.*FREQ=' . $rrule['FREQ'] . '/', $ics, "Export Recurrence Frequence");
+        $this->assertMatchesRegularExpression('/RRULE:.*INTERVAL=' . $rrule['INTERVAL'] . '/', $ics, "Export Recurrence Interval");
+        $this->assertMatchesRegularExpression('/RRULE:.*UNTIL=20140718T215959Z/', $ics, "Export Recurrence End date");
+        $this->assertMatchesRegularExpression('/RRULE:.*BYDAY=' . $rrule['BYDAY'] . '/', $ics, "Export Recurrence BYDAY");
+        $this->assertMatchesRegularExpression('/EXDATE.*:20131218/', $ics, "Export Recurrence EXDATE");
 
-        $this->assertStringContainsString('BEGIN:VALARM',   $ics, "Export VALARM");
+        $this->assertStringContainsString('BEGIN:VALARM', $ics, "Export VALARM");
         $this->assertStringContainsString('TRIGGER;RELATED=END:-PT12H', $ics, "Export Alarm trigger");
 
-        $this->assertMatchesRegularExpression('/ATTACH.*;VALUE=BINARY/',                    $ics, "Embed attachment");
-        $this->assertMatchesRegularExpression('/ATTACH.*;ENCODING=BASE64/',                 $ics, "Attachment B64 encoding");
-        $this->assertMatchesRegularExpression('!ATTACH.*;FMTTYPE=text/html!',               $ics, "Attachment mimetype");
-        $this->assertMatchesRegularExpression('!ATTACH.*;X-LABEL=calendar.html!',           $ics, "Attachment filename with X-LABEL");
+        $this->assertMatchesRegularExpression('/ATTACH.*;VALUE=BINARY/', $ics, "Embed attachment");
+        $this->assertMatchesRegularExpression('/ATTACH.*;ENCODING=BASE64/', $ics, "Attachment B64 encoding");
+        $this->assertMatchesRegularExpression('!ATTACH.*;FMTTYPE=text/html!', $ics, "Attachment mimetype");
+        $this->assertMatchesRegularExpression('!ATTACH.*;X-LABEL=calendar.html!', $ics, "Attachment filename with X-LABEL");
 
-        $this->assertStringContainsString('END:VEVENT',     $ics, "VEVENT encapsulation END");
-        $this->assertStringContainsString('END:VCALENDAR',  $ics, "VCALENDAR encapsulation END");
+        $this->assertStringContainsString('END:VEVENT', $ics, "VEVENT encapsulation END");
+        $this->assertStringContainsString('END:VCALENDAR', $ics, "VCALENDAR encapsulation END");
     }
 
     /**
      * @depends test_extended
      * @depends test_export
      */
-    function test_export_multiple()
+    public function test_export_multiple()
     {
         $ical = new libcalendaring_vcalendar();
         $events = array_merge(
@@ -431,15 +431,15 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $ics = $ical->export($events, null, false);
 
         $this->assertStringContainsString('BEGIN:VCALENDAR', $ics, "VCALENDAR encapsulation BEGIN");
-        $this->assertStringContainsString('END:VCALENDAR',   $ics, "VCALENDAR encapsulation END");
+        $this->assertStringContainsString('END:VCALENDAR', $ics, "VCALENDAR encapsulation END");
         $this->assertEquals($num, substr_count($ics, 'BEGIN:VEVENT'), "VEVENT encapsulation BEGIN");
-        $this->assertEquals($num, substr_count($ics, 'END:VEVENT'),   "VEVENT encapsulation END");
+        $this->assertEquals($num, substr_count($ics, 'END:VEVENT'), "VEVENT encapsulation END");
     }
 
     /**
      * @depends test_export
      */
-    function test_export_recurrence_exceptions()
+    public function test_export_recurrence_exceptions()
     {
         $ical = new libcalendaring_vcalendar();
         $events = $ical->import_from_file(__DIR__ . '/resources/recurring.ics', 'UTF-8');
@@ -466,16 +466,16 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $ics = $ical->export($events, null, false);
 
         $num = count($events[0]['recurrence']['EXCEPTIONS']) + 1;
-        $this->assertEquals($num, substr_count($ics, 'BEGIN:VEVENT'),       "VEVENT encapsulation BEGIN");
-        $this->assertEquals($num, substr_count($ics, 'UID:'.$event['uid']), "Recurrence Exceptions with same UID");
-        $this->assertEquals($num, substr_count($ics, 'END:VEVENT'),         "VEVENT encapsulation END");
+        $this->assertEquals($num, substr_count($ics, 'BEGIN:VEVENT'), "VEVENT encapsulation BEGIN");
+        $this->assertEquals($num, substr_count($ics, 'UID:' . $event['uid']), "Recurrence Exceptions with same UID");
+        $this->assertEquals($num, substr_count($ics, 'END:VEVENT'), "VEVENT encapsulation END");
 
         $this->assertStringContainsString('RECURRENCE-ID;TZID=Europe/Zurich:20130814', $ics, "Recurrence-ID (1) being the exception date");
         $this->assertStringContainsString('RECURRENCE-ID;TZID=Europe/Zurich:20131113', $ics, "Recurrence-ID (2) being the exception date");
-        $this->assertStringContainsString('SUMMARY:'.$exception2['title'], $ics, "Exception title");
+        $this->assertStringContainsString('SUMMARY:' . $exception2['title'], $ics, "Exception title");
     }
 
-    function test_export_valid_rrules()
+    public function test_export_valid_rrules()
     {
         $event = [
             'uid' => '1234567890',
@@ -499,7 +499,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      *
      */
-    function test_export_rdate()
+    public function test_export_rdate()
     {
         $ical = new libcalendaring_vcalendar();
         $events = $ical->import_from_file(__DIR__ . '/resources/multiple-rdate.ics', 'UTF-8');
@@ -511,7 +511,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     /**
      * @depends test_export
      */
-    function test_export_direct()
+    public function test_export_direct()
     {
         $ical = new libcalendaring_vcalendar();
         $events = $ical->import_from_file(__DIR__ . '/resources/multiple.ics', 'UTF-8');
@@ -524,12 +524,12 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
 
         $this->assertTrue($return, "Return true on successful writing");
         $this->assertStringContainsString('BEGIN:VCALENDAR', $output, "VCALENDAR encapsulation BEGIN");
-        $this->assertStringContainsString('END:VCALENDAR',   $output, "VCALENDAR encapsulation END");
+        $this->assertStringContainsString('END:VCALENDAR', $output, "VCALENDAR encapsulation END");
         $this->assertEquals($num, substr_count($output, 'BEGIN:VEVENT'), "VEVENT encapsulation BEGIN");
-        $this->assertEquals($num, substr_count($output, 'END:VEVENT'),   "VEVENT encapsulation END");
+        $this->assertEquals($num, substr_count($output, 'END:VEVENT'), "VEVENT encapsulation END");
     }
 
-    function test_datetime()
+    public function test_datetime()
     {
         $ical = new libcalendaring_vcalendar();
         $cal  = new \Sabre\VObject\Component\VCalendar();
@@ -544,7 +544,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $this->assertStringContainsString('20130901T100000Z', $asutctime->serialize());
     }
 
-    function test_get_vtimezone()
+    public function test_get_vtimezone()
     {
         $vtz = libcalendaring_vcalendar::get_vtimezone('Europe/Berlin', strtotime('2014-08-22T15:00:00+02:00'));
         $this->assertInstanceOf('\Sabre\VObject\Component', $vtz, "VTIMEZONE is a Component object");
@@ -602,7 +602,7 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $this->assertEquals('+03', $std->TZNAME);
     }
 
-    function get_attachment_data($id, $event)
+    public function get_attachment_data($id, $event)
     {
         return $this->attachment_data;
     }

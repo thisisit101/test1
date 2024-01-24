@@ -34,12 +34,10 @@ $config['kolab_delegation_login_field'] = 'email';
 // Note: These are not LDAP attributes, but field names in config
 // Note: If there are more than one email address, as many identities will be created
 // See kolab_auth plugin config
-$config['kolab_delegation_name_field']         = array('name', 'cn');
-$config['kolab_delegation_email_field']        = array('email');
-$config['kolab_delegation_organization_field'] = array('organization');
+$config['kolab_delegation_name_field']         = ['name', 'cn'];
+$config['kolab_delegation_email_field']        = ['email'];
+$config['kolab_delegation_organization_field'] = ['organization'];
 
 // Remove all user identities which do not match the user's primary or alias
 // addresses and delegator's addresses
 $config['kolab_delegation_purge_identities'] = false;
-
-?>

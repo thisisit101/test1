@@ -263,4 +263,3 @@ $labels['arialabeleventattendees'] = 'Dalībnieku saraksts';
 $labels['arialabeleventresources'] = 'Resursu saraksts';
 $labels['arialabelresourcesearchform'] = 'Resursu meklēšanas forma';
 $labels['arialabelresourceselection'] = 'Pieejamie resursi';
-?>

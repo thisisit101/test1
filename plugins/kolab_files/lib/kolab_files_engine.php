@@ -31,12 +31,12 @@ class kolab_files_engine
     private $filetypes_style;
     private $timeout = 600;
     private $file_data;
-    private $files_sort_cols    = array('name', 'mtime', 'size');
+    private $files_sort_cols    = ['name', 'mtime', 'size'];
     private $request;
-    private $sessions_sort_cols = array('name');
+    private $sessions_sort_cols = ['name'];
     private $mimetypes = null;
 
-    const API_VERSION = 4;
+    public const API_VERSION = 4;
 
 
     /**
@@ -58,20 +58,20 @@ class kolab_files_engine
     {
         $this->plugin->add_texts('localization/');
 
-        $templates = array();
+        $templates = [];
         $list_widget = false;
 
         // set templates of Files UI and widgets
         if ($this->rc->task == 'mail') {
-            if (in_array($this->rc->action, array('', 'show', 'compose'))) {
+            if (in_array($this->rc->action, ['', 'show', 'compose'])) {
                 $templates[] = 'compose_plugin';
             }
-            if (in_array($this->rc->action, array('show', 'preview', 'get'))) {
+            if (in_array($this->rc->action, ['show', 'preview', 'get'])) {
                 $templates[] = 'message_plugin';
 
                 if ($this->rc->action == 'get') {
                     // add "Save as" button into attachment toolbar
-                    $this->plugin->add_button(array(
+                    $this->plugin->add_button([
                         'id'         => 'saveas',
                         'name'       => 'saveas',
                         'type'       => 'link',
@@ -80,11 +80,10 @@ class kolab_files_engine
                         'classact'   => 'button saveas',
                         'label'      => 'kolab_files.save',
                         'title'      => 'kolab_files.saveto',
-                        ), 'toolbar');
-                }
-                else {
+                        ], 'toolbar');
+                } else {
                     // add "Save as" button into attachment menu
-                    $this->plugin->add_button(array(
+                    $this->plugin->add_button([
                         'id'         => 'attachmenusaveas',
                         'name'       => 'attachmenusaveas',
                         'type'       => 'link',
@@ -94,17 +93,15 @@ class kolab_files_engine
                         'classact'   => 'icon active saveas',
                         'innerclass' => 'icon active saveas',
                         'label'      => 'kolab_files.saveto',
-                        ), 'attachmentmenu');
+                        ], 'attachmentmenu');
                 }
             }
 
             $list_widget = true;
-        }
-        else if (!$this->rc->action && in_array($this->rc->task, array('calendar', 'tasks'))) {
+        } elseif (!$this->rc->action && in_array($this->rc->task, ['calendar', 'tasks'])) {
             $list_widget = true;
             $templates[] = 'compose_plugin';
-        }
-        else if ($this->rc->task == 'files') {
+        } elseif ($this->rc->task == 'files') {
             $templates[] = 'files';
 
             // get list of external sources
@@ -117,28 +114,39 @@ class kolab_files_engine
         if ($list_widget) {
             $this->folder_list_env();
 
-            $this->plugin->add_label('save', 'cancel', 'saveto',
-                'saveall', 'fromcloud', 'attachsel', 'selectfiles', 'attaching',
-                'collection_audio', 'collection_video', 'collection_image', 'collection_document',
-                'folderauthtitle', 'authenticating'
+            $this->plugin->add_label(
+                'save',
+                'cancel',
+                'saveto',
+                'saveall',
+                'fromcloud',
+                'attachsel',
+                'selectfiles',
+                'attaching',
+                'collection_audio',
+                'collection_video',
+                'collection_image',
+                'collection_document',
+                'folderauthtitle',
+                'authenticating'
             );
         }
 
         // add taskbar button
         if (empty($_REQUEST['framed'])) {
-            $this->plugin->add_button(array(
+            $this->plugin->add_button([
                 'command'    => 'files',
                 'class'      => 'button-files',
                 'classsel'   => 'button-files button-selected',
                 'innerclass' => 'button-inner',
                 'label'      => 'kolab_files.files',
-                'type'       => 'link'
-                ), 'taskbar');
+                'type'       => 'link',
+                ], 'taskbar');
         }
 
         $caps = $this->capabilities();
 
-        $this->plugin->include_stylesheet($this->plugin->local_skin_path().'/style.css');
+        $this->plugin->include_stylesheet($this->plugin->local_skin_path() . '/style.css');
         $this->plugin->include_script($this->url . '/js/files_api.js');
         $this->plugin->include_script('kolab_files.js');
 
@@ -149,12 +157,34 @@ class kolab_files_engine
         $this->rc->output->set_env('files_user', $this->rc->get_user_name());
 
         if (!empty($caps['DOCEDIT'])) {
-            $this->plugin->add_label('declinednotice', 'invitednotice', 'acceptedownernotice',
-                'declinedownernotice', 'requestednotice', 'acceptednotice', 'declinednotice',
-                'more', 'accept', 'decline', 'join', 'status', 'when', 'file', 'comment',
-                'statusaccepted', 'statusinvited', 'statusdeclined', 'statusrequested',
-                'invitationaccepting', 'invitationdeclining', 'invitationrequesting',
-                'close', 'invitationtitle', 'sessions', 'saving');
+            $this->plugin->add_label(
+                'declinednotice',
+                'invitednotice',
+                'acceptedownernotice',
+                'declinedownernotice',
+                'requestednotice',
+                'acceptednotice',
+                'declinednotice',
+                'more',
+                'accept',
+                'decline',
+                'join',
+                'status',
+                'when',
+                'file',
+                'comment',
+                'statusaccepted',
+                'statusinvited',
+                'statusdeclined',
+                'statusrequested',
+                'invitationaccepting',
+                'invitationdeclining',
+                'invitationrequesting',
+                'close',
+                'invitationtitle',
+                'sessions',
+                'saving'
+            );
         }
 
         if (!empty($templates)) {
@@ -164,27 +194,28 @@ class kolab_files_engine
             $this->rc->output->set_env('kolab_files_collapsed_folders', $collapsed_folders);
 
             // register template objects for dialogs (and main interface)
-            $this->rc->output->add_handlers(array(
-                'folder-create-form' => array($this, 'folder_create_form'),
-                'folder-edit-form'   => array($this, 'folder_edit_form'),
-                'folder-mount-form'  => array($this, 'folder_mount_form'),
-                'folder-auth-options'=> array($this, 'folder_auth_options'),
-                'file-search-form'   => array($this, 'file_search_form'),
-                'file-rename-form'   => array($this, 'file_rename_form'),
-                'file-create-form'   => array($this, 'file_create_form'),
-                'file-edit-dialog'   => array($this, 'file_edit_dialog'),
-                'file-session-dialog' => array($this, 'file_session_dialog'),
-                'filelist'           => array($this, 'file_list'),
-                'sessionslist'       => array($this, 'sessions_list'),
-                'filequotadisplay'   => array($this, 'quota_display'),
-                'document-editors-dialog' => array($this, 'document_editors_dialog'),
-            ));
+            $this->rc->output->add_handlers([
+                'folder-create-form' => [$this, 'folder_create_form'],
+                'folder-edit-form'   => [$this, 'folder_edit_form'],
+                'folder-mount-form'  => [$this, 'folder_mount_form'],
+                'folder-auth-options' => [$this, 'folder_auth_options'],
+                'file-search-form'   => [$this, 'file_search_form'],
+                'file-rename-form'   => [$this, 'file_rename_form'],
+                'file-create-form'   => [$this, 'file_create_form'],
+                'file-edit-dialog'   => [$this, 'file_edit_dialog'],
+                'file-session-dialog' => [$this, 'file_session_dialog'],
+                'filelist'           => [$this, 'file_list'],
+                'sessionslist'       => [$this, 'sessions_list'],
+                'filequotadisplay'   => [$this, 'quota_display'],
+                'document-editors-dialog' => [$this, 'document_editors_dialog'],
+            ]);
 
             if ($this->rc->task != 'files') {
                 // add dialog(s) content at the end of page body
                 foreach ($templates as $template) {
                     $this->rc->output->add_footer(
-                        $this->rc->output->parse('kolab_files.' . $template, false, false));
+                        $this->rc->output->parse('kolab_files.' . $template, false, false)
+                    );
                 }
             }
         }
@@ -197,11 +228,9 @@ class kolab_files_engine
     {
         if ($this->rc->task == 'files' && $this->rc->action) {
             $action = $this->rc->action;
-        }
-        else if ($this->rc->task != 'files' && $_POST['act']) {
+        } elseif ($this->rc->task != 'files' && $_POST['act']) {
             $action = $_POST['act'];
-        }
-        else {
+        } else {
             $action = 'index';
         }
 
@@ -223,9 +252,9 @@ class kolab_files_engine
             $attrib['id'] = 'folder-create-form';
         }
 
-        $input_name    = new html_inputfield(array('id' => 'folder-name', 'name' => 'name', 'size' => 30));
-        $select_parent = new html_select(array('id' => 'folder-parent', 'name' => 'parent'));
-        $table         = new html_table(array('cols' => 2, 'class' => 'propform'));
+        $input_name    = new html_inputfield(['id' => 'folder-name', 'name' => 'name', 'size' => 30]);
+        $select_parent = new html_select(['id' => 'folder-parent', 'name' => 'parent']);
+        $table         = new html_table(['cols' => 2, 'class' => 'propform']);
 
         $table->add('title', html::label('folder-name', rcube::Q($this->plugin->gettext('foldername'))));
         $table->add(null, $input_name->show());
@@ -255,9 +284,9 @@ class kolab_files_engine
             $attrib['id'] = 'folder-edit-form';
         }
 
-        $input_name    = new html_inputfield(array('id' => 'folder-edit-name', 'name' => 'name', 'size' => 30));
-        $select_parent = new html_select(array('id' => 'folder-edit-parent', 'name' => 'parent'));
-        $table         = new html_table(array('cols' => 2, 'class' => 'propform'));
+        $input_name    = new html_inputfield(['id' => 'folder-edit-name', 'name' => 'name', 'size' => 30]);
+        $select_parent = new html_select(['id' => 'folder-edit-parent', 'name' => 'parent']);
+        $table         = new html_table(['cols' => 2, 'class' => 'propform']);
 
         $table->add('title', html::label('folder-edit-name', rcube::Q($this->plugin->gettext('foldername'))));
         $table->add(null, $input_name->show());
@@ -294,49 +323,57 @@ class kolab_files_engine
         }
 
         // build form content
-        $table        = new html_table(array('cols' => 2, 'class' => 'propform'));
-        $input_name   = new html_inputfield(array('id' => 'folder-mount-name', 'name' => 'name', 'size' => 30));
-        $input_driver = new html_radiobutton(array('name' => 'driver', 'size' => 30));
+        $table        = new html_table(['cols' => 2, 'class' => 'propform']);
+        $input_name   = new html_inputfield(['id' => 'folder-mount-name', 'name' => 'name', 'size' => 30]);
+        $input_driver = new html_radiobutton(['name' => 'driver', 'size' => 30]);
 
         $table->add('title', html::label('folder-mount-name', rcube::Q($this->plugin->gettext('name'))));
         $table->add(null, $input_name->show());
 
         foreach ($sources as $key => $source) {
             $id    = 'source-' . $key;
-            $form  = new html_table(array('cols' => 2, 'class' => 'propform driverform'));
+            $form  = new html_table(['cols' => 2, 'class' => 'propform driverform']);
 
             foreach ((array) $source['form'] as $idx => $label) {
                 $iid = $id . '-' . $idx;
                 $type  = stripos($idx, 'pass') !== false ? 'html_passwordfield' : 'html_inputfield';
-                $input = new $type(array('size' => 30));
+                $input = new $type(['size' => 30]);
 
                 $form->add('title', html::label($iid, rcube::Q($label)));
-                $form->add(null, $input->show('', array(
+                $form->add(null, $input->show('', [
                         'id'   => $iid,
-                        'name' => $key . '[' . $idx . ']'
-                )));
+                        'name' => $key . '[' . $idx . ']',
+                ]));
             }
 
-            $row = $input_driver->show(null, array('value' => $key))
-                . html::img(array('src' => $source['image'], 'alt' => $key, 'title' => $source['name']))
-                . html::div(null, html::span('name', rcube::Q($source['name']))
+            $row = $input_driver->show(null, ['value' => $key])
+                . html::img(['src' => $source['image'], 'alt' => $key, 'title' => $source['name']])
+                . html::div(
+                    null,
+                    html::span('name', rcube::Q($source['name']))
                     . html::br()
                     . html::span('description hint', rcube::Q($source['description']))
                     . $form->show()
                 );
 
-            $table->add(array('id' => $id, 'colspan' => 2, 'class' => 'source'), $row);
+            $table->add(['id' => $id, 'colspan' => 2, 'class' => 'source'], $row);
         }
 
-        $out = $table->show() . $this->folder_auth_options(array('suffix' => '-form'));
+        $out = $table->show() . $this->folder_auth_options(['suffix' => '-form']);
 
         // add form tag around text field
         if (empty($attrib['form'])) {
             $out = $this->rc->output->form_tag($attrib, $out);
         }
 
-        $this->plugin->add_label('foldermounting', 'foldermountnotice', 'foldermount',
-            'save', 'cancel', 'folderauthtitle', 'authenticating'
+        $this->plugin->add_label(
+            'foldermounting',
+            'foldermountnotice',
+            'foldermount',
+            'save',
+            'cancel',
+            'folderauthtitle',
+            'authenticating'
         );
         $this->rc->output->add_gui_object('folder-mount-form', $attrib['id']);
 
@@ -348,13 +385,14 @@ class kolab_files_engine
      */
     public function folder_auth_options($attrib)
     {
-        $checkbox = new html_checkbox(array(
+        $checkbox = new html_checkbox([
             'name'  => 'store_passwords',
             'value' => '1',
             'class' => 'pretty-checkbox',
-        ));
+        ]);
 
-        return html::div('auth-options',
+        return html::div(
+            'auth-options',
             html::label(null, $checkbox->show() . ' ' . $this->plugin->gettext('storepasswords'))
             . html::p('description hint', $this->plugin->gettext('storepasswordsdesc'))
         );
@@ -371,7 +409,7 @@ class kolab_files_engine
 
         if (empty($info) || empty($info['form'])) {
             $msg = $this->plugin->gettext($info === false ? 'sharepermissionerror' : 'sharestorageerror');
-            return html::div(array('class' => 'boxerror', 'id' => 'share-notice'), rcube::Q($msg));
+            return html::div(['class' => 'boxerror', 'id' => 'share-notice'], rcube::Q($msg));
         }
 
         if (empty($attrib['id'])) {
@@ -381,20 +419,19 @@ class kolab_files_engine
         $out = '';
 
         foreach ($info['form'] as $mode => $tab) {
-            $table  = new html_table(array(
+            $table  = new html_table([
                     'cols'        => ($tab['list_column'] ? 1 : count($tab['form'])) + 1,
                     'data-mode'   => $mode,
                     'data-single' => $tab['single'] ? 1 : 0,
-            ));
-            $submit = new html_button(array('class' => 'btn btn-secondary submit'));
-            $delete = new html_button(array('class' => 'btn btn-secondary btn-danger delete'));
-            $fields = array();
+            ]);
+            $submit = new html_button(['class' => 'btn btn-secondary submit']);
+            $delete = new html_button(['class' => 'btn btn-secondary btn-danger delete']);
+            $fields = [];
 
             // Table header
             if (!empty($tab['list_column'])) {
                 $table->add_header(null, rcube::Q($tab['list_column_label']));
-            }
-            else {
+            } else {
                 foreach ($tab['form'] as $field) {
                     $table->add_header(null, rcube::Q($field['title']));
                 }
@@ -406,34 +443,31 @@ class kolab_files_engine
             foreach ($tab['form'] as $index => $field) {
                 $add = '';
                 if ($field['type'] == 'select') {
-                    $ff = new html_select(array('name' => $index));
+                    $ff = new html_select(['name' => $index]);
                     foreach ($field['options'] as $opt_idx => $opt) {
                         $ff->add($opt, $opt_idx);
                     }
-                }
-                else if ($field['type'] == 'password') {
-                    $ff = new html_passwordfield(array(
+                } elseif ($field['type'] == 'password') {
+                    $ff = new html_passwordfield([
                             'name'        => $index,
                             'placeholder' => $this->rc->gettext('password'),
-                    ));
-                    $add = new html_passwordfield(array(
+                    ]);
+                    $add = new html_passwordfield([
                             'name'        => $index . 'confirm',
                             'placeholder' => $this->plugin->gettext('confirmpassword'),
-                    ));
+                    ]);
                     $add = $add->show();
-                }
-                else {
-                    $ff = new html_inputfield(array(
+                } else {
+                    $ff = new html_inputfield([
                             'name'              => $index,
                             'data-autocomplete' => $field['autocomplete'],
                             'placeholder'       => $field['placeholder'],
-                    ));
+                    ]);
                 }
 
                 if (!empty($tab['list_column'])) {
                     $record .= $ff->show() . $add;
-                }
-                else {
+                } else {
                     $table->add(null, $ff->show() . $add);
                 }
                 $fields[$index] = $ff;
@@ -445,7 +479,7 @@ class kolab_files_engine
 
             $hidden = '';
             foreach ((array) $tab['extra_fields'] as $key => $default) {
-                $h = new html_hiddenfield(array('name' => $key, 'value' => $default));
+                $h = new html_hiddenfield(['name' => $key, 'value' => $default]);
                 $hidden .= $h->show();
             }
 
@@ -455,15 +489,13 @@ class kolab_files_engine
             foreach ((array) $info['rights'] as $entry) {
                 if ($entry['mode'] == $mode) {
                     if (!empty($tab['list_column'])) {
-                        $table->add(null, html::span(array('title' => $entry['title'], 'class' => 'name'), rcube::Q($entry[$tab['list_column']])));
-                    }
-                    else {
+                        $table->add(null, html::span(['title' => $entry['title'], 'class' => 'name'], rcube::Q($entry[$tab['list_column']])));
+                    } else {
                         foreach ($tab['form'] as $index => $field) {
                             if ($fields[$index] instanceof html_select) {
                                 $table->add(null, $fields[$index]->show($entry[$index]));
-                            }
-                            else if ($fields[$index] instanceof html_inputfield) {
-                                $table->add(null, html::span(array('title' => $entry['title'], 'class' => 'name'), rcube::Q($entry[$index])));
+                            } elseif ($fields[$index] instanceof html_inputfield) {
+                                $table->add(null, html::span(['title' => $entry['title'], 'class' => 'name'], rcube::Q($entry[$index])));
                             }
                         }
                     }
@@ -471,7 +503,7 @@ class kolab_files_engine
                     $hidden = '';
                     foreach ((array) $tab['extra_fields'] as $key => $default) {
                         if (isset($entry[$key])) {
-                            $h = new html_hiddenfield(array('name' => $key, 'value' => $entry[$key]));
+                            $h = new html_hiddenfield(['name' => $key, 'value' => $entry[$key]]);
                             $hidden .= $h->show();
                         }
                     }
@@ -500,8 +532,18 @@ class kolab_files_engine
      */
     public function file_edit_dialog($attrib)
     {
-        $this->plugin->add_label('select', 'create', 'cancel', 'editfiledialog', 'editfilesessions',
-            'newsession', 'ownedsession', 'invitedsession', 'joinsession', 'editfilero', 'editfilerotitle',
+        $this->plugin->add_label(
+            'select',
+            'create',
+            'cancel',
+            'editfiledialog',
+            'editfilesessions',
+            'newsession',
+            'ownedsession',
+            'invitedsession',
+            'joinsession',
+            'editfilero',
+            'editfilerotitle',
             'newsessionro'
         );
 
@@ -513,8 +555,15 @@ class kolab_files_engine
      */
     public function file_session_dialog($attrib)
     {
-        $this->plugin->add_label('join', 'open', 'close', 'request', 'cancel',
-            'sessiondialog', 'sessiondialogcontent');
+        $this->plugin->add_label(
+            'join',
+            'open',
+            'close',
+            'request',
+            'cancel',
+            'sessiondialog',
+            'sessiondialogcontent'
+        );
 
         return '<div></div>';
     }
@@ -524,27 +573,32 @@ class kolab_files_engine
      */
     public function document_editors_dialog($attrib)
     {
-        $table = new html_table($attrib + array('cols' => 3, 'border' => 0, 'cellpadding' => 0));
+        $table = new html_table($attrib + ['cols' => 3, 'border' => 0, 'cellpadding' => 0]);
 
         $table->add_header('username', $this->plugin->gettext('participant'));
         $table->add_header('status', $this->plugin->gettext('status'));
         $table->add_header('options', null);
 
-        $input    = new html_inputfield(array('name' => 'participant', 'id' => 'invitation-editor-name', 'size' => 30, 'class' => 'form-control'));
-        $textarea = new html_textarea(array('name' => 'comment', 'id' => 'invitation-comment',
-            'rows' => 4, 'cols' => 55, 'class' => 'form-control', 'title' => $this->plugin->gettext('invitationtexttitle')));
-        $button   = new html_inputfield(array('type' => 'button', 'class' => 'button', 'id' => 'invitation-editor-add',
-            'value' => $this->plugin->gettext('addparticipant')));
+        $input    = new html_inputfield(['name' => 'participant', 'id' => 'invitation-editor-name', 'size' => 30, 'class' => 'form-control']);
+        $textarea = new html_textarea(['name' => 'comment', 'id' => 'invitation-comment',
+            'rows' => 4, 'cols' => 55, 'class' => 'form-control', 'title' => $this->plugin->gettext('invitationtexttitle')]);
+        $button   = new html_inputfield(['type' => 'button', 'class' => 'button', 'id' => 'invitation-editor-add',
+            'value' => $this->plugin->gettext('addparticipant')]);
 
         $this->plugin->add_label('manageeditors', 'statusorganizer', 'addparticipant');
 
         // initialize attendees autocompletion
         $this->rc->autocomplete_init();
 
-        return html::div(null, $table->show() . html::div(null,
+        return html::div(null, $table->show() . html::div(
+            null,
             html::div('form-searchbar', $input->show() . " " . $button->show())
-            . html::p('attendees-commentbox', html::label(null,
-                $this->plugin->gettext('invitationtextlabel') . $textarea->show())
+            . html::p(
+                'attendees-commentbox',
+                html::label(
+                    null,
+                    $this->plugin->gettext('invitationtextlabel') . $textarea->show()
+                )
             )
         ));
     }
@@ -559,8 +613,8 @@ class kolab_files_engine
             $attrib['id'] = 'file-rename-form';
         }
 
-        $input_name = new html_inputfield(array('id' => 'file-rename-name', 'name' => 'name', 'size' => 50));
-        $table      = new html_table(array('cols' => 2, 'class' => 'propform'));
+        $input_name = new html_inputfield(['id' => 'file-rename-name', 'name' => 'name', 'size' => 50]);
+        $table      = new html_table(['cols' => 2, 'class' => 'propform']);
 
         $table->add('title', html::label('file-rename-name', rcube::Q($this->plugin->gettext('filename'))));
         $table->add(null, $input_name->show());
@@ -588,12 +642,12 @@ class kolab_files_engine
             $attrib['id'] = 'file-create-form';
         }
 
-        $input_name    = new html_inputfield(array('id' => 'file-create-name', 'name' => 'name', 'size' => 30));
-        $select_parent = new html_select(array('id' => 'file-create-parent', 'name' => 'parent'));
-        $select_type   = new html_select(array('id' => 'file-create-type', 'name' => 'type'));
-        $table         = new html_table(array('cols' => 2, 'class' => 'propform'));
+        $input_name    = new html_inputfield(['id' => 'file-create-name', 'name' => 'name', 'size' => 30]);
+        $select_parent = new html_select(['id' => 'file-create-parent', 'name' => 'parent']);
+        $select_type   = new html_select(['id' => 'file-create-type', 'name' => 'type']);
+        $table         = new html_table(['cols' => 2, 'class' => 'propform']);
 
-        $types = array();
+        $types = [];
 
         foreach ($this->get_mimetypes('edit') as $type => $mimetype) {
             $types[$type] = $mimetype['ext'];
@@ -614,8 +668,15 @@ class kolab_files_engine
             $out = $this->rc->output->form_tag($attrib, $out);
         }
 
-        $this->plugin->add_label('create', 'cancel', 'filecreating', 'createfile', 'createandedit',
-            'copyfile', 'copyandedit');
+        $this->plugin->add_label(
+            'create',
+            'cancel',
+            'filecreating',
+            'createfile',
+            'createandedit',
+            'copyfile',
+            'copyandedit'
+        );
         $this->rc->output->add_gui_object('file-create-form', $attrib['id']);
         $this->rc->output->set_env('file_extensions', $types);
 
@@ -627,13 +688,13 @@ class kolab_files_engine
      */
     public function file_search_form($attrib)
     {
-        $attrib += array(
+        $attrib += [
             'name'          => '_q',
             'gui-object'    => 'filesearchbox',
             'form-name'     => 'filesearchform',
             'command'       => 'files-search',
             'reset-command' => 'files-search-reset',
-        );
+        ];
 
         // add form tag around text field
         return $this->rc->output->search_form($attrib);
@@ -667,11 +728,10 @@ class kolab_files_engine
         if (empty($attrib['columns'])) {
             $list_cols     = $this->rc->config->get($c_prefix . 'list_cols');
             $dont_override = $this->rc->config->get('dont_override');
-            $a_show_cols = is_array($list_cols) ? $list_cols : array('name');
+            $a_show_cols = is_array($list_cols) ? $list_cols : ['name'];
             $this->rc->output->set_env($type . '_col_movable', !in_array($c_prefix . 'list_cols', (array)$dont_override));
-        }
-        else {
-            $columns     = str_replace(array("'", '"'), '', $attrib['columns']);
+        } else {
+            $columns     = str_replace(["'", '"'], '', $attrib['columns']);
             $a_show_cols = preg_split('/[\s,;]+/', $columns);
         }
 
@@ -694,10 +754,12 @@ class kolab_files_engine
         }
 
         // set default sort col/order to session
-        if (!isset($_SESSION[$prefix . 'sort_col']))
+        if (!isset($_SESSION[$prefix . 'sort_col'])) {
             $_SESSION[$prefix . 'sort_col'] = $this->rc->config->get($c_prefix . 'sort_col') ?: 'name';
-        if (!isset($_SESSION[$prefix . 'sort_order']))
+        }
+        if (!isset($_SESSION[$prefix . 'sort_order'])) {
             $_SESSION[$prefix . 'sort_order'] = strtoupper($this->rc->config->get($c_prefix . 'sort_order') ?: 'asc');
+        }
 
         // set client env
         $this->rc->output->add_gui_object($type . 'list', $attrib['id']);
@@ -717,12 +779,15 @@ class kolab_files_engine
 
         $thead = '';
         foreach ($this->list_head($attrib, $a_show_cols, $type) as $cell) {
-            $thead .= html::tag('th', array('class' => $cell['className'], 'id' => $cell['id']), $cell['html']);
+            $thead .= html::tag('th', ['class' => $cell['className'], 'id' => $cell['id']], $cell['html']);
         }
 
-        return html::tag('table', $attrib,
+        return html::tag(
+            'table',
+            $attrib,
             html::tag('thead', null, html::tag('tr', null, $thead)) . html::tag('tbody', null, ''),
-            array('style', 'class', 'id', 'cellpadding', 'cellspacing', 'border', 'summary'));
+            ['style', 'class', 'id', 'cellpadding', 'cellspacing', 'border', 'summary']
+        );
     }
 
     /**
@@ -746,61 +811,60 @@ class kolab_files_engine
         $this->rc->output->set_env($prefix . 'disabled_sort_order', $disabled_order);
 
         // define sortable columns
-        if ($disabled_sort)
-            $a_sort_cols = $sort_col && !$disabled_order ? array($sort_col) : array();
-        else
+        if ($disabled_sort) {
+            $a_sort_cols = $sort_col && !$disabled_order ? [$sort_col] : [];
+        } else {
             $a_sort_cols = $this->{$type . '_sort_cols'};
+        }
 
         if (!empty($attrib['optionsmenuicon'])) {
             $onclick = 'return ' . rcmail_output::JS_OBJECT_NAME . ".command('menu-open', '{$type}listmenu', this, event)";
             $inner   = $this->rc->gettext('listoptions');
 
             if (is_string($attrib['optionsmenuicon']) && $attrib['optionsmenuicon'] != 'true') {
-                $inner = html::img(array('src' => $skin_path . $attrib['optionsmenuicon'], 'alt' => $this->rc->gettext('listoptions')));
+                $inner = html::img(['src' => $skin_path . $attrib['optionsmenuicon'], 'alt' => $this->rc->gettext('listoptions')]);
             }
 
-            $list_menu = html::a(array(
+            $list_menu = html::a([
                 'href'     => '#list-options',
                 'onclick'  => $onclick,
                 'class'    => 'listmenu',
                 'id'       => $type . 'listmenulink',
                 'title'    => $this->rc->gettext('listoptions'),
                 'tabindex' => '0',
-            ), $inner);
-        }
-        else {
+            ], $inner);
+        } else {
             $list_menu = '';
         }
 
-        $cells = array();
+        $cells = [];
 
         foreach ($a_show_cols as $col) {
             // get column name
             switch ($col) {
-            case 'options':
-                $col_name = $list_menu;
-                break;
-            default:
-                $col_name = rcube::Q($this->plugin->gettext($col));
+                case 'options':
+                    $col_name = $list_menu;
+                    break;
+                default:
+                    $col_name = rcube::Q($this->plugin->gettext($col));
             }
 
             // make sort links
             if (in_array($col, $a_sort_cols)) {
-                $col_name = html::a(array(
+                $col_name = html::a([
                         'href'    => "#sort",
                         'onclick' => 'return ' . rcmail_output::JS_OBJECT_NAME . ".command('$type-sort','$col',this)",
-                        'title'   => $this->plugin->gettext('sortby')
-                    ), $col_name);
-            }
-            else if (empty($col_name) || $col_name[0] != '<') {
-                $col_name = '<span class="' . $col .'">' . $col_name . '</span>';
+                        'title'   => $this->plugin->gettext('sortby'),
+                    ], $col_name);
+            } elseif (empty($col_name) || $col_name[0] != '<') {
+                $col_name = '<span class="' . $col . '">' . $col_name . '</span>';
             }
 
             $sort_class = $col == $sort_col && !$disabled_order ? " sorted$sort_order" : '';
-            $class_name = $col.$sort_class;
+            $class_name = $col . $sort_class;
 
             // put it all together
-            $cells[] = array('className' => $class_name, 'id' => "rcm$col", 'html' => $col_name);
+            $cells[] = ['className' => $class_name, 'id' => "rcm$col", 'html' => $col_name];
         }
 
         return $cells;
@@ -824,7 +888,7 @@ class kolab_files_engine
         $head        = '';
 
         foreach ($this->list_head($attrib, $a_show_cols, $type) as $cell) {
-            $head .= html::tag('th', array('class' => $cell['className'], 'id' => $cell['id']), $cell['html']);
+            $head .= html::tag('th', ['class' => $cell['className'], 'id' => $cell['id']], $cell['html']);
         }
 
         $head = html::tag('tr', null, $head);
@@ -839,23 +903,23 @@ class kolab_files_engine
     public function file_info_box($attrib)
     {
         // print_r($this->file_data, true);
-        $table = new html_table(array('cols' => 2, 'class' => $attrib['class']));
+        $table = new html_table(['cols' => 2, 'class' => $attrib['class']]);
 
         // file name
-        $table->add('title', $this->plugin->gettext('name').':');
+        $table->add('title', $this->plugin->gettext('name') . ':');
         $table->add('data filename', $this->file_data['name']);
 
         // file type
         // @TODO: human-readable type name
-        $table->add('title', $this->plugin->gettext('type').':');
+        $table->add('title', $this->plugin->gettext('type') . ':');
         $table->add('data filetype', $this->file_data['type']);
 
         // file size
-        $table->add('title', $this->plugin->gettext('size').':');
+        $table->add('title', $this->plugin->gettext('size') . ':');
         $table->add('data filesize', $this->rc->show_bytes($this->file_data['size']));
 
         // file modification time
-        $table->add('title', $this->plugin->gettext('mtime').':');
+        $table->add('title', $this->plugin->gettext('mtime') . ':');
         $table->add('data filemtime', $this->file_data['mtime']);
 
         // @TODO: for images: width, height, color depth, etc.
@@ -882,8 +946,7 @@ class kolab_files_engine
             if (!preg_match('|^https?://|', $href)) {
                 $href = $this->url . '/api/' . $href;
             }
-        }
-        else {
+        } else {
             $token = $this->get_api_token();
             $href  = $this->url . '/api/?method=file_get'
                 . '&file=' . urlencode($this->file_data['filename'])
@@ -903,19 +966,19 @@ class kolab_files_engine
             $attrib['src'] = 'program/resources/blank.gif';
 
             $form_content = new html_hiddenfield();
-            $form_attrib  = array(
+            $form_attrib  = [
                 'action' => $href,
                 'id'     => $attrib['id'] . '-form',
                 'target' => $attrib['name'],
                 'method' => 'post',
-            );
+            ];
 
             foreach ($this->file_data['viewer']['post'] as $name => $value) {
-                $form_content->add(array('name' => $name, 'value' => $value));
+                $form_content->add(['name' => $name, 'value' => $value]);
             }
 
             $form = html::tag('form', $form_attrib, $form_content->show())
-                . html::script(array(), "\$('#{$attrib['id']}-form').submit()");
+                . html::script([], "\$('#{$attrib['id']}-form').submit()");
         }
 
         return html::iframe($attrib) . $form;
@@ -937,7 +1000,7 @@ class kolab_files_engine
 
         // get quota
         $token   = $this->get_api_token();
-        $request = $this->get_request(array('method' => 'quota'), $token);
+        $request = $this->get_request(['method' => 'quota'], $token);
 
         // send request to the API
         try {
@@ -947,14 +1010,12 @@ class kolab_files_engine
 
             if ($status == 200 && $body['status'] == 'OK') {
                 $quota = $body['result'];
-            }
-            else {
+            } else {
                 throw new Exception($body['reason'] ?: "Failed to get quota. Status: $status");
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, false);
-            $quota = array('total' => 0, 'percent' => 0);
+            $quota = ['total' => 0, 'percent' => 0];
         }
 
         $quota = rcube_output::json_serialize($quota);
@@ -978,14 +1039,14 @@ class kolab_files_engine
             }
         }
 
-        $request = $this->get_request(array('method' => 'ping'), $token);
+        $request = $this->get_request(['method' => 'ping'], $token);
 
         try {
             $url = $request->getUrl();
 
             // Send ping request
             if ($token) {
-                $url->setQueryVariables(array('method' => 'ping'));
+                $url->setQueryVariables(['method' => 'ping']);
                 $request->setUrl($url);
                 $response = $request->send();
                 $status   = $response->getStatus();
@@ -999,12 +1060,12 @@ class kolab_files_engine
             }
 
             // Go with authenticate request
-            $url->setQueryVariables(array('method' => 'authenticate', 'version' => self::API_VERSION));
+            $url->setQueryVariables(['method' => 'authenticate', 'version' => self::API_VERSION]);
             $request->setUrl($url);
             $request->setAuth($this->rc->user->get_username(), $this->rc->decrypt($_SESSION['password']));
 
             // Allow plugins (e.g. kolab_sso) to modify the request
-            $this->rc->plugins->exec_hook('chwala_authenticate', array('request' => $request));
+            $this->rc->plugins->exec_hook('chwala_authenticate', ['request' => $request]);
 
             $response = $request->send();
             $status   = $response->getStatus();
@@ -1017,8 +1078,7 @@ class kolab_files_engine
                     $_SESSION['kolab_files_time']  = time();
                     $_SESSION['kolab_files_caps']  = $body['result']['capabilities'];
                 }
-            }
-            else {
+            } else {
                 throw new Exception(sprintf("Authenticate error (Status: %d)", $status));
             }
 
@@ -1026,8 +1086,7 @@ class kolab_files_engine
             if ($configure && $token) {
                 $this->configure($token);
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, false);
         }
 
@@ -1040,7 +1099,7 @@ class kolab_files_engine
             $token = $this->get_api_token();
 
             if (empty($_SESSION['kolab_files_caps'])) {
-                $request = $this->get_request(array('method' => 'capabilities'), $token);
+                $request = $this->get_request(['method' => 'capabilities'], $token);
 
                 // send request to the API
                 try {
@@ -1050,14 +1109,12 @@ class kolab_files_engine
 
                     if ($status == 200 && $body['status'] == 'OK') {
                         $_SESSION['kolab_files_caps'] = $body['result'];
-                    }
-                    else {
+                    } else {
                         throw new Exception($body['reason'] ?: "Failed to get capabilities. Status: $status");
                     }
-                }
-                catch (Exception $e) {
+                } catch (Exception $e) {
                     rcube::raise_error($e, true, false);
-                    return array();
+                    return [];
                 }
             }
         }
@@ -1068,7 +1125,7 @@ class kolab_files_engine
         }
 
         if (!empty($_SESSION['kolab_files_caps']) && !isset($_SESSION['kolab_files_caps']['MOUNTPOINTS'])) {
-            $_SESSION['kolab_files_caps']['MOUNTPOINTS'] = array();
+            $_SESSION['kolab_files_caps']['MOUNTPOINTS'] = [];
         }
 
         return $_SESSION['kolab_files_caps'];
@@ -1082,21 +1139,19 @@ class kolab_files_engine
         $url = $this->url_srv . '/api/';
 
         if (empty($this->request)) {
-            $config = array(
+            $config = [
                 'store_body'       => true,
                 'follow_redirects' => true,
-            );
+            ];
 
             $this->request = libkolab::http_request($url, 'GET', $config);
-        }
-        else {
+        } else {
             // cleanup
             try {
                 $this->request->setBody('');
                 $this->request->setUrl($url);
                 $this->request->setMethod(HTTP_Request2::METHOD_GET);
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 rcube::raise_error($e, true, true);
             }
         }
@@ -1128,7 +1183,7 @@ class kolab_files_engine
     /**
      * Configure chwala session
      */
-    public function configure($token = null, $prefs = array())
+    public function configure($token = null, $prefs = [])
     {
         if (!$token) {
             $token = $this->get_api_token(false);
@@ -1136,11 +1191,11 @@ class kolab_files_engine
 
         try {
             // Configure session
-            $query = array(
+            $query = [
                 'method'      => 'configure',
                 'timezone'    => $prefs['timezone'] ?? $this->rc->config->get('timezone'),
                 'date_format' => $prefs['date_long'] ?? $this->rc->config->get('date_long', 'Y-m-d H:i'),
-            );
+            ];
 
             $request  = $this->get_request($query, $token);
             $response = $request->send();
@@ -1149,8 +1204,7 @@ class kolab_files_engine
             if ($status != 200) {
                 throw new Exception(sprintf("Failed to configure chwala session (Status: %d)", $status));
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, false);
         }
     }
@@ -1161,10 +1215,21 @@ class kolab_files_engine
     protected function action_index()
     {
         $this->plugin->add_label(
-            'uploading', 'attaching', 'uploadsizeerror',
-            'filedeleting', 'filedeletenotice', 'filedeleteconfirm',
-            'filemoving', 'filemovenotice', 'filemoveconfirm', 'filecopying', 'filecopynotice',
-            'fileskip', 'fileskipall', 'fileoverwrite', 'fileoverwriteall'
+            'uploading',
+            'attaching',
+            'uploadsizeerror',
+            'filedeleting',
+            'filedeletenotice',
+            'filedeleteconfirm',
+            'filemoving',
+            'filemovenotice',
+            'filemoveconfirm',
+            'filecopying',
+            'filecopynotice',
+            'fileskip',
+            'fileskipall',
+            'fileoverwrite',
+            'fileoverwriteall'
         );
 
         $this->folder_list_env();
@@ -1204,13 +1269,13 @@ class kolab_files_engine
     protected function action_prefs()
     {
         $dont_override = (array)$this->rc->config->get('dont_override');
-        $prefs = array();
+        $prefs = [];
         $type  = rcube_utils::get_input_value('type', rcube_utils::INPUT_POST);
-        $opts  = array(
+        $opts  = [
             'kolab_files_sort_col'   => true,
             'kolab_files_sort_order' => true,
             'kolab_files_list_cols'  => false,
-        );
+        ];
 
         foreach ($opts as $o => $sess) {
             if (isset($_POST[$o])) {
@@ -1264,8 +1329,15 @@ class kolab_files_engine
      */
     protected function action_edit()
     {
-        $this->plugin->add_label('sessionterminating', 'unsavedchanges', 'documentinviting',
-            'documentcancelling', 'removeparticipant', 'sessionterminated', 'sessionterminatedtitle');
+        $this->plugin->add_label(
+            'sessionterminating',
+            'unsavedchanges',
+            'documentinviting',
+            'documentcancelling',
+            'removeparticipant',
+            'sessionterminated',
+            'sessionterminatedtitle'
+        );
 
         $this->file_opener(intval($_GET['_viewer']));
     }
@@ -1275,7 +1347,7 @@ class kolab_files_engine
      */
     protected function action_share()
     {
-        $this->rc->output->add_handler('share-form', array($this, 'folder_share_form'));
+        $this->rc->output->add_handler('share-form', [$this, 'folder_share_form']);
 
         $this->rc->output->send('kolab_files.share');
     }
@@ -1285,7 +1357,7 @@ class kolab_files_engine
      */
     protected function action_save_file()
     {
-//        $source = rcube_utils::get_input_value('source', rcube_utils::INPUT_POST);
+        //        $source = rcube_utils::get_input_value('source', rcube_utils::INPUT_POST);
         $uid    = rcube_utils::get_input_value('uid', rcube_utils::INPUT_POST);
         $dest   = rcube_utils::get_input_value('dest', rcube_utils::INPUT_POST);
         $id     = rcube_utils::get_input_value('id', rcube_utils::INPUT_POST);
@@ -1295,13 +1367,13 @@ class kolab_files_engine
         $message  = new rcube_message($uid);
         $request  = $this->get_request();
         $url      = $request->getUrl();
-        $files    = array();
-        $errors   = array();
-        $attachments = array();
+        $files    = [];
+        $errors   = [];
+        $attachments = [];
 
         $request->setMethod(HTTP_Request2::METHOD_POST);
         $request->setHeader('X-Session-Token', $this->get_api_token());
-        $url->setQueryVariables(array('method' => 'file_upload', 'folder' => $dest));
+        $url->setQueryVariables(['method' => 'file_upload', 'folder' => $dest]);
         $request->setUrl($url);
 
         foreach ($message->attachments as $attach_prop) {
@@ -1320,13 +1392,15 @@ class kolab_files_engine
             // save attachment to file
             if ($fp = fopen($path, 'w+')) {
                 $message->get_part_body($attach_prop->mime_id, false, 0, $fp);
-            }
-            else {
+            } else {
                 $errors[] = true;
-                rcube::raise_error(array(
+                rcube::raise_error(
+                    [
                     'code' => 500, 'type' => 'php', 'line' => __LINE__, 'file' => __FILE__,
-                    'message' => "Unable to save attachment into file $path"),
-                    true, false);
+                    'message' => "Unable to save attachment into file $path"],
+                    true,
+                    false
+                );
                 continue;
             }
 
@@ -1342,18 +1416,19 @@ class kolab_files_engine
 
                 if ($status == 200 && $body['status'] == 'OK') {
                     $files[] = $attach_name;
-                }
-                else {
+                } else {
                     throw new Exception($body['reason'] ?: "Failed to post file_upload. Status: $status");
                 }
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 unlink($path);
                 $errors[] = $e->getMessage();
-                rcube::raise_error(array(
+                rcube::raise_error(
+                    [
                     'code' => 500, 'type' => 'php', 'line' => __LINE__, 'file' => __FILE__,
-                    'message' => $e->getMessage()),
-                    true, false);
+                    'message' => $e->getMessage()],
+                    true,
+                    false
+                );
                 continue;
             }
 
@@ -1363,11 +1438,11 @@ class kolab_files_engine
         }
 
         if ($count = count($files)) {
-            $msg = $this->plugin->gettext(array('name' => 'saveallnotice', 'vars' => array('n' => $count)));
+            $msg = $this->plugin->gettext(['name' => 'saveallnotice', 'vars' => ['n' => $count]]);
             $this->rc->output->show_message($msg, 'confirmation');
         }
         if ($count = count($errors)) {
-            $msg = $this->plugin->gettext(array('name' => 'saveallerror', 'vars' => array('n' => $count)));
+            $msg = $this->plugin->gettext(['name' => 'saveallerror', 'vars' => ['n' => $count]]);
             $this->rc->output->show_message($msg, 'error');
         }
 
@@ -1385,12 +1460,12 @@ class kolab_files_engine
         $uploadid    = rcube_utils::get_input_value('uploadid', rcube_utils::INPUT_POST);
         $COMPOSE_ID  = rcube_utils::get_input_value('id', rcube_utils::INPUT_POST);
         $COMPOSE     = null;
-        $errors      = array();
-        $attachments = array();
+        $errors      = [];
+        $attachments = [];
 
         if ($this->rc->task == 'mail') {
-            if ($COMPOSE_ID && $_SESSION['compose_data_'.$COMPOSE_ID]) {
-                $COMPOSE =& $_SESSION['compose_data_'.$COMPOSE_ID];
+            if ($COMPOSE_ID && $_SESSION['compose_data_' . $COMPOSE_ID]) {
+                $COMPOSE = & $_SESSION['compose_data_' . $COMPOSE_ID];
             }
 
             if (!$COMPOSE) {
@@ -1399,7 +1474,7 @@ class kolab_files_engine
 
             // attachment upload action
             if (!is_array($COMPOSE['attachments'])) {
-                $COMPOSE['attachments'] = array();
+                $COMPOSE['attachments'] = [];
             }
         }
 
@@ -1423,7 +1498,7 @@ class kolab_files_engine
 
             // get file information
             try {
-                $url->setQueryVariables(array('method' => 'file_info', 'file' => $file));
+                $url->setQueryVariables(['method' => 'file_info', 'file' => $file]);
                 $request->setUrl($url);
                 $response = $request->send();
                 $status   = $response->getStatus();
@@ -1431,17 +1506,18 @@ class kolab_files_engine
 
                 if ($status == 200 && $body['status'] == 'OK') {
                     $file_params = $body['result'];
-                }
-                else {
+                } else {
                     throw new Exception($body['reason'] ?: "Failed to get file_info. Status: $status");
                 }
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 $errors[] = $e->getMessage();
-                rcube::raise_error(array(
+                rcube::raise_error(
+                    [
                     'code' => 500, 'type' => 'php', 'line' => __LINE__, 'file' => __FILE__,
-                    'message' => $e->getMessage()),
-                    true, false);
+                    'message' => $e->getMessage()],
+                    true,
+                    false
+                );
                 continue;
             }
 
@@ -1451,7 +1527,7 @@ class kolab_files_engine
 
             // download file
             try {
-                $url->setQueryVariables(array('method' => 'file_get', 'file' => $file));
+                $url->setQueryVariables(['method' => 'file_get', 'file' => $file]);
                 $request->setUrl($url);
                 $request->attach($observer);
                 $response = $request->send();
@@ -1462,23 +1538,25 @@ class kolab_files_engine
                 if ($status != 200 || !file_exists($path)) {
                     throw new Exception("Unable to save file");
                 }
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 $errors[] = $e->getMessage();
-                rcube::raise_error(array(
+                rcube::raise_error(
+                    [
                     'code' => 500, 'type' => 'php', 'line' => __LINE__, 'file' => __FILE__,
-                    'message' => $e->getMessage()),
-                    true, false);
+                    'message' => $e->getMessage()],
+                    true,
+                    false
+                );
                 continue;
             }
 
-            $attachment = array(
+            $attachment = [
                 'path'     => $path,
                 'size'     => $file_params['size'],
                 'name'     => $file_params['name'],
                 'mimetype' => $file_params['type'],
                 'group'    => $COMPOSE_ID,
-            );
+            ];
 
             if ($this->rc->task != 'mail') {
                 $attachments[] = $attachment;
@@ -1489,11 +1567,9 @@ class kolab_files_engine
 
             if ($attachment['status'] && !$attachment['abort']) {
                 $this->compose_attach_success($attachment, $COMPOSE, $COMPOSE_ID, $uploadid);
-            }
-            else if ($attachment['error']) {
+            } elseif ($attachment['error']) {
                 $errors[] = $attachment['error'];
-            }
-            else {
+            } else {
                 $errors[] = $this->plugin->gettext('attacherror');
             }
         }
@@ -1501,8 +1577,7 @@ class kolab_files_engine
         if (!empty($errors)) {
             $this->rc->output->command('display_message', $this->plugin->gettext('attacherror'), 'error');
             $this->rc->output->command('remove_from_attachment_list', $uploadid);
-        }
-        else if ($this->rc->task == 'calendar' || $this->rc->task == 'tasks') {
+        } elseif ($this->rc->task == 'calendar' || $this->rc->task == 'tasks') {
             // for uploads in events/tasks we'll use its standard upload handler,
             // for this we have to fake $_FILES and some other POST args
             foreach ($attachments as $attach) {
@@ -1517,15 +1592,15 @@ class kolab_files_engine
             $_GET['_id']       = $COMPOSE_ID;
 
             switch ($this->rc->task) {
-            case 'tasks':
-                $handler = new kolab_attachments_handler();
-                $handler->attachment_upload(tasklist::SESSION_KEY);
-                break;
+                case 'tasks':
+                    $handler = new kolab_attachments_handler();
+                    $handler->attachment_upload(tasklist::SESSION_KEY);
+                    break;
 
-            case 'calendar':
-                $handler = new kolab_attachments_handler();
-                $handler->attachment_upload(calendar::SESSION_KEY, 'cal-');
-                break;
+                case 'calendar':
+                    $handler = new kolab_attachments_handler();
+                    $handler->attachment_upload(calendar::SESSION_KEY, 'cal-');
+                    break;
             }
         }
 
@@ -1547,55 +1622,55 @@ class kolab_files_engine
         $this->rc->session->append('compose_data_' . $COMPOSE_ID . '.attachments', $id, $attachment);
 
         if (($icon = $COMPOSE['deleteicon']) && is_file($icon)) {
-            $button = html::img(array(
+            $button = html::img([
                 'src' => $icon,
-                'alt' => $this->rc->gettext('delete')
-            ));
-        }
-        else if ($COMPOSE['textbuttons']) {
+                'alt' => $this->rc->gettext('delete'),
+            ]);
+        } elseif ($COMPOSE['textbuttons']) {
             $button = rcube::Q($this->rc->gettext('delete'));
-        }
-        else {
+        } else {
             $button = '';
         }
 
         if (version_compare(version_parse(RCMAIL_VERSION), '1.3.0', '>=')) {
-            $link_content = sprintf('%s <span class="attachment-size"> (%s)</span>',
-                rcube::Q($attachment['name']), $this->rc->show_bytes($attachment['size']));
+            $link_content = sprintf(
+                '%s <span class="attachment-size"> (%s)</span>',
+                rcube::Q($attachment['name']),
+                $this->rc->show_bytes($attachment['size'])
+            );
 
-            $content_link = html::a(array(
+            $content_link = html::a([
                     'href'    => "#load",
                     'class'   => 'filename',
                     'onclick' => sprintf("return %s.command('load-attachment','rcmfile%s', this, event)", rcmail_output::JS_OBJECT_NAME, $id),
-                ), $link_content);
+                ], $link_content);
 
-            $delete_link = html::a(array(
+            $delete_link = html::a([
                     'href'    => "#delete",
                     'onclick' => sprintf("return %s.command('remove-attachment','rcmfile%s', this, event)", rcmail_output::JS_OBJECT_NAME, $id),
                     'title'   => $this->rc->gettext('delete'),
                     'class'   => 'delete',
                     'aria-label' => $this->rc->gettext('delete') . ' ' . $attachment['name'],
-                ), $button);
+                ], $button);
 
-            $content = $COMPOSE['icon_pos'] == 'left' ? $delete_link.$content_link : $content_link.$delete_link;
-        }
-        else {
-            $content = html::a(array(
+            $content = $COMPOSE['icon_pos'] == 'left' ? $delete_link . $content_link : $content_link . $delete_link;
+        } else {
+            $content = html::a([
                     'href'    => "#delete",
                     'onclick' => sprintf("return %s.command('remove-attachment','rcmfile%s', this)", rcmail_output::JS_OBJECT_NAME, $id),
                     'title'   => $this->rc->gettext('delete'),
                     'class'   => 'delete',
-            ), $button);
+            ], $button);
 
             $content .= rcube::Q($attachment['name']);
         }
 
-        $this->rc->output->command('add2attachment_list', "rcmfile$id", array(
+        $this->rc->output->command('add2attachment_list', "rcmfile$id", [
             'html'      => $content,
             'name'      => $attachment['name'],
             'mimetype'  => $attachment['mimetype'],
             'classname' => rcube_utils::file2class($attachment['mimetype'], $attachment['name']),
-            'complete'  => true), $uploadid);
+            'complete'  => true], $uploadid);
     }
 
     /**
@@ -1608,12 +1683,12 @@ class kolab_files_engine
 
         // get file info
         $token   = $this->get_api_token();
-        $request = $this->get_request(array(
+        $request = $this->get_request([
             'method'  => 'file_info',
             'file'    => $file,
             'viewer'  => $viewer,
             'session' => $session,
-            ), $token);
+            ], $token);
 
         // send request to the API
         try {
@@ -1623,16 +1698,17 @@ class kolab_files_engine
 
             if ($status == 200 && $body['status'] == 'OK') {
                 $this->file_data = $body['result'];
-            }
-            else {
+            } else {
                 throw new Exception($body['reason'] ?: "Failed to get file_info. Status: $status");
             }
-        }
-        catch (Exception $e) {
-            rcube::raise_error(array(
+        } catch (Exception $e) {
+            rcube::raise_error(
+                [
                 'code' => 500, 'type' => 'php', 'line' => __LINE__, 'file' => __FILE__,
-                'message' => $e->getMessage()),
-                true, true);
+                'message' => $e->getMessage()],
+                true,
+                true
+            );
         }
 
         if ($file === null || $file === '') {
@@ -1644,10 +1720,10 @@ class kolab_files_engine
         $this->plugin->add_label('filedeleteconfirm', 'filedeleting', 'filedeletenotice', 'terminate');
 
         // register template objects for dialogs (and main interface)
-        $this->rc->output->add_handlers(array(
-            'fileinfobox'      => array($this, 'file_info_box'),
-            'filepreviewframe' => array($this, 'file_preview_frame'),
-        ));
+        $this->rc->output->add_handlers([
+            'fileinfobox'      => [$this, 'file_info_box'],
+            'filepreviewframe' => [$this, 'file_preview_frame'],
+        ]);
 
         $placeholder = $this->rc->output->asset_url('program/resources/blank.gif');
 
@@ -1656,8 +1732,7 @@ class kolab_files_engine
         if (!empty($this->file_data['viewer']['wopi'])) {
             $editor_type = 'wopi';
             $got_editor  = ($viewer & 4);
-        }
-        else if (!empty($this->file_data['viewer']['manticore'])) {
+        } elseif (!empty($this->file_data['viewer']['manticore'])) {
             $editor_type = 'manticore';
             $got_editor = ($viewer & 4);
         }
@@ -1679,7 +1754,7 @@ class kolab_files_engine
      */
     protected function get_mimetypes($type = 'view')
     {
-        $mimetypes = array();
+        $mimetypes = [];
 
         // send request to the API
         try {
@@ -1688,15 +1763,14 @@ class kolab_files_engine
 
                 $token    = $this->get_api_token();
                 $caps     = $this->capabilities();
-                $request  = $this->get_request(array('method' => 'mimetypes'), $token);
+                $request  = $this->get_request(['method' => 'mimetypes'], $token);
                 $response = $request->send();
                 $status   = $response->getStatus();
                 $body     = @json_decode($response->getBody(), true);
 
                 if ($status == 200 && $body['status'] == 'OK') {
                     $this->mimetypes = $body['result'];
-                }
-                else {
+                } else {
                     throw new Exception($body['reason'] ?: "Failed to get mimetypes. Status: $status");
                 }
             }
@@ -1706,34 +1780,35 @@ class kolab_files_engine
                     $mimetypes = $this->mimetypes[$type];
                 }
                 // fallback to static definition if old Chwala is used
-                else if ($type == 'edit') {
-                    $mimetypes = array(
+                elseif ($type == 'edit') {
+                    $mimetypes = [
                         'text/plain' => 'txt',
                         'text/html'  => 'html',
-                    );
+                    ];
                     if (!empty($caps['MANTICORE'])) {
-                        $mimetypes = array_merge(array('application/vnd.oasis.opendocument.text' => 'odt'), $mimetypes);
+                        $mimetypes = array_merge(['application/vnd.oasis.opendocument.text' => 'odt'], $mimetypes);
                     }
 
                     foreach (array_keys($mimetypes) as $type) {
-                        list ($app, $label) = explode('/', $type);
+                        [$app, $label] = explode('/', $type);
                         $label = preg_replace('/[^a-z]/', '', $label);
-                        $mimetypes[$type] = array(
+                        $mimetypes[$type] = [
                             'ext'   => $mimetypes[$type],
                             'label' => $this->plugin->gettext('type.' . $label),
-                        );
+                        ];
                     }
-                }
-                else {
+                } else {
                     $mimetypes = $this->mimetypes;
                 }
             }
-        }
-        catch (Exception $e) {
-            rcube::raise_error(array(
+        } catch (Exception $e) {
+            rcube::raise_error(
+                [
                 'code' => 500, 'type' => 'php', 'line' => __LINE__, 'file' => __FILE__,
-                'message' => $e->getMessage()),
-                true, false);
+                'message' => $e->getMessage()],
+                true,
+                false
+            );
         }
 
         return $mimetypes;
@@ -1746,7 +1821,7 @@ class kolab_files_engine
     {
         // first get configured sources from Chwala
         $token   = $this->get_api_token();
-        $request = $this->get_request(array('method' => 'folder_types'), $token);
+        $request = $this->get_request(['method' => 'folder_types'], $token);
 
         // send request to the API
         try {
@@ -1756,12 +1831,10 @@ class kolab_files_engine
 
             if ($status == 200 && $body['status'] == 'OK') {
                 $sources = $body['result'];
-            }
-            else {
+            } else {
                 throw new Exception($body['reason'] ?: "Failed to get folder_types. Status: $status");
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, false);
             return;
         }
@@ -1776,7 +1849,7 @@ class kolab_files_engine
     {
         // first get configured sources from Chwala
         $token   = $this->get_api_token();
-        $request = $this->get_request(array('method' => 'sharing', 'folder' => $folder), $token);
+        $request = $this->get_request(['method' => 'sharing', 'folder' => $folder], $token);
 
         // send request to the API
         try {
@@ -1786,15 +1859,12 @@ class kolab_files_engine
 
             if ($status == 200 && $body['status'] == 'OK') {
                 $info = $body['result'];
-            }
-            else if ($body['code'] == 530) {
+            } elseif ($body['code'] == 530) {
                 return false;
-            }
-            else {
+            } else {
                 throw new Exception($body['reason'] ?: "Failed to get sharing form information. Status: $status");
             }
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             rcube::raise_error($e, true, false);
             return;
         }
@@ -1809,12 +1879,23 @@ class kolab_files_engine
     {
         // folder list and actions
         $this->plugin->add_label(
-            'folderdeleting', 'folderdeleteconfirm', 'folderdeletenotice',
-            'collection_audio', 'collection_video', 'collection_image', 'collection_document',
-            'additionalfolders', 'listpermanent', 'storageautherror'
+            'folderdeleting',
+            'folderdeleteconfirm',
+            'folderdeletenotice',
+            'collection_audio',
+            'collection_video',
+            'collection_image',
+            'collection_document',
+            'additionalfolders',
+            'listpermanent',
+            'storageautherror'
         );
-        $this->rc->output->add_label('foldersubscribing', 'foldersubscribed',
-            'folderunsubscribing', 'folderunsubscribed', 'searching'
+        $this->rc->output->add_label(
+            'foldersubscribing',
+            'foldersubscribed',
+            'folderunsubscribing',
+            'folderunsubscribed',
+            'searching'
         );
     }
 }

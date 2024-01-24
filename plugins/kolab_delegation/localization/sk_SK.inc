@@ -7,4 +7,3 @@
  * For translation see https://www.transifex.com/projects/p/kolab/resource/kolab_delegation/
  */
 $labels['event'] = 'Kalendáre';
-?>

@@ -263,4 +263,3 @@ $labels['arialabeleventattendees'] = 'イベント参加者リスト';
 $labels['arialabeleventresources'] = 'イベントリソースリスト';
 $labels['arialabelresourcesearchform'] = 'リソース検索元';
 $labels['arialabelresourceselection'] = '利用可能なリソース';
-?>

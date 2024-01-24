@@ -165,11 +165,10 @@ class carddav_contacts_driver
             $abook_id = $prop['id'] ?: $result;
             $props = $this->abook_prop($abook_id, $abook);
 
-            $this->rc->output->show_message('kolab_addressbook.book'.$type.'d', 'confirmation');
+            $this->rc->output->show_message('kolab_addressbook.book' . $type . 'd', 'confirmation');
             $this->rc->output->command('book_update', $props, $prop['id']);
-        }
-        else {
-            $this->rc->output->show_message('kolab_addressbook.book'.$type.'error', 'error');
+        } else {
+            $this->rc->output->show_message('kolab_addressbook.book' . $type . 'error', 'error');
         }
     }
 
@@ -178,21 +177,21 @@ class carddav_contacts_driver
      */
     public function abook_prop($id, $abook)
     {
-/*
-        if ($abook instanceof kolab_storage_folder_virtual) {
-            return [
-                'id'       => $id,
-                'name'     => $abook->get_name(),
-                'listname' => $abook->get_foldername(),
-                'group'    => $abook instanceof kolab_storage_folder_user ? 'user' : $abook->get_namespace(),
-                'readonly' => true,
-                'rights'   => 'l',
-                'kolab'    => true,
-                'virtual'  => true,
-                'carddav'  => true,
-            ];
-        }
-*/
+        /*
+                if ($abook instanceof kolab_storage_folder_virtual) {
+                    return [
+                        'id'       => $id,
+                        'name'     => $abook->get_name(),
+                        'listname' => $abook->get_foldername(),
+                        'group'    => $abook instanceof kolab_storage_folder_user ? 'user' : $abook->get_namespace(),
+                        'readonly' => true,
+                        'rights'   => 'l',
+                        'kolab'    => true,
+                        'virtual'  => true,
+                        'carddav'  => true,
+                    ];
+                }
+        */
         return [
             'id'         => $id,
             'name'       => $abook->get_name(),

@@ -29,7 +29,7 @@ $config['kolab_sso_ldap_pass'] = 'password';
 $config['kolab_sso_disable_login'] = false;
 
 // SSO providers/configuration
-$config['kolab_sso_options'] = array();
+$config['kolab_sso_options'] = [];
 /* Example:
 $config['kolab_sso_options'] = array(
     'keycloak' => array(

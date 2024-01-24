@@ -39,8 +39,8 @@ class kolab_storage_dav_cache_task extends kolab_storage_dav_cache
         $sql_data['dtstart'] = !empty($object['start']) ? $this->_convert_datetime($object['start']) : null;
         $sql_data['dtend']   = !empty($object['due']) ? $this->_convert_datetime($object['due']) : null;
 
-        $sql_data['tags']  = ' ' . join(' ', $this->get_tags($object)) . ' ';  // pad with spaces for strict/prefix search
-        $sql_data['words'] = ' ' . join(' ', $this->get_words($object)) . ' ';
+        $sql_data['tags']  = ' ' . implode(' ', $this->get_tags($object)) . ' ';  // pad with spaces for strict/prefix search
+        $sql_data['words'] = ' ' . implode(' ', $this->get_words($object)) . ' ';
 
         return $sql_data;
     }
@@ -55,7 +55,7 @@ class kolab_storage_dav_cache_task extends kolab_storage_dav_cache
         $data = '';
 
         foreach ($this->fulltext_cols as $colname) {
-            list($col, $field) = strpos($colname, ':') ? explode(':', $colname) : [$colname, null];
+            [$col, $field] = strpos($colname, ':') ? explode(':', $colname) : [$colname, null];
 
             if (empty($object[$col])) {
                 continue;
@@ -68,10 +68,9 @@ class kolab_storage_dav_cache_task extends kolab_storage_dav_cache
                         $a[] = $attr[$field];
                     }
                 }
-                $val = join(' ', $a);
-            }
-            else {
-                $val = is_array($object[$col]) ? join(' ', $object[$col]) : $object[$col];
+                $val = implode(' ', $a);
+            } else {
+                $val = is_array($object[$col]) ? implode(' ', $object[$col]) : $object[$col];
             }
 
             if (is_string($val) && strlen($val)) {

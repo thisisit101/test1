@@ -41,4 +41,3 @@ $messages['bookupdated'] = 'Aadressiraamatut on uuendatud.';
 $messages['bookcreated'] = 'Aadressiraamat on loodud.';
 $messages['nobooknamewarning'] = 'Palun sisesta aadressiraamatu nimi.';
 $messages['noemailnamewarning'] = 'Palun sisesta e-posti aadress või kontakti nimi.';
-?>

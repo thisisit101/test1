@@ -1,4 +1,5 @@
 <?php
+
 $labels['tabtitle'] = 'Activesync';
 $labels['activesynctitle'] = 'Activesync-apparaten beheren';
 $labels['devices'] = 'Apparaten';
@@ -30,4 +31,3 @@ $labels['os'] = 'Besturingssysteem';
 $labels['oslanguage'] = 'Taal van besturingssysteem';
 $labels['phonenumber'] = 'Telefoonnummer';
 $labels['arialabeldeviceframe'] = 'Formulier met instellingen voor synchronisatie van apparaat';
-?>

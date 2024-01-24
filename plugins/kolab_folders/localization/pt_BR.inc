@@ -24,4 +24,3 @@ $labels['outbox'] = 'Caixa de saída';
 $labels['wastebasket'] = 'Lixeira';
 $labels['junkemail'] = 'Spam';
 $messages['defaultfolderexists'] = 'Já existe um diretório padrão do tipo especificado';
-?>

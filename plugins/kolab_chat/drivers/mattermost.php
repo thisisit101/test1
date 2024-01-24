@@ -51,10 +51,9 @@ class kolab_chat_mattermost
         $url = rtrim($this->rc->config->get('kolab_chat_url'), '/');
 
         if ($websocket) {
-            $url  = str_replace(array('http://', 'https://'), array('ws://', 'wss://'), $url);
+            $url  = str_replace(['http://', 'https://'], ['ws://', 'wss://'], $url);
             $url .= '/api/v4/websocket';
-        }
-        else if ($this->rc->action == 'index' && $this->rc->task == 'kolab-chat') {
+        } elseif ($this->rc->action == 'index' && $this->rc->task == 'kolab-chat') {
             $channel = rcube_utils::get_input_value('_channel', rcube_utils::INPUT_GET);
             if (empty($channel)) {
                 $channel = $this->rc->config->get('kolab_chat_channel');
@@ -83,8 +82,7 @@ class kolab_chat_mattermost
         if ($this->rc->task != 'kolab-chat') {
             $this->plugin->include_script("js/mattermost.js");
             $this->plugin->add_label('openchat', 'directmessage', 'mentionmessage');
-        }
-        else if ($this->get_token()) {
+        } elseif ($this->get_token()) {
             $this->setcookie('MMUSERID', $_SESSION['mattermost'][0]);
             $this->setcookie('MMAUTHTOKEN', $_SESSION['mattermost'][1]);
         }
@@ -95,11 +93,11 @@ class kolab_chat_mattermost
      */
     public function action()
     {
-        $result = array(
+        $result = [
             'url'     => $this->url(true),
             'token'   => $this->get_token(),
             'user_id' => $this->get_user_id(),
-        );
+        ];
 
         echo rcube_output::json_serialize($result);
         exit;
@@ -117,7 +115,7 @@ class kolab_chat_mattermost
 
         if (!isset($no_override['kolab_chat_channel'])) {
             $field_id = 'rcmfd_kolab_chat_channel';
-            $select   = new html_select(array('name' => '_kolab_chat_channel', 'id' => $field_id));
+            $select   = new html_select(['name' => '_kolab_chat_channel', 'id' => $field_id]);
 
             $select->add('---', '');
             if ($channels = $this->get_channels_list()) {
@@ -128,10 +126,10 @@ class kolab_chat_mattermost
                 }
             }
 
-            $p['blocks']['main']['options']['kolab_chat_channel'] = array(
+            $p['blocks']['main']['options']['kolab_chat_channel'] = [
                 'title'   => html::label($field_id, rcube::Q($this->plugin->gettext('defaultchannel'))),
                 'content' => $select->show($this->rc->config->get('kolab_chat_channel')),
-            );
+            ];
         }
     }
 
@@ -178,8 +176,7 @@ class kolab_chat_mattermost
                 if ($status != 200) {
                     $token = null;
                 }
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 rcube::raise_error($e, true, false);
                 $token = null;
             }
@@ -188,10 +185,10 @@ class kolab_chat_mattermost
         // Request a new session token
         if (empty($token)) {
             $request = $this->get_api_request('POST', '/users/login');
-            $request->setBody(json_encode(array(
+            $request->setBody(json_encode([
                     'login_id' => $user,
                     'password' => $pass,
-            )));
+            ]));
 
             // send request to the API, get token and user ID
             try {
@@ -202,22 +199,19 @@ class kolab_chat_mattermost
 
                 if ($status == 200) {
                     $user_id = $body['id'];
-                }
-                else if (is_array($body) && $body['message']) {
+                } elseif (is_array($body) && $body['message']) {
                     throw new Exception($body['message']);
-                }
-                else {
+                } else {
                     throw new Exception("Failed to authenticate the chat user ($user). Status: $status");
                 }
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 rcube::raise_error($e, true, false);
             }
         }
 
         if (!empty($user_id) && !empty($token)) {
             $this->token_valid = true;
-            $_SESSION['mattermost'] = array($user_id, $token);
+            $_SESSION['mattermost'] = [$user_id, $token];
             return $token;
         }
 
@@ -253,9 +247,8 @@ class kolab_chat_mattermost
 
         if ($extended && is_array($channel)) {
             if (!empty($channel['team_id'])) {
-                 $team = $this->api_get('/teams/' . urlencode($channel['team_id']));
-            }
-            else if ($teams = $this->get_user_teams()) {
+                $team = $this->api_get('/teams/' . urlencode($channel['team_id']));
+            } elseif ($teams = $this->get_user_teams()) {
                 // if there's no team assigned to the channel, we'll get the user's team
                 // so we can build proper channel URL, there's no other way in the API
                 $team = $teams[0];
@@ -307,10 +300,10 @@ class kolab_chat_mattermost
     protected function get_api_request($type, $path)
     {
         $url      = rtrim($this->rc->config->get('kolab_chat_url'), '/');
-        $defaults = array(
+        $defaults = [
             'store_body'       => true,
             'follow_redirects' => true,
-        );
+        ];
 
         $config = array_merge($defaults, (array) $this->rc->config->get('kolab_chat_http_request'));
 
@@ -334,8 +327,7 @@ class kolab_chat_mattermost
                 if ($status == 200) {
                     return json_decode($body, true);
                 }
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 rcube::raise_error($e, true, false);
             }
         }

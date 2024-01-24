@@ -63,12 +63,12 @@ class kolab_storage_dav_cache_contact extends kolab_storage_dav_cache
         // make sure some data is not longer that database limit (#5291)
         foreach ($this->extra_cols as $col) {
             if (strlen($sql_data[$col]) > $this->extra_cols_max) {
-                $sql_data[$col] = rcube_charset::clean(substr($sql_data[$col], 0,  $this->extra_cols_max));
+                $sql_data[$col] = rcube_charset::clean(substr($sql_data[$col], 0, $this->extra_cols_max));
             }
         }
 
-        $sql_data['tags']  = ' ' . join(' ', $this->get_tags($object)) . ' ';  // pad with spaces for strict/prefix search
-        $sql_data['words'] = ' ' . join(' ', $this->get_words($object)) . ' ';
+        $sql_data['tags']  = ' ' . implode(' ', $this->get_tags($object)) . ' ';  // pad with spaces for strict/prefix search
+        $sql_data['words'] = ' ' . implode(' ', $this->get_words($object)) . ' ';
 
         return $sql_data;
     }
@@ -83,11 +83,11 @@ class kolab_storage_dav_cache_contact extends kolab_storage_dav_cache
         $data = '';
 
         foreach ($object as $colname => $value) {
-            list($col, $field) = strpos($colname, ':') ? explode(':', $colname) : [$colname, null];
+            [$col, $field] = strpos($colname, ':') ? explode(':', $colname) : [$colname, null];
 
             $val = null;
             if (in_array($col, $this->fulltext_cols)) {
-                $val = is_array($value) ? join(' ', $value) : $value;
+                $val = is_array($value) ? implode(' ', $value) : $value;
             }
 
             if (is_string($val) && strlen($val)) {

@@ -37,7 +37,7 @@ class kolab_tags_engine
 
         require_once $plugin->home . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'kolab_tags_backend.php';
 
-        $this->backend = new kolab_tags_backend;
+        $this->backend = new kolab_tags_backend();
         $this->plugin  = $plugin;
         $this->rc      = $plugin->rc;
     }
@@ -47,22 +47,35 @@ class kolab_tags_engine
      */
     public function ui()
     {
-        if ($this->rc->action && !in_array($this->rc->action, array('show', 'preview', 'dialog-ui'))) {
+        if ($this->rc->action && !in_array($this->rc->action, ['show', 'preview', 'dialog-ui'])) {
             return;
         }
 
         $this->plugin->add_texts('localization/');
 
-        $this->plugin->include_stylesheet($this->plugin->local_skin_path().'/style.css');
+        $this->plugin->include_stylesheet($this->plugin->local_skin_path() . '/style.css');
         $this->plugin->include_script('kolab_tags.js');
         $this->rc->output->add_label('cancel', 'save');
-        $this->plugin->add_label('tags', 'add', 'edit', 'delete', 'saving',
-            'nameempty', 'nameexists', 'colorinvalid', 'untag', 'tagname',
-            'tagcolor', 'tagsearchnew', 'newtag', 'notags');
+        $this->plugin->add_label(
+            'tags',
+            'add',
+            'edit',
+            'delete',
+            'saving',
+            'nameempty',
+            'nameexists',
+            'colorinvalid',
+            'untag',
+            'tagname',
+            'tagcolor',
+            'tagsearchnew',
+            'newtag',
+            'notags'
+        );
 
-        $this->rc->output->add_handlers(array(
-            'plugin.taglist' => array($this, 'taglist'),
-        ));
+        $this->rc->output->add_handlers([
+            'plugin.taglist' => [$this, 'taglist'],
+        ]);
 
         $ui = $this->rc->output->parse('kolab_tags.ui', false, false);
         $this->rc->output->add_footer($ui);
@@ -94,14 +107,13 @@ class kolab_tags_engine
             $delete   = (array) rcube_utils::get_input_value('delete', rcube_utils::INPUT_POST);
             $update   = (array) rcube_utils::get_input_value('update', rcube_utils::INPUT_POST, true);
             $add      = (array) rcube_utils::get_input_value('add', rcube_utils::INPUT_POST, true);
-            $response = array();
+            $response = [];
 
             // tags deletion
             foreach ($delete as $uid) {
                 if ($this->backend->remove($uid)) {
                     $response['delete'][] = $uid;
-                }
-                else {
+                } else {
                     $error = true;
                 }
             }
@@ -110,8 +122,7 @@ class kolab_tags_engine
             foreach ($add as $tag) {
                 if ($tag = $this->backend->create($tag)) {
                     $response['add'][] = $this->parse_tag($tag);
-                }
-                else {
+                } else {
                     $error = true;
                 }
             }
@@ -120,16 +131,14 @@ class kolab_tags_engine
             foreach ($update as $tag) {
                 if ($this->backend->update($tag)) {
                     $response['update'][] = $this->parse_tag($tag);
-                }
-                else {
+                } else {
                     $error = true;
                 }
             }
 
             if (!empty($error)) {
                 $this->rc->output->show_message($this->plugin->gettext('updateerror'), 'error');
-            }
-            else {
+            } else {
                 $this->rc->output->show_message($this->plugin->gettext('updatesuccess'), 'confirmation');
             }
 
@@ -146,21 +155,20 @@ class kolab_tags_engine
     public function action_remove()
     {
         $tag     = rcube_utils::get_input_value('_tag', rcube_utils::INPUT_POST);
-        $filter  = $tag == '*' ? array() : array(array('uid', '=', explode(',', $tag)));
+        $filter  = $tag == '*' ? [] : [['uid', '=', explode(',', $tag)]];
         $taglist = $this->backend->list_tags($filter);
-        $filter  = array();
-        $tags    = array();
+        $filter  = [];
+        $tags    = [];
 
         foreach (rcmail::get_uids() as $mbox => $uids) {
             if ($uids === '*') {
-                $filter[$mbox] = $this->build_member_url(array('folder' => $mbox));
-            }
-            else {
+                $filter[$mbox] = $this->build_member_url(['folder' => $mbox]);
+            } else {
                 foreach ((array)$uids as $uid) {
-                    $filter[$mbox][] = $this->build_member_url(array(
+                    $filter[$mbox][] = $this->build_member_url([
                             'folder' => $mbox,
-                            'uid'    => $uid
-                    ));
+                            'uid'    => $uid,
+                    ]);
                 }
             }
         }
@@ -208,10 +216,9 @@ class kolab_tags_engine
                 $this->rc->output->show_message($this->plugin->gettext('untaggingerror'), 'error');
                 $this->rc->output->command('list_mailbox');
             }
-        }
-        else {
+        } else {
             $this->rc->output->show_message($this->plugin->gettext('untaggingsuccess'), 'confirmation');
-            $this->rc->output->command('plugin.kolab_tags', array('mark' => 1, 'delete' => $tags));
+            $this->rc->output->command('plugin.kolab_tags', ['mark' => 1, 'delete' => $tags]);
         }
     }
 
@@ -222,7 +229,7 @@ class kolab_tags_engine
     {
         $tag     = rcube_utils::get_input_value('_tag', rcube_utils::INPUT_POST);
         $storage = $this->rc->get_storage();
-        $members = array();
+        $members = [];
 
         // build list of members
         foreach (rcmail::get_uids() as $mbox => $uids) {
@@ -230,8 +237,7 @@ class kolab_tags_engine
                 $index = $storage->index($mbox, null, null, true);
                 $uids  = $index->get();
                 $msgs  = $storage->fetch_headers($mbox, $uids, false);
-            }
-            else {
+            } else {
                 $msgs = $storage->fetch_headers($mbox, $uids, false);
             }
 
@@ -240,17 +246,17 @@ class kolab_tags_engine
 
         // create a new tag?
         if (!empty($_POST['_new'])) {
-            $object = array(
+            $object = [
                 'name'    => $tag,
                 'members' => $members,
-            );
+            ];
 
             $object = $this->backend->create($object);
             $error  = $object === false;
         }
         // use existing tags (by UID)
         else {
-            $filter  = array(array('uid', '=', explode(',', $tag)));
+            $filter  = [['uid', '=', explode(',', $tag)]];
             $taglist = $this->backend->list_tags($filter);
 
             // for every tag...
@@ -270,12 +276,11 @@ class kolab_tags_engine
             if ($_POST['_from'] != 'show') {
                 $this->rc->output->command('list_mailbox');
             }
-        }
-        else {
+        } else {
             $this->rc->output->show_message($this->plugin->gettext('taggingsuccess'), 'confirmation');
 
             if (isset($object)) {
-                $this->rc->output->command('plugin.kolab_tags', array('mark' => 1, 'add' => array($this->parse_tag($object))));
+                $this->rc->output->command('plugin.kolab_tags', ['mark' => 1, 'add' => [$this->parse_tag($object)]]);
             }
         }
     }
@@ -286,10 +291,10 @@ class kolab_tags_engine
     public function action_refresh()
     {
         $taglist = $this->backend->list_tags();
-        $taglist = array_map(array($this, 'parse_tag'), $taglist);
+        $taglist = array_map([$this, 'parse_tag'], $taglist);
 
         $this->rc->output->set_env('tags', $taglist);
-        $this->rc->output->command('plugin.kolab_tags', array('refresh' => 1));
+        $this->rc->output->command('plugin.kolab_tags', ['refresh' => 1]);
     }
 
     /**
@@ -304,7 +309,7 @@ class kolab_tags_engine
             $this->taglist = $taglist;
         }
 
-        $taglist = array_map(array($this, 'parse_tag'), $taglist);
+        $taglist = array_map([$this, 'parse_tag'], $taglist);
 
         $this->rc->output->set_env('tags', $taglist);
         $this->rc->output->add_gui_object('taglist', $attrib['id']);
@@ -336,7 +341,7 @@ class kolab_tags_engine
             $tag = $this->parse_tag($tag, true);
 
             foreach ((array) $tag['uids'] as $folder => $_uids) {
-                array_walk($_uids, function(&$uid, $key, $folder) { $uid .= '-' . $folder; }, $folder);
+                array_walk($_uids, function (&$uid, $key, $folder) { $uid .= '-' . $folder; }, $folder);
 
                 foreach (array_intersect($uids, $_uids) as $uid) {
                     $message_tags[$uid][] = $tag['uid'];
@@ -359,7 +364,7 @@ class kolab_tags_engine
         $taglist = $this->taglist ?: $this->backend->list_tags();
         $uid     = $args['uid'];
         $folder  = $args['folder'];
-        $tags    = array();
+        $tags    = [];
 
         foreach ($taglist as $tag) {
             $tag = $this->parse_tag($tag, true, false);
@@ -390,7 +395,7 @@ class kolab_tags_engine
         $orig_folder = $storage->get_folder();
 
         // get tags
-        $tags = $this->backend->list_tags(array(array('uid', '=', $args['search_tags'])));
+        $tags = $this->backend->list_tags([['uid', '=', $args['search_tags']]]);
 
         // sanity check (that should not happen)
         if (empty($tags)) {
@@ -401,7 +406,7 @@ class kolab_tags_engine
             return $args;
         }
 
-        $search  = array();
+        $search  = [];
         $folders = (array) $args['folder'];
 
         // collect folders and uids
@@ -419,20 +424,19 @@ class kolab_tags_engine
         }
 
         $search   = array_map('array_unique', $search);
-        $criteria = array();
+        $criteria = [];
 
         // modify search folders/criteria
         $args['folder'] = array_intersect($folders, array_keys($search));
 
         foreach ($args['folder'] as $folder) {
-            $criteria[$folder] = ($args['search'] != 'ALL' ? trim($args['search']).' ' : '')
+            $criteria[$folder] = ($args['search'] != 'ALL' ? trim($args['search']) . ' ' : '')
                 . 'UID ' . rcube_imap_generic::compressMessageSet($search[$folder]);
         }
 
         if (!empty($args['folder'])) {
             $args['search'] = $criteria;
-        }
-        else {
+        } else {
             // return empty result
             empty_result:
 
@@ -442,8 +446,7 @@ class kolab_tags_engine
                     $index = new rcube_result_index($folder, '* SORT');
                     $args['result']->add($index);
                 }
-            }
-            else {
+            } else {
                 $class  = 'rcube_result_' . ($args['threading'] ? 'thread' : 'index');
                 $result = $args['threading'] ? '* THREAD' : '* SORT';
 
@@ -463,10 +466,10 @@ class kolab_tags_engine
      */
     protected function search_filter_mods()
     {
-       if (!empty($_REQUEST['_search']) && !empty($_SESSION['search'])
-            && $_SESSION['search_request'] == $_REQUEST['_search']
-            && ($filter = $_SESSION['search_filter'])
-       ) {
+        if (!empty($_REQUEST['_search']) && !empty($_SESSION['search'])
+             && $_SESSION['search_request'] == $_REQUEST['_search']
+             && ($filter = $_SESSION['search_filter'])
+        ) {
             if (preg_match('/^(kolab_tags_[0-9]{10,}:([^:]+):)/', $filter, $m)) {
                 $search_tags   = explode(',', $m[2]);
                 $search_filter = substr($filter, strlen($m[1]));
@@ -483,11 +486,11 @@ class kolab_tags_engine
      */
     private function parse_tag($tag, $list = false, $force = true)
     {
-        $result = array(
+        $result = [
             'uid'   => $tag['uid'],
             'name'  => $tag['name'],
             'color' => $tag['color'] ?? null,
-        );
+        ];
 
         if ($list) {
             $result['uids'] = $this->get_tag_messages($tag, $force);

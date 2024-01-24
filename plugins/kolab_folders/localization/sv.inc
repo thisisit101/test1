@@ -25,4 +25,3 @@ $labels['wastebasket'] = 'Papperskorg';
 $labels['junkemail'] = 'Skräp';
 $labels['confidential'] = 'Konfidentiellt';
 $messages['defaultfolderexists'] = 'Det finns redan en standardmapp för specificerad typ';
-?>

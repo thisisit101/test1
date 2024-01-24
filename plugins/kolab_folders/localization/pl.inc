@@ -9,4 +9,3 @@
 $labels['foldertypeevent'] = 'Kalendarz';
 $labels['foldertypetask'] = 'Zadania';
 $labels['foldertypefile'] = 'Pliki';
-?>

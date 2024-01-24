@@ -212,4 +212,3 @@ $labels['arialabeleventattendees'] = 'Учасники події';
 $labels['arialabeleventresources'] = 'Ресурси подій';
 $labels['arialabelresourcesearchform'] = 'Форма пошуку ресурсів';
 $labels['arialabelresourceselection'] = 'Доступні ресурси';
-?>

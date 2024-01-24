@@ -8,4 +8,3 @@
  */
 $labels['bookremove'] = 'Премахване от списъка';
 $labels['foldersubscribe'] = 'Постоянен списък';
-?>

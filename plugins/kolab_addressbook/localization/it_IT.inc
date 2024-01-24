@@ -56,4 +56,3 @@ $messages['bookupdateerror'] = 'Si è verificato un errore durante l\'aggiorname
 $messages['bookcreateerror'] = 'Si è verificato un errore durante la creazione della rubrica.';
 $messages['nobooknamewarning'] = 'Inserire il nome della rubrica.';
 $messages['noemailnamewarning'] = 'Inserire l\'indirizzo email o il nome del contatto.';
-?>

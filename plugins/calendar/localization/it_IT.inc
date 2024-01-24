@@ -259,4 +259,3 @@ $labels['arialabeleventattendees'] = 'Lista partecipanti all\'evento';
 $labels['arialabeleventresources'] = 'Lista risorse dell\'evento';
 $labels['arialabelresourcesearchform'] = 'Modulo ricerca risorse';
 $labels['arialabelresourceselection'] = 'Risorse disponibili';
-?>

@@ -28,37 +28,37 @@ abstract class kolab_format_xcal extends kolab_format
 {
     public $CTYPE = 'application/calendar+xml';
 
-    public static $fulltext_cols = array('title', 'description', 'location', 'attendees:name', 'attendees:email', 'categories');
+    public static $fulltext_cols = ['title', 'description', 'location', 'attendees:name', 'attendees:email', 'categories'];
 
-    public static $scheduling_properties = array('start', 'end', 'location');
+    public static $scheduling_properties = ['start', 'end', 'location'];
 
     protected $_scheduling_properties = null;
 
-    protected $role_map = array(
+    protected $role_map = [
         'REQ-PARTICIPANT' => kolabformat::Required,
         'OPT-PARTICIPANT' => kolabformat::Optional,
         'NON-PARTICIPANT' => kolabformat::NonParticipant,
         'CHAIR' => kolabformat::Chair,
-    );
+    ];
 
-    protected $cutype_map = array(
+    protected $cutype_map = [
         'INDIVIDUAL' => kolabformat::CutypeIndividual,
         'GROUP'      => kolabformat::CutypeGroup,
         'ROOM'       => kolabformat::CutypeRoom,
         'RESOURCE'   => kolabformat::CutypeResource,
         'UNKNOWN'    => kolabformat::CutypeUnknown,
-    );
+    ];
 
-    protected $rrule_type_map = array(
+    protected $rrule_type_map = [
         'MINUTELY' => RecurrenceRule::Minutely,
         'HOURLY' => RecurrenceRule::Hourly,
         'DAILY' => RecurrenceRule::Daily,
         'WEEKLY' => RecurrenceRule::Weekly,
         'MONTHLY' => RecurrenceRule::Monthly,
         'YEARLY' => RecurrenceRule::Yearly,
-    );
+    ];
 
-    protected $weekday_map = array(
+    protected $weekday_map = [
         'MO' => kolabformat::Monday,
         'TU' => kolabformat::Tuesday,
         'WE' => kolabformat::Wednesday,
@@ -66,15 +66,15 @@ abstract class kolab_format_xcal extends kolab_format
         'FR' => kolabformat::Friday,
         'SA' => kolabformat::Saturday,
         'SU' => kolabformat::Sunday,
-    );
+    ];
 
-    protected $alarm_type_map = array(
+    protected $alarm_type_map = [
         'DISPLAY' => Alarm::DisplayAlarm,
         'EMAIL' => Alarm::EMailAlarm,
         'AUDIO' => Alarm::AudioAlarm,
-    );
+    ];
 
-    protected $status_map = array(
+    protected $status_map = [
         'NEEDS-ACTION' => kolabformat::StatusNeedsAction,
         'IN-PROCESS'   => kolabformat::StatusInProcess,
         'COMPLETED'    => kolabformat::StatusCompleted,
@@ -83,9 +83,9 @@ abstract class kolab_format_xcal extends kolab_format
         'CONFIRMED'    => kolabformat::StatusConfirmed,
         'DRAFT'        => kolabformat::StatusDraft,
         'FINAL'        => kolabformat::StatusFinal,
-    );
+    ];
 
-    protected $part_status_map = array(
+    protected $part_status_map = [
         'UNKNOWN'      => kolabformat::PartNeedsAction,
         'NEEDS-ACTION' => kolabformat::PartNeedsAction,
         'TENTATIVE'    => kolabformat::PartTentative,
@@ -94,7 +94,7 @@ abstract class kolab_format_xcal extends kolab_format
         'DELEGATED'    => kolabformat::PartDelegated,
         'IN-PROCESS'   => kolabformat::PartInProcess,
         'COMPLETED'    => kolabformat::PartCompleted,
-      );
+      ];
 
 
     /**
@@ -104,14 +104,14 @@ abstract class kolab_format_xcal extends kolab_format
      *
      * @return array  Object data as hash array
      */
-    public function to_array($data = array())
+    public function to_array($data = [])
     {
         // read common object props
         $object = parent::to_array($data);
 
         $status_map = array_flip($this->status_map);
 
-        $object += array(
+        $object += [
             'sequence'    => intval($this->obj->sequence()),
             'title'       => $this->obj->summary(),
             'location'    => $this->obj->location(),
@@ -121,7 +121,7 @@ abstract class kolab_format_xcal extends kolab_format
             'priority'    => $this->obj->priority(),
             'categories'  => self::vector2array($this->obj->categories()),
             'start'       => self::php_datetime($this->obj->start()),
-        );
+        ];
 
         if (method_exists($this->obj, 'comment')) {
             $object['comment'] = $this->obj->comment();
@@ -129,10 +129,10 @@ abstract class kolab_format_xcal extends kolab_format
 
         // read organizer and attendees
         if (($organizer = $this->obj->organizer()) && ($organizer->email() || $organizer->name())) {
-            $object['organizer'] = array(
+            $object['organizer'] = [
                 'email' => $organizer->email(),
                 'name' => $organizer->name(),
-            );
+            ];
         }
 
         // Get the list of attendees (excluding the organizer)
@@ -140,21 +140,21 @@ abstract class kolab_format_xcal extends kolab_format
         $cutype_map = array_flip($this->cutype_map);
         $part_status_map = array_flip($this->part_status_map);
         $attvec = $this->obj->attendees();
-        for ($i=0; $i < $attvec->size(); $i++) {
+        for ($i = 0; $i < $attvec->size(); $i++) {
             $attendee = $attvec->get($i);
             $cr = $attendee->contact();
             if (empty($object['organizer']['email']) || strcasecmp($cr->email(), $object['organizer']['email'])) {
-                $delegators = $delegatees = array();
+                $delegators = $delegatees = [];
                 $vdelegators = $attendee->delegatedFrom();
-                for ($j=0; $j < $vdelegators->size(); $j++) {
+                for ($j = 0; $j < $vdelegators->size(); $j++) {
                     $delegators[] = $vdelegators->get($j)->email();
                 }
                 $vdelegatees = $attendee->delegatedTo();
-                for ($j=0; $j < $vdelegatees->size(); $j++) {
+                for ($j = 0; $j < $vdelegatees->size(); $j++) {
                     $delegatees[] = $vdelegatees->get($j)->email();
                 }
 
-                $object['attendees'][] = array(
+                $object['attendees'][] = [
                     'role' => $role_map[$attendee->role()],
                     'cutype' => $cutype_map[$attendee->cutype()],
                     'status' => $part_status_map[$attendee->partStat()],
@@ -163,7 +163,7 @@ abstract class kolab_format_xcal extends kolab_format
                     'name' => $cr->name(),
                     'delegated-from' => $delegators,
                     'delegated-to' => $delegatees,
-                );
+                ];
             }
         }
 
@@ -175,15 +175,15 @@ abstract class kolab_format_xcal extends kolab_format
         // read recurrence rule
         if (($rr = $this->obj->recurrenceRule()) && $rr->isValid()) {
             $rrule_type_map = array_flip($this->rrule_type_map);
-            $object['recurrence'] = array('FREQ' => $rrule_type_map[$rr->frequency()]);
+            $object['recurrence'] = ['FREQ' => $rrule_type_map[$rr->frequency()]];
 
-            if ($intvl = $rr->interval())
+            if ($intvl = $rr->interval()) {
                 $object['recurrence']['INTERVAL'] = $intvl;
+            }
 
             if (($count = $rr->count()) && $count > 0) {
                 $object['recurrence']['COUNT'] = $count;
-            }
-            else if ($until = self::php_datetime($rr->end(), $start_tz)) {
+            } elseif ($until = self::php_datetime($rr->end(), $start_tz)) {
                 $refdate = $this->get_reference_date();
                 if ($refdate && $refdate instanceof DateTimeInterface && empty($refdate->_dateonly)) {
                     $until->setTime($refdate->format('G'), $refdate->format('i'), 0);
@@ -193,25 +193,25 @@ abstract class kolab_format_xcal extends kolab_format
 
             if (($byday = $rr->byday()) && $byday->size()) {
                 $weekday_map = array_flip($this->weekday_map);
-                $weekdays = array();
-                for ($i=0; $i < $byday->size(); $i++) {
+                $weekdays = [];
+                for ($i = 0; $i < $byday->size(); $i++) {
                     $daypos = $byday->get($i);
                     $prefix = $daypos->occurence();
                     $weekdays[] = ($prefix ?: '') . $weekday_map[$daypos->weekday()];
                 }
-                $object['recurrence']['BYDAY'] = join(',', $weekdays);
+                $object['recurrence']['BYDAY'] = implode(',', $weekdays);
             }
 
             if (($bymday = $rr->bymonthday()) && $bymday->size()) {
-                $object['recurrence']['BYMONTHDAY'] = join(',', self::vector2array($bymday));
+                $object['recurrence']['BYMONTHDAY'] = implode(',', self::vector2array($bymday));
             }
 
             if (($bymonth = $rr->bymonth()) && $bymonth->size()) {
-                $object['recurrence']['BYMONTH'] = join(',', self::vector2array($bymonth));
+                $object['recurrence']['BYMONTH'] = implode(',', self::vector2array($bymonth));
             }
 
             if ($exdates = $this->obj->exceptionDates()) {
-                for ($i=0; $i < $exdates->size(); $i++) {
+                for ($i = 0; $i < $exdates->size(); $i++) {
                     if ($exdate = self::php_datetime($exdates->get($i), $start_tz)) {
                         $object['recurrence']['EXDATE'][] = $exdate;
                     }
@@ -220,7 +220,7 @@ abstract class kolab_format_xcal extends kolab_format
         }
 
         if ($rdates = $this->obj->recurrenceDates()) {
-            for ($i=0; $i < $rdates->size(); $i++) {
+            for ($i = 0; $i < $rdates->size(); $i++) {
                 if ($rdate = self::php_datetime($rdates->get($i), $start_tz)) {
                     $object['recurrence']['RDATE'][] = $rdate;
                 }
@@ -230,27 +230,26 @@ abstract class kolab_format_xcal extends kolab_format
         // read alarm
         $valarms = $this->obj->alarms();
         $alarm_types = array_flip($this->alarm_type_map);
-        $object['valarms'] = array();
-        for ($i=0; $i < $valarms->size(); $i++) {
+        $object['valarms'] = [];
+        for ($i = 0; $i < $valarms->size(); $i++) {
             $alarm = $valarms->get($i);
             $type  = $alarm_types[$alarm->type()];
 
             if ($type == 'DISPLAY' || $type == 'EMAIL' || $type == 'AUDIO') {  // only some alarms are supported
-                $valarm = array(
+                $valarm = [
                     'action'      => $type,
                     'summary'     => $alarm->summary(),
                     'description' => $alarm->description(),
-                );
+                ];
 
                 if ($type == 'EMAIL') {
-                    $valarm['attendees'] = array();
+                    $valarm['attendees'] = [];
                     $attvec = $alarm->attendees();
-                    for ($j=0; $j < $attvec->size(); $j++) {
+                    for ($j = 0; $j < $attvec->size(); $j++) {
                         $cr = $attvec->get($j);
                         $valarm['attendees'][] = $cr->email();
                     }
-                }
-                else if ($type == 'AUDIO') {
+                } elseif ($type == 'AUDIO') {
                     $attach = $alarm->audioFile();
                     $valarm['uri'] = $attach->uri();
                 }
@@ -258,17 +257,22 @@ abstract class kolab_format_xcal extends kolab_format
                 if ($start = self::php_datetime($alarm->start())) {
                     $object['alarms']  = '@' . $start->format('U');
                     $valarm['trigger'] = $start;
-                }
-                else if ($offset = $alarm->relativeStart()) {
+                } elseif ($offset = $alarm->relativeStart()) {
                     $prefix = $offset->isNegative() ? '-' : '+';
                     $value  = '';
                     $time   = '';
 
-                    if      ($w = $offset->weeks())     $value .= $w . 'W';
-                    else if ($d = $offset->days())      $value .= $d . 'D';
-                    else if ($h = $offset->hours())     $time  .= $h . 'H';
-                    else if ($m = $offset->minutes())   $time  .= $m . 'M';
-                    else if ($s = $offset->seconds())   $time  .= $s . 'S';
+                    if      ($w = $offset->weeks()) {
+                        $value .= $w . 'W';
+                    } elseif ($d = $offset->days()) {
+                        $value .= $d . 'D';
+                    } elseif ($h = $offset->hours()) {
+                        $time  .= $h . 'H';
+                    } elseif ($m = $offset->minutes()) {
+                        $time  .= $m . 'M';
+                    } elseif ($s = $offset->seconds()) {
+                        $time  .= $s . 'S';
+                    }
 
                     // assume 'at event time'
                     if (empty($value) && empty($time)) {
@@ -288,11 +292,17 @@ abstract class kolab_format_xcal extends kolab_format
                 if (($duration = $alarm->duration()) && $duration->isValid()) {
                     $value = $time = '';
 
-                    if      ($w = $duration->weeks())     $value .= $w . 'W';
-                    else if ($d = $duration->days())      $value .= $d . 'D';
-                    else if ($h = $duration->hours())     $time  .= $h . 'H';
-                    else if ($m = $duration->minutes())   $time  .= $m . 'M';
-                    else if ($s = $duration->seconds())   $time  .= $s . 'S';
+                    if      ($w = $duration->weeks()) {
+                        $value .= $w . 'W';
+                    } elseif ($d = $duration->days()) {
+                        $value .= $d . 'D';
+                    } elseif ($h = $duration->hours()) {
+                        $time  .= $h . 'H';
+                    } elseif ($m = $duration->minutes()) {
+                        $time  .= $m . 'M';
+                    } elseif ($s = $duration->seconds()) {
+                        $time  .= $s . 'S';
+                    }
 
                     $valarm['duration'] = 'P' . $value . ($time ? 'T' . $time : '');
                     $valarm['repeat']   = $alarm->numrepeat();
@@ -329,8 +339,7 @@ abstract class kolab_format_xcal extends kolab_format
         if (!isset($object['sequence'])) {
             if ($is_new) {
                 $object['sequence'] = 0;
-            }
-            else {
+            } else {
                 $object['sequence'] = $old_sequence;
 
                 // increment sequence when updating properties relevant for scheduling.
@@ -358,12 +367,11 @@ abstract class kolab_format_xcal extends kolab_format
         }
 
         // process event attendees
-        $attendees = new vectorattendee;
+        $attendees = new vectorattendee();
         foreach ((array)($object['attendees'] ?? []) as $i => $attendee) {
             if (!empty($attendee['role']) && $attendee['role'] == 'ORGANIZER') {
                 $object['organizer'] = $attendee;
-            }
-            else if (
+            } elseif (
                 !empty($attendee['email'])
                 && (empty($object['organizer']['email']) || $attendee['email'] != $object['organizer']['email'])
             ) {
@@ -379,7 +387,7 @@ abstract class kolab_format_xcal extends kolab_format
                 $partstat = $this->part_status_map[$attendee['status'] ?? -1] ?? null;
                 $role     = $this->role_map[$attendee['role'] ?? -1] ?? null;
 
-                $att = new Attendee;
+                $att = new Attendee();
                 $att->setContact($cr);
                 $att->setPartStat($partstat);
                 $att->setRole($role ?: kolabformat::Required);
@@ -387,14 +395,14 @@ abstract class kolab_format_xcal extends kolab_format
                 $att->setRSVP(!empty($attendee['rsvp']));
 
                 if (!empty($attendee['delegated-from'])) {
-                    $vdelegators = new vectorcontactref;
+                    $vdelegators = new vectorcontactref();
                     foreach ((array)$attendee['delegated-from'] as $delegator) {
                         $vdelegators->push(new ContactReference(ContactReference::EmailReference, $delegator));
                     }
                     $att->setDelegatedFrom($vdelegators);
                 }
                 if (!empty($attendee['delegated-to'])) {
-                    $vdelegatees = new vectorcontactref;
+                    $vdelegatees = new vectorcontactref();
                     foreach ((array)$attendee['delegated-to'] as $delegatee) {
                         $vdelegatees->push(new ContactReference(ContactReference::EmailReference, $delegatee));
                     }
@@ -403,13 +411,12 @@ abstract class kolab_format_xcal extends kolab_format
 
                 if ($att->isValid()) {
                     $attendees->push($att);
-                }
-                else {
-                    rcube::raise_error(array(
+                } else {
+                    rcube::raise_error([
                         'code' => 600, 'type' => 'php',
                         'file' => __FILE__, 'line' => __LINE__,
                         'message' => "Invalid event attendee: " . json_encode($attendee),
-                    ), true);
+                    ], true);
                 }
             }
         }
@@ -427,7 +434,7 @@ abstract class kolab_format_xcal extends kolab_format
         }
 
         // save recurrence rule
-        $rr = new RecurrenceRule;
+        $rr = new RecurrenceRule();
         $rr->setFrequency(RecurrenceRule::FreqNone);
 
         if (!empty($object['recurrence']['FREQ'])) {
@@ -436,11 +443,12 @@ abstract class kolab_format_xcal extends kolab_format
 
             $rr->setFrequency($this->rrule_type_map[$freq]);
 
-            if ($object['recurrence']['INTERVAL'])
+            if ($object['recurrence']['INTERVAL']) {
                 $rr->setInterval(intval($object['recurrence']['INTERVAL']));
+            }
 
             if (!empty($object['recurrence']['BYDAY'])) {
-                $byday = new vectordaypos;
+                $byday = new vectordaypos();
                 foreach (explode(',', $object['recurrence']['BYDAY']) as $day) {
                     $occurrence = 0;
                     if (preg_match('/^([\d-]+)([A-Z]+)$/', $day, $m)) {
@@ -455,8 +463,7 @@ abstract class kolab_format_xcal extends kolab_format
                             foreach ($bysetpos as $pos) {
                                 $byday->push(new DayPos(intval($pos), $this->weekday_map[$day]));
                             }
-                        }
-                        else {
+                        } else {
                             $byday->push(new DayPos($occurrence, $this->weekday_map[$day]));
                         }
                     }
@@ -465,7 +472,7 @@ abstract class kolab_format_xcal extends kolab_format
             }
 
             if (!empty($object['recurrence']['BYMONTHDAY'])) {
-                $bymday = new vectori;
+                $bymday = new vectori();
                 foreach (explode(',', $object['recurrence']['BYMONTHDAY']) as $day) {
                     $bymday->push(intval($day));
                 }
@@ -473,35 +480,34 @@ abstract class kolab_format_xcal extends kolab_format
             }
 
             if (!empty($object['recurrence']['BYMONTH'])) {
-                $bymonth = new vectori;
-                foreach (explode(',', $object['recurrence']['BYMONTH']) as $month)
+                $bymonth = new vectori();
+                foreach (explode(',', $object['recurrence']['BYMONTH']) as $month) {
                     $bymonth->push(intval($month));
+                }
                 $rr->setBymonth($bymonth);
             }
 
             if (!empty($object['recurrence']['COUNT'])) {
                 $rr->setCount(intval($object['recurrence']['COUNT']));
-            }
-            else if (!empty($object['recurrence']['UNTIL'])) {
+            } elseif (!empty($object['recurrence']['UNTIL'])) {
                 $rr->setEnd(self::get_datetime($object['recurrence']['UNTIL'], null, true, $start_tz));
             }
 
             if ($rr->isValid()) {
                 // add exception dates (only if recurrence rule is valid)
                 if (!empty($object['recurrence']['EXDATE'])) {
-                    $exdates = new vectordatetime;
+                    $exdates = new vectordatetime();
                     foreach ((array)$object['recurrence']['EXDATE'] as $exdate) {
                         $exdates->push(self::get_datetime($exdate, null, true, $start_tz));
                     }
                     $this->obj->setExceptionDates($exdates);
                 }
-            }
-            else {
-                rcube::raise_error(array(
+            } else {
+                rcube::raise_error([
                     'code' => 600, 'type' => 'php',
                     'file' => __FILE__, 'line' => __LINE__,
                     'message' => "Invalid event recurrence rule: " . json_encode($object['recurrence']),
-                ), true);
+                ], true);
             }
         }
 
@@ -509,7 +515,7 @@ abstract class kolab_format_xcal extends kolab_format
 
         // save recurrence dates (aka RDATE)
         if (!empty($object['recurrence']['RDATE'])) {
-            $rdates = new vectordatetime;
+            $rdates = new vectordatetime();
             foreach ((array)$object['recurrence']['RDATE'] as $rdate) {
                 $rdates->push(self::get_datetime($rdate, null, true, $start_tz));
             }
@@ -517,8 +523,8 @@ abstract class kolab_format_xcal extends kolab_format
         }
 
         // save alarm(s)
-        $valarms = new vectoralarm;
-        $valarm_hashes = array();
+        $valarms = new vectoralarm();
+        $valarm_hashes = [];
         if (!empty($object['valarms'])) {
             foreach ($object['valarms'] as $valarm) {
                 if (empty($valarm['action']) || empty($valarm['trigger'])) {
@@ -537,8 +543,8 @@ abstract class kolab_format_xcal extends kolab_format
                 $valarm_hashes[] = $hash;
 
                 if ($valarm['action'] == 'EMAIL') {
-                    $recipients = new vectorcontactref;
-                    foreach (($valarm['attendees'] ?: array($object['_owner'])) as $email) {
+                    $recipients = new vectorcontactref();
+                    foreach (($valarm['attendees'] ?: [$object['_owner']]) as $email) {
                         $recipients->push(new ContactReference(ContactReference::EmailReference, $email));
                     }
                     $alarm = new Alarm(
@@ -546,13 +552,11 @@ abstract class kolab_format_xcal extends kolab_format
                         strval(!empty($valarm['description']) ? $valarm['description'] : $object['description']),
                         $recipients
                     );
-                }
-                else if ($valarm['action'] == 'AUDIO') {
-                    $attach = new Attachment;
+                } elseif ($valarm['action'] == 'AUDIO') {
+                    $attach = new Attachment();
                     $attach->setUri($valarm['uri'] ?: 'null', 'unknown');
                     $alarm = new Alarm($attach);
-                }
-                else {
+                } else {
                     // action == DISPLAY
                     $title = !empty($valarm['summary']) ? $valarm['summary'] : ($object['title'] ?? '');
                     $alarm = new Alarm($title);
@@ -560,21 +564,18 @@ abstract class kolab_format_xcal extends kolab_format
 
                 if ($valarm['trigger'] instanceof DateTimeInterface) {
                     $alarm->setStart(self::get_datetime($valarm['trigger'], new DateTimeZone('UTC')));
-                }
-                else if (preg_match('/^@([0-9]+)$/', $valarm['trigger'], $m)) {
+                } elseif (preg_match('/^@([0-9]+)$/', $valarm['trigger'], $m)) {
                     $alarm->setStart(self::get_datetime($m[1], new DateTimeZone('UTC')));
-                }
-                else {
+                } else {
                     // Support also interval in format without PT, e.g. -10M
                     if (preg_match('/^([-+]*)([0-9]+[DHMS])$/', strtoupper($valarm['trigger']), $m)) {
-                        $valarm['trigger'] = $m[1] . ($m[2][strlen($m[2])-1] == 'D' ? 'P' : 'PT') . $m[2];
+                        $valarm['trigger'] = $m[1] . ($m[2][strlen($m[2]) - 1] == 'D' ? 'P' : 'PT') . $m[2];
                     }
 
                     try {
                         $period   = new DateInterval(preg_replace('/[^0-9PTWDHMS]/', '', $valarm['trigger']));
                         $duration = new Duration($period->d, $period->h, $period->i, $period->s, $valarm['trigger'][0] == '-');
-                    }
-                    catch (Exception $e) {
+                    } catch (Exception $e) {
                         // skip alarm with invalid trigger values
                         rcube::raise_error($e, true);
                         continue;
@@ -589,8 +590,7 @@ abstract class kolab_format_xcal extends kolab_format
                         $d = new DateInterval($valarm['duration']);
                         $duration = new Duration($d->d, $d->h, $d->i, $d->s);
                         $alarm->setDuration($duration, intval($valarm['repeat'] ?? 0));
-                    }
-                    catch (Exception $e) {
+                    } catch (Exception $e) {
                         // ignore, but log
                         rcube::raise_error($e, true);
                     }
@@ -600,29 +600,32 @@ abstract class kolab_format_xcal extends kolab_format
             }
         }
         // legacy support
-        else if (!empty($object['alarms'])) {
-            list($offset, $type) = explode(":", $object['alarms']);
+        elseif (!empty($object['alarms'])) {
+            [$offset, $type] = explode(":", $object['alarms']);
 
             if ($type == 'EMAIL' && !empty($object['_owner'])) {  // email alarms implicitly go to event owner
-                $recipients = new vectorcontactref;
+                $recipients = new vectorcontactref();
                 $recipients->push(new ContactReference(ContactReference::EmailReference, $object['_owner']));
                 $alarm = new Alarm($object['title'], strval($object['description']), $recipients);
-            }
-            else {  // default: display alarm
+            } else {  // default: display alarm
                 $alarm = new Alarm($object['title']);
             }
 
             if (preg_match('/^@(\d+)/', $offset, $d)) {
                 $alarm->setStart(self::get_datetime($d[1], new DateTimeZone('UTC')));
-            }
-            else if (preg_match('/^([-+]?)P?T?(\d+)([SMHDW])/', $offset, $d)) {
+            } elseif (preg_match('/^([-+]?)P?T?(\d+)([SMHDW])/', $offset, $d)) {
                 $days = $hours = $minutes = $seconds = 0;
                 switch ($d[3]) {
-                    case 'W': $days  = 7*intval($d[2]); break;
-                    case 'D': $days    = intval($d[2]); break;
-                    case 'H': $hours   = intval($d[2]); break;
-                    case 'M': $minutes = intval($d[2]); break;
-                    case 'S': $seconds = intval($d[2]); break;
+                    case 'W': $days  = 7 * intval($d[2]);
+                        break;
+                    case 'D': $days    = intval($d[2]);
+                        break;
+                    case 'H': $hours   = intval($d[2]);
+                        break;
+                    case 'M': $minutes = intval($d[2]);
+                        break;
+                    case 'S': $seconds = intval($d[2]);
+                        break;
                 }
                 $alarm->setRelativeStart(new Duration($days, $hours, $minutes, $seconds, $d[1] == '-'), $d[1] == '-' ? kolabformat::Start : kolabformat::End);
             }
@@ -659,25 +662,25 @@ abstract class kolab_format_xcal extends kolab_format
         $object = $obj ?: $this->data;
 
         foreach (self::$fulltext_cols as $colname) {
-            list($col, $field) = array_pad(explode(':', $colname), 2, null);
+            [$col, $field] = array_pad(explode(':', $colname), 2, null);
 
             if (empty($object[$col])) {
                 continue;
             }
 
             if ($field) {
-                $a = array();
+                $a = [];
                 foreach ((array) $object[$col] as $attr) {
                     $a[] = $attr[$field] ?? null;
                 }
-                $val = join(' ', $a);
-            }
-            else {
-                $val = is_array($object[$col]) ? join(' ', $object[$col]) : $object[$col];
+                $val = implode(' ', $a);
+            } else {
+                $val = is_array($object[$col]) ? implode(' ', $object[$col]) : $object[$col];
             }
 
-            if (strlen($val))
+            if (strlen($val)) {
                 $data .= $val . ' ';
+            }
         }
 
         $words = rcube_utils::normalize_string($data, true);
@@ -699,7 +702,7 @@ abstract class kolab_format_xcal extends kolab_format
      */
     public function get_tags($obj = null)
     {
-        $tags = array();
+        $tags = [];
         $object = $obj ?: $this->data;
 
         if (!empty($object['valarms'])) {
@@ -709,8 +712,9 @@ abstract class kolab_format_xcal extends kolab_format
         // create tags reflecting participant status
         if (!empty($object['attendees'])) {
             foreach ($object['attendees'] as $attendee) {
-                if (!empty($attendee['email']) && !empty($attendee['status']))
+                if (!empty($attendee['email']) && !empty($attendee['status'])) {
                     $tags[] = 'x-partstat:' . $attendee['email'] . ':' . strtolower($attendee['status']);
+                }
             }
         }
 
@@ -730,7 +734,7 @@ abstract class kolab_format_xcal extends kolab_format
 
     /**
      * Identify changes considered relevant for scheduling
-     * 
+     *
      * @param array Hash array with NEW object properties
      * @param array Hash array with OLD object properties
      *
@@ -763,10 +767,9 @@ abstract class kolab_format_xcal extends kolab_format
 
                 // advanced rrule comparison: no rescheduling if series was shortened
                 if ($a['COUNT'] && $b['COUNT'] && $b['COUNT'] < $a['COUNT']) {
-                  unset($a['COUNT'], $b['COUNT']);
-                }
-                else if ($a['UNTIL'] && $b['UNTIL'] && $b['UNTIL'] < $a['UNTIL']) {
-                  unset($a['UNTIL'], $b['UNTIL']);
+                    unset($a['COUNT'], $b['COUNT']);
+                } elseif ($a['UNTIL'] && $b['UNTIL'] && $b['UNTIL'] < $a['UNTIL']) {
+                    unset($a['UNTIL'], $b['UNTIL']);
                 }
             }
             if ($a != $b) {
@@ -793,10 +796,10 @@ abstract class kolab_format_xcal extends kolab_format
 
         if (!$error_logged) {
             $error_logged = true;
-            rcube::raise_error(array(
+            rcube::raise_error([
                 'code'    => 900,
-                'message' => "Required kolabcalendaring module not found"
-            ), true);
+                'message' => "Required kolabcalendaring module not found",
+            ], true);
         }
 
         return false;

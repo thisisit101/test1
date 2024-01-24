@@ -20,4 +20,3 @@ $labels['typeprimary'] = 'Основен';
 $labels['bookremove'] = 'Remove from list';
 $labels['searchterms'] = 'Search terms';
 $labels['foldersubscribe'] = 'List permanently';
-?>

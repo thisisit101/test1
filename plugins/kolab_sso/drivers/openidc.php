@@ -29,10 +29,10 @@ require_once __DIR__ . '/oauth2.php';
 class kolab_sso_openidc extends kolab_sso_oauth2
 {
     protected $id     = 'openidc';
-    protected $params = array(
+    protected $params = [
         'scope'      => 'openid email offline_access',
         'token_type' => 'id_token',
-    );
+    ];
 
     /**
      * Returns error text for specified OpenIDC error code
@@ -41,24 +41,24 @@ class kolab_sso_openidc extends kolab_sso_oauth2
     {
         // OpenIDC-specific codes
         switch ($error) {
-        case 'interaction_required':
-            return "End-User interaction required";
-        case 'login_required':
-            return "End-User authentication required";
-        case 'account_selection_required':
-            return "End-User account selection required";
-        case 'consent_required':
-            return "End-User consent required";
-        case 'invalid_request_uri':
-            return "Invalid request_uri";
-        case 'invalid_request_object':
-            return "Invalid Request Object";
-        case 'request_not_supported':
-            return "Request not supported";
-        case 'request_uri_not_supported':
-            return "request_uri param not supported";
-        case 'registration_not_supported':
-            return "Registration not supported";
+            case 'interaction_required':
+                return "End-User interaction required";
+            case 'login_required':
+                return "End-User authentication required";
+            case 'account_selection_required':
+                return "End-User account selection required";
+            case 'consent_required':
+                return "End-User consent required";
+            case 'invalid_request_uri':
+                return "Invalid request_uri";
+            case 'invalid_request_object':
+                return "Invalid Request Object";
+            case 'request_not_supported':
+                return "Request not supported";
+            case 'request_uri_not_supported':
+                return "request_uri param not supported";
+            case 'registration_not_supported':
+                return "Registration not supported";
         }
 
         // Fallback to OAuth2-specific codes

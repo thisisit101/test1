@@ -28,4 +28,3 @@ $labels['private'] = 'Yksityinen';
 $labels['folderexpire'] = 'Poista viestit, jotka ovat vanhempia kuin';
 $labels['xdays'] = '$x päivää';
 $messages['defaultfolderexists'] = 'Määritetylle tyypille on jo olemassa oletuskansio';
-?>

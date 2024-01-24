@@ -28,4 +28,3 @@ $labels['private'] = 'Privat';
 $labels['folderexpire'] = 'Slet beskeder ældre end';
 $labels['xdays'] = '$x dage';
 $messages['defaultfolderexists'] = 'Der er allerede en standardmapper med angive type';
-?>

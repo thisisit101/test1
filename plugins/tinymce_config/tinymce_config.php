@@ -24,18 +24,18 @@ class tinymce_config extends rcube_plugin
 {
     public $task = 'mail|settings';
 
-    function init()
+    public function init()
     {
-        $this->add_hook('html_editor', array($this, 'config'));
+        $this->add_hook('html_editor', [$this, 'config']);
     }
 
-    function config($args)
+    public function config($args)
     {
-        $config = array(
+        $config = [
             'forced_root_block' => '',
             'force_p_newlines' => false,
             'force_br_newlines' => true,
-        );
+        ];
 
         $rcmail = rcube::get_instance();
         $var    = 'window.rcmail_editor_settings';

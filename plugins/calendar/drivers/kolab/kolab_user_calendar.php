@@ -45,12 +45,10 @@ class kolab_user_calendar extends kolab_calendar
         if (is_array($user_or_folder)) {
             $this->userdata = $user_or_folder;
             $this->storage = new kolab_storage_folder_user($this->userdata['kolabtargetfolder'], '', $this->userdata);
-        }
-        else if ($user_or_folder instanceof kolab_storage_folder_user) {
+        } elseif ($user_or_folder instanceof kolab_storage_folder_user) {
             $this->storage  = $user_or_folder;
             $this->userdata = $this->storage->ldaprec;
-        }
-        else {
+        } else {
             // get user record from LDAP
             $this->storage  = new kolab_storage_folder_user($user_or_folder);
             $this->userdata = $this->storage->ldaprec;
@@ -187,7 +185,7 @@ class kolab_user_calendar extends kolab_calendar
     public function get_event($id)
     {
         // TODO: implement this
-        return isset($this->events[$id]) ? $this->events[$id] : null;
+        return $this->events[$id] ?? null;
     }
 
     /**
@@ -221,15 +219,13 @@ class kolab_user_calendar extends kolab_calendar
     {
         // convert to DateTime for comparisons
         try {
-            $start_dt = new DateTime('@'.$start);
-        }
-        catch (Exception $e) {
+            $start_dt = new DateTime('@' . $start);
+        } catch (Exception $e) {
             $start_dt = new DateTime('@0');
         }
         try {
-            $end_dt = new DateTime('@'.$end);
-        }
-        catch (Exception $e) {
+            $end_dt = new DateTime('@' . $end);
+        } catch (Exception $e) {
             $end_dt = new DateTime('today +10 years');
         }
 
@@ -238,8 +234,10 @@ class kolab_user_calendar extends kolab_calendar
         if (!empty($query)) {
             foreach ($query as $q) {
                 if ($q[0] == 'changed' && $q[1] == '>=') {
-                    try { $limit_changed = new DateTime('@'.$q[2]); }
-                    catch (Exception $e) { /* ignore */ }
+                    try {
+                        $limit_changed = new DateTime('@' . $q[2]);
+                    } catch (Exception $e) { /* ignore */
+                    }
                 }
             }
         }
@@ -318,13 +316,14 @@ class kolab_user_calendar extends kolab_calendar
             }
 
             unset($request, $response);
-        }
-        catch (Exception $e) {
-            rcube::raise_error([
+        } catch (Exception $e) {
+            rcube::raise_error(
+                [
                     'code' => 900, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error fetching free/busy information: " . $e->getMessage()
+                    'message' => "Error fetching free/busy information: " . $e->getMessage(),
                 ],
-                true, false
+                true,
+                false
             );
 
             return false;
@@ -360,7 +359,7 @@ class kolab_user_calendar extends kolab_calendar
                 }
 
                 foreach ($fb['periods'] as $tuple) {
-                    list($from, $to, $type) = $tuple;
+                    [$from, $to, $type] = $tuple;
                     $event = [
                         'uid'       => md5($this->id . $from->format('U') . '/' . $to->format('U')),
                         'calendar'  => $this->id,
@@ -372,7 +371,7 @@ class kolab_user_calendar extends kolab_calendar
                         'className' => 'fc-type-freebusy',
                         'organizer' => [
                             'email' => $this->userdata['mail'],
-                            'name'  => isset($this->userdata['displayname']) ? $this->userdata['displayname'] : null,
+                            'name'  => $this->userdata['displayname'] ?? null,
                         ],
                     ];
 

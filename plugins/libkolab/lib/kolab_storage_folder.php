@@ -47,7 +47,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * @param string Expected folder type
      * @param string Optional folder type if known
      */
-    function __construct($name, $type = null, $type_annotation = null)
+    public function __construct($name, $type = null, $type_annotation = null)
     {
         parent::__construct($name);
         $this->set_folder($name, $type, $type_annotation);
@@ -69,7 +69,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
         }
 
         $oldtype = $this->type;
-        list($this->type, $suffix) = array_pad(explode('.', $type_annotation), 2, null);
+        [$this->type, $suffix] = array_pad(explode('.', $type_annotation), 2, null);
         $this->default      = $suffix == 'default';
         $this->subtype      = $this->default ? '' : $suffix;
         $this->id           = kolab_storage::folder_id($name);
@@ -83,10 +83,11 @@ class kolab_storage_folder extends kolab_storage_folder_api
         $this->owner = $this->namespace = $this->resource_uri = $this->info = $this->idata = null;
 
         // get a new cache instance if folder type changed
-        if (!$this->cache || $this->type != $oldtype)
+        if (!$this->cache || $this->type != $oldtype) {
             $this->cache = kolab_storage_cache::factory($this);
-        else
+        } else {
             $this->cache->set_folder($this);
+        }
 
         $this->imap->set_folder($this->name);
     }
@@ -108,7 +109,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     {
         if (($err_code = $this->imap->get_error_code()) < 0) {
             $this->error = kolab_storage::ERROR_IMAP_CONN;
-            if (($res_code = $this->imap->get_response_code()) !== 0 && in_array($res_code, array(rcube_storage::NOPERM, rcube_storage::READONLY))) {
+            if (($res_code = $this->imap->get_response_code()) !== 0 && in_array($res_code, [rcube_storage::NOPERM, rcube_storage::READONLY])) {
                 $this->error = kolab_storage::ERROR_NO_PERMISSION;
             }
         }
@@ -132,11 +133,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
         if (!empty($nsdata[0][0]) && strpos($this->name, $nsdata[0][0]) === 0) {
             $subpath = substr($this->name, strlen($nsdata[0][0]));
             if ($ns == 'other') {
-                list($user, $suffix) = explode($nsdata[0][1], $subpath, 2);
+                [$user, $suffix] = explode($nsdata[0][1], $subpath, 2);
                 $subpath = $suffix;
             }
-        }
-        else {
+        } else {
             $subpath = $this->name;
         }
 
@@ -153,7 +153,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     public function get_uid()
     {
         // UID is defined in folder METADATA
-        $metakeys = array(kolab_storage::UID_KEY_SHARED, kolab_storage::UID_KEY_CYRUS);
+        $metakeys = [kolab_storage::UID_KEY_SHARED, kolab_storage::UID_KEY_CYRUS];
         $metadata = $this->get_metadata();
 
         if ($metadata !== null) {
@@ -185,7 +185,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
      */
     public function set_uid($uid)
     {
-        $success = $this->set_metadata(array(kolab_storage::UID_KEY_SHARED => $uid));
+        $success = $this->set_metadata([kolab_storage::UID_KEY_SHARED => $uid]);
 
         $this->check_error();
         return $success;
@@ -294,7 +294,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * @return array List of Kolab data objects (each represented as hash array)
      * @deprecated Use select()
      */
-    public function get_objects($query = array())
+    public function get_objects($query = [])
     {
         return $this->select($query);
     }
@@ -309,10 +309,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
      *
      * @return null|array|kolab_storage_dataset List of Kolab data objects (each represented as hash array)
      */
-    public function select($query = array(), $fast = false)
+    public function select($query = [], $fast = false)
     {
         if (!$this->valid) {
-            return array();
+            return [];
         }
 
         // synchronize caches
@@ -328,10 +328,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * @param array Pseudo-SQL query as list of filter parameter triplets
      * @return array List of Kolab object UIDs
      */
-    public function get_uids($query = array())
+    public function get_uids($query = [])
     {
         if (!$this->valid) {
-            return array();
+            return [];
         }
 
         // synchronize caches
@@ -365,14 +365,13 @@ class kolab_storage_folder extends kolab_storage_folder_api
         // string equals type query
         // FIXME: should not be called this way!
         if (is_string($query)) {
-            return $this->cache->has_type_col() && !empty($query) ? array(array('type','=',$query)) : array();
+            return $this->cache->has_type_col() && !empty($query) ? [['type','=',$query]] : [];
         }
 
         foreach ((array)$query as $i => $param) {
             if ($param[0] == 'type' && !$this->cache->has_type_col()) {
                 unset($query[$i]);
-            }
-            else if (($param[0] == 'dtstart' || $param[0] == 'dtend' || $param[0] == 'changed')) {
+            } elseif (($param[0] == 'dtstart' || $param[0] == 'dtend' || $param[0] == 'changed')) {
                 if (is_object($param[2]) && $param[2] instanceof DateTimeInterface) {
                     $param[2] = $param[2]->format('U');
                 }
@@ -409,21 +408,24 @@ class kolab_storage_folder extends kolab_storage_folder_api
                 if ($object = $this->cache->get($msguid)) {
                     // load data from XML (attachment content is not stored in cache)
                     if ($object['_formatobj'] && isset($object['_size'])) {
-                        $object['_attachments'] = array();
+                        $object['_attachments'] = [];
                         $object['_formatobj']->get_attachments($object);
                     }
 
                     foreach ($object['_attachments'] as $attach) {
                         if ($attach['id'] == $part) {
-                            if ($print)   echo $attach['content'];
-                            else if ($fp) fwrite($fp, $attach['content']);
-                            else          return $attach['content'];
+                            if ($print) {
+                                echo $attach['content'];
+                            } elseif ($fp) {
+                                fwrite($fp, $attach['content']);
+                            } else {
+                                return $attach['content'];
+                            }
                             return true;
                         }
                     }
                 }
-            }
-            else {
+            } else {
                 // return message part from IMAP directly
                 // TODO: We could improve performance if we cache part's encoding
                 //       without 3rd argument get_message_part() will request BODYSTRUCTURE from IMAP
@@ -450,8 +452,12 @@ class kolab_storage_folder extends kolab_storage_folder_api
             return false;
         }
 
-        if (!$type) $type = $this->type;
-        if (!$folder) $folder = $this->name;
+        if (!$type) {
+            $type = $this->type;
+        }
+        if (!$folder) {
+            $folder = $this->name;
+        }
 
         $this->imap->set_folder($folder);
 
@@ -474,19 +480,19 @@ class kolab_storage_folder extends kolab_storage_folder_api
             }
         }
         // fix buggy messages stating the X-Kolab-Type header twice
-        else if (is_array($message->headers->others['x-kolab-type'])) {
+        elseif (is_array($message->headers->others['x-kolab-type'])) {
             $message->headers->others['x-kolab-type'] = reset($message->headers->others['x-kolab-type']);
         }
 
         // no object type header found: abort
         if (empty($message->headers->others['x-kolab-type'])) {
-            rcube::raise_error(array(
+            rcube::raise_error([
                 'code' => 600,
                 'type' => 'php',
                 'file' => __FILE__,
                 'line' => __LINE__,
                 'message' => "No X-Kolab-Type information found in message $msguid ($this->name).",
-            ), true);
+            ], true);
             return false;
         }
 
@@ -498,15 +504,14 @@ class kolab_storage_folder extends kolab_storage_folder_api
             return false;
         }
 
-        $attachments = array();
+        $attachments = [];
 
         // get XML part
         $xml = null;
         foreach ((array)$message->attachments as $part) {
             if (!$xml && ($part->mimetype == $content_type || preg_match('!application/([a-z.]+\+)?xml!i', $part->mimetype))) {
                 $xml = $message->get_part_body($part->mime_id, true);
-            }
-            else if ($part->filename || $part->content_id) {
+            } elseif ($part->filename || $part->content_id) {
                 $key  = $part->content_id ? trim($part->content_id, '<>') : $part->filename;
                 $size = null;
 
@@ -515,54 +520,56 @@ class kolab_storage_folder extends kolab_storage_folder_api
                     $size = $part->d_parameters['size'];
                 }
                 // we can trust part size only if it's not encoded
-                else if ($part->encoding == 'binary' || $part->encoding == '7bit' || $part->encoding == '8bit') {
+                elseif ($part->encoding == 'binary' || $part->encoding == '7bit' || $part->encoding == '8bit') {
                     $size = $part->size;
                 }
 
-                $attachments[$key] = array(
+                $attachments[$key] = [
                     'id'       => $part->mime_id,
                     'name'     => $part->filename,
                     'mimetype' => $part->mimetype,
                     'size'     => $size,
-                );
+                ];
             }
         }
 
         if (!$xml) {
-            rcube::raise_error(array(
+            rcube::raise_error([
                 'code' => 600,
                 'type' => 'php',
                 'file' => __FILE__,
                 'line' => __LINE__,
                 'message' => "Could not find Kolab data part in message $msguid ($this->name).",
-            ), true);
+            ], true);
             return false;
         }
 
         // check kolab format version
         $format_version = $message->headers->others['x-kolab-mime-version'];
         if (empty($format_version)) {
-            list($xmltype, $subtype) = explode('.', $object_type);
+            [$xmltype, $subtype] = explode('.', $object_type);
             $xmlhead = substr($xml, 0, 512);
 
             // detect old Kolab 2.0 format
-            if (strpos($xmlhead, '<' . $xmltype) !== false && strpos($xmlhead, 'xmlns=') === false)
+            if (strpos($xmlhead, '<' . $xmltype) !== false && strpos($xmlhead, 'xmlns=') === false) {
                 $format_version = '2.0';
-            else
-                $format_version = '3.0'; // assume 3.0
+            } else {
+                $format_version = '3.0';
+            } // assume 3.0
         }
 
         // get Kolab format handler for the given type
         $format = kolab_format::factory($object_type, $format_version);
 
-        if (is_a($format, 'PEAR_Error'))
+        if (is_a($format, 'PEAR_Error')) {
             return false;
+        }
 
         // load Kolab object from XML part
         $format->load($xml);
 
         if ($format->is_valid()) {
-            $object = $format->to_array(array('_attachments' => $attachments));
+            $object = $format->to_array(['_attachments' => $attachments]);
             $object['_type']      = $object_type;
             $object['_msguid']    = $msguid;
             $object['_mailbox']   = $this->name;
@@ -570,19 +577,19 @@ class kolab_storage_folder extends kolab_storage_folder_api
             $object['_size']      = strlen($xml);
 
             return $object;
-        }
-        else {
+        } else {
             // try to extract object UID from XML block
-            if (preg_match('!<uid>(.+)</uid>!Uims', $xml, $m))
+            if (preg_match('!<uid>(.+)</uid>!Uims', $xml, $m)) {
                 $msgadd = " UID = " . trim(strip_tags($m[1]));
+            }
 
-            rcube::raise_error(array(
+            rcube::raise_error([
                 'code' => 600,
                 'type' => 'php',
                 'file' => __FILE__,
                 'line' => __LINE__,
                 'message' => "Could not parse Kolab object data in message $msguid ($this->name)." . ($msgadd ?? ''),
-            ), true);
+            ], true);
 
             self::save_user_xml("$msguid.xml", $xml);
         }
@@ -605,8 +612,9 @@ class kolab_storage_folder extends kolab_storage_folder_api
             return false;
         }
 
-        if (!$type)
+        if (!$type) {
             $type = $this->type;
+        }
 
         // copy attachments from old message
         $copyfrom = $object['_copyfrom'] ?? ($object['_msguid'] ?? null);
@@ -620,9 +628,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
                     unset($object['_attachments'][$key]);
                 }
                 // load photo.attachment from old Kolab2 format to be directly embedded in xcard block
-                else if ($type == 'contact' && ($key == 'photo.attachment' || $key == 'kolab-picture.png') && $att['id']) {
-                    if (!isset($object['photo']))
+                elseif ($type == 'contact' && ($key == 'photo.attachment' || $key == 'kolab-picture.png') && $att['id']) {
+                    if (!isset($object['photo'])) {
                         $object['photo'] = $this->get_attachment($copyfrom, $att['id'], $object['_mailbox']);
+                    }
                     unset($object['_attachments'][$key]);
                 }
             }
@@ -631,10 +640,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
         // save contact photo to attachment for Kolab2 format
         if (kolab_storage::$version == '2.0' && $object['photo']) {
             $attkey = 'kolab-picture.png';  // this file name is hard-coded in libkolab/kolabformatV2/contact.cpp
-            $object['_attachments'][$attkey] = array(
-                'mimetype'=> rcube_mime::image_content_type($object['photo']),
+            $object['_attachments'][$attkey] = [
+                'mimetype' => rcube_mime::image_content_type($object['photo']),
                 'content' => preg_match('![^a-z0-9/=+-]!i', $object['photo']) ? $object['photo'] : base64_decode($object['photo']),
-            );
+            ];
         }
 
         // process attachments
@@ -656,12 +665,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
                             // here nor in rcube_imap_generic before IMAP APPEND
                             $stat = fstat($attachment['content']);
                             $attachment['size'] = $stat ? $stat['size'] : 0;
-                        }
-                        else {
+                        } else {
                             $attachment['size'] = strlen($attachment['content']);
                         }
-                    }
-                    else if (!empty($attachment['path'])) {
+                    } elseif (!empty($attachment['path'])) {
                         $attachment['size'] = filesize($attachment['path']);
                     }
                     $object['_attachments'][$key] = $attachment;
@@ -672,7 +679,9 @@ class kolab_storage_folder extends kolab_storage_folder_api
                     // derrive content-id from attachment file name
                     $ext = preg_match('/(\.[a-z0-9]{1,6})$/i', $attachment['name'], $m) ? $m[1] : null;
                     $basename = preg_replace('/[^a-z0-9_.-]/i', '', basename($attachment['name'], $ext));  // to 7bit ascii
-                    if (!$basename) $basename = 'noname';
+                    if (!$basename) {
+                        $basename = 'noname';
+                    }
                     $cid = $basename . '.' . microtime(true) . $key . $ext;
 
                     $object['_attachments'][$cid] = $attachment;
@@ -767,10 +776,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
                     $untildate->sub(new DateInterval('P1D'));
                     $object['recurrence']['UNTIL'] = $untildate;
                     unset($object['recurrence']['COUNT']);
-                }
-                else {
-                    if (!$exdates[$exception['start']->format('Y-m-d')])
+                } else {
+                    if (!$exdates[$exception['start']->format('Y-m-d')]) {
                         $object['recurrence']['EXDATE'][] = clone $exception['start'];
+                    }
                     unset($exception['recurrence']);
                 }
 
@@ -813,8 +822,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
 
         if ($msguid && $expunge) {
             $success = $this->imap->delete_message($msguid, $this->name);
-        }
-        else if ($msguid) {
+        } elseif ($msguid) {
             $success = $this->imap->set_flag($msguid, 'DELETED', $this->name);
         }
 
@@ -896,13 +904,12 @@ class kolab_storage_folder extends kolab_storage_folder_api
                 $new_uid = ($copyuid = $this->imap->conn->data['COPYUID']) ? $copyuid[1] : null;
                 $this->cache->move($msguid, $uid, $target_folder, $new_uid);
                 return true;
-            }
-            else {
-                rcube::raise_error(array(
+            } else {
+                rcube::raise_error([
                     'code' => 600, 'type' => 'php',
                     'file' => __FILE__, 'line' => __LINE__,
                     'message' => "Failed to move message $msguid to {$target_folder->name}: " . $this->imap->get_error_str(),
-                ), true);
+                ], true);
             }
         }
 
@@ -924,17 +931,20 @@ class kolab_storage_folder extends kolab_storage_folder_api
     {
         // load old object to preserve data we don't understand/process
         $format = null;
-        if (is_object($object['_formatobj'] ?? null))
+        if (is_object($object['_formatobj'] ?? null)) {
             $format = $object['_formatobj'];
-        else if (!empty($object['_msguid']) && ($old = $this->cache->get($object['_msguid'], $type, $object['_mailbox'] ?? null)))
+        } elseif (!empty($object['_msguid']) && ($old = $this->cache->get($object['_msguid'], $type, $object['_mailbox'] ?? null))) {
             $format = $old['_formatobj'] ?? null;
+        }
 
         // create new kolab_format instance
-        if (!$format)
+        if (!$format) {
             $format = kolab_format::factory($type, kolab_storage::$version);
+        }
 
-        if (PEAR::isError($format))
+        if (PEAR::isError($format)) {
             return false;
+        }
 
         $format->set($object);
         $xml = $format->write(kolab_storage::$version);
@@ -947,8 +957,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
 
         $mime     = new Mail_mime("\r\n");
         $rcmail   = rcube::get_instance();
-        $headers  = array();
-        $files    = array();
+        $headers  = [];
+        $files    = [];
         $part_id  = 1;
         $encoding = $binary ? 'binary' : 'base64';
         $temp_dir = unslashify($rcmail->config->get('temp_dir'));
@@ -962,13 +972,13 @@ class kolab_storage_folder extends kolab_storage_folder_api
         $headers['X-Kolab-Type'] = kolab_format::KTYPE_PREFIX . $type;
         $headers['X-Kolab-Mime-Version'] = kolab_storage::$version;
         $headers['Subject'] = $object['uid'];
-//        $headers['Message-ID'] = $rcmail->gen_message_id();
+        //        $headers['Message-ID'] = $rcmail->gen_message_id();
         $headers['User-Agent'] = $rcmail->config->get('useragent');
 
         // Check if we have enough memory to handle the message in it
         // It's faster than using files, so we'll do this if we only can
         if (!empty($object['_attachments']) && ($mem_limit = parse_bytes(ini_get('memory_limit'))) > 0) {
-            $memory = function_exists('memory_get_usage') ? memory_get_usage() : 16*1024*1024; // safe value: 16MB
+            $memory = function_exists('memory_get_usage') ? memory_get_usage() : 16 * 1024 * 1024; // safe value: 16MB
 
             foreach ($object['_attachments'] as $attachment) {
                 $memory += $attachment['size'];
@@ -992,7 +1002,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
         // when APPENDing from temp file
         $xml = preg_replace('/\r?\n/', "\r\n", $xml);
 
-        $mime->addAttachment($xml,  // file
+        $mime->addAttachment(
+            $xml,  // file
             $ctype,                 // content-type
             'kolab.xml',            // filename
             false,                  // is_file
@@ -1013,17 +1024,15 @@ class kolab_storage_folder extends kolab_storage_folder_api
                     $att['path'] = tempnam($temp_dir, 'rcmAttmnt');
                     if (($fp = fopen($att['path'], 'w')) && $this->get_attachment($msguid, $att['id'], $object['_mailbox'], false, $fp, true)) {
                         fclose($fp);
-                    }
-                    else {
+                    } else {
                         return false;
                     }
-                }
-                else {
+                } else {
                     $att['content'] = $this->get_attachment($msguid, $att['id'], $object['_mailbox'], false, null, true);
                 }
             }
 
-            $headers = array('Content-ID' => Mail_mimePart::encodeHeader('Content-ID', '<' . $key . '>', RCUBE_CHARSET, 'quoted-printable'));
+            $headers = ['Content-ID' => Mail_mimePart::encodeHeader('Content-ID', '<' . $key . '>', RCUBE_CHARSET, 'quoted-printable')];
             $name = !empty($att['name']) ? $att['name'] : $key;
 
             // To store binary files we can use faster method
@@ -1034,17 +1043,14 @@ class kolab_storage_folder extends kolab_storage_folder_api
                 if ($is_file && $binary) {
                     $files[] = fopen($att['path'], 'r');
                     $mime->addAttachment($marker, $att['mimetype'], $name, false, $encoding, 'attachment', '', '', '', null, null, '', RCUBE_CHARSET, $headers);
-                }
-                else {
+                } else {
                     $mime->addAttachment($att['path'], $att['mimetype'], $name, true, $encoding, 'attachment', '', '', '', null, null, '', RCUBE_CHARSET, $headers);
                 }
-            }
-            else {
+            } else {
                 if (is_resource($att['content']) && $is_file && $binary) {
                     $files[] = $att['content'];
                     $mime->addAttachment($marker, $att['mimetype'], $name, false, $encoding, 'attachment', '', '', '', null, null, '', RCUBE_CHARSET, $headers);
-                }
-                else {
+                } else {
                     if (is_resource($att['content'])) {
                         @rewind($att['content']);
                         $att['content'] = stream_get_contents($att['content']);
@@ -1066,7 +1072,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
         // @phpstan-ignore-next-line
         if (!empty($files)) {
             $message = explode($marker, $message);
-            $tmp     = array();
+            $tmp     = [];
 
             foreach ($message as $msg_part) {
                 $tmp[] = $msg_part;
@@ -1077,19 +1083,22 @@ class kolab_storage_folder extends kolab_storage_folder_api
             $message = $tmp;
         }
         // write complete message body into temp file
-        else if ($is_file) {
+        elseif ($is_file) {
             // use common temp dir
             $body_file = tempnam($temp_dir, 'rcmMsg');
 
             if (PEAR::isError($mime_result = $mime->saveMessageBody($body_file))) {
-                rcube::raise_error(array('code' => 650, 'type' => 'php',
+                rcube::raise_error(
+                    ['code' => 650, 'type' => 'php',
                     'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Could not create message: ".$mime_result->getMessage()),
-                    true, false);
+                    'message' => "Could not create message: " . $mime_result->getMessage()],
+                    true,
+                    false
+                );
                 return false;
             }
 
-            $message = array(trim($mime->txtHeaders()) . "\r\n\r\n", fopen($body_file, 'r'));
+            $message = [trim($mime->txtHeaders()) . "\r\n\r\n", fopen($body_file, 'r')];
         }
 
         return $message;
@@ -1109,22 +1118,23 @@ class kolab_storage_folder extends kolab_storage_folder_api
         $url = kolab_storage::get_freebusy_server();
 
         switch ($this->type) {
-        case 'event':
-            if ($url && $this->get_namespace() == 'personal') {
-                $result = $this->trigger_url(
-                    sprintf('%s/trigger/%s/%s.pfb',
-                        $url,
-                        urlencode($owner),
-                        urlencode($this->imap->mod_folder($this->name))
-                    ),
-                    $this->imap->options['user'],
-                    $this->imap->options['password']
-                );
-            }
-            break;
+            case 'event':
+                if ($url && $this->get_namespace() == 'personal') {
+                    $result = $this->trigger_url(
+                        sprintf(
+                            '%s/trigger/%s/%s.pfb',
+                            $url,
+                            urlencode($owner),
+                            urlencode($this->imap->mod_folder($this->name))
+                        ),
+                        $this->imap->options['user'],
+                        $this->imap->options['password']
+                    );
+                }
+                break;
 
-        default:
-            return true;
+            default:
+                return true;
         }
 
         if ($result instanceof PEAR_Error) {
@@ -1151,13 +1161,13 @@ class kolab_storage_folder extends kolab_storage_folder_api
             $request = libkolab::http_request($url);
 
             // set authentication credentials
-            if ($auth_user && $auth_passwd)
+            if ($auth_user && $auth_passwd) {
                 $request->setAuth($auth_user, $auth_passwd);
+            }
 
             $result = $request->send();
             // rcube::write_log('trigger', $result->getBody());
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             return PEAR::raiseError($e->getMessage());
         }
 

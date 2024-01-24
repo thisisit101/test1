@@ -10,4 +10,3 @@ $labels['mail'] = '邮件';
 $labels['note'] = '笔记';
 $labels['read'] = '只读';
 $labels['savingdata'] = '保存数据...';
-?>

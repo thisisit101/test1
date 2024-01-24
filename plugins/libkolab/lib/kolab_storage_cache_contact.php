@@ -24,8 +24,8 @@
 class kolab_storage_cache_contact extends kolab_storage_cache
 {
     protected $extra_cols_max = 255;
-    protected $extra_cols     = array('type', 'name', 'firstname', 'surname', 'email');
-    protected $data_props     = array('type', 'name', 'firstname', 'middlename', 'prefix', 'suffix', 'surname', 'email', 'organization', 'member');
+    protected $extra_cols     = ['type', 'name', 'firstname', 'surname', 'email'];
+    protected $data_props     = ['type', 'name', 'firstname', 'middlename', 'prefix', 'suffix', 'surname', 'email', 'organization', 'member'];
 
     /**
      * Helper method to convert the given Kolab object into a dataset to be written to cache
@@ -42,12 +42,11 @@ class kolab_storage_cache_contact extends kolab_storage_cache
         // columns for sorting
         $sql_data['name']      = rcube_charset::clean(($object['name'] ?? '') . ($object['prefix'] ?? ''));
         $sql_data['firstname'] = rcube_charset::clean(($object['firstname'] ?? '') . ($object['middlename'] ?? '') . ($object['surname'] ?? ''));
-        $sql_data['surname']   = rcube_charset::clean(($object['surname'] ?? '')   . ($object['firstname'] ?? '')  . ($object['middlename'] ?? ''));
+        $sql_data['surname']   = rcube_charset::clean(($object['surname'] ?? '') . ($object['firstname'] ?? '') . ($object['middlename'] ?? ''));
 
         if (is_array($email)) {
             $sql_data['email'] = $email['address'] ?? '';
-        }
-        else {
+        } else {
             $sql_data['email'] = rcube_charset::clean($email);
         }
         // avoid value being null
@@ -63,7 +62,7 @@ class kolab_storage_cache_contact extends kolab_storage_cache
         // make sure some data is not longer that database limit (#5291)
         foreach ($this->extra_cols as $col) {
             if (strlen($sql_data[$col]) > $this->extra_cols_max) {
-                $sql_data[$col] = rcube_charset::clean(substr($sql_data[$col], 0,  $this->extra_cols_max));
+                $sql_data[$col] = rcube_charset::clean(substr($sql_data[$col], 0, $this->extra_cols_max));
             }
         }
 

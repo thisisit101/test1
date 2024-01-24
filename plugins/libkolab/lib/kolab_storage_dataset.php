@@ -26,7 +26,7 @@
 
 class kolab_storage_dataset implements Iterator, ArrayAccess, Countable
 {
-    const CHUNK_SIZE = 25;
+    public const CHUNK_SIZE = 25;
 
     private $cache;  // kolab_storage_cache instance to use for fetching data
     private $memlimit = 0;
@@ -84,8 +84,7 @@ class kolab_storage_dataset implements Iterator, ArrayAccess, Countable
     {
         if (is_string($value)) {
             $uid = $value;
-        }
-        else {
+        } else {
             $uid = !empty($value['_msguid']) ? $value['_msguid'] : $value['uid'];
         }
 
@@ -132,8 +131,7 @@ class kolab_storage_dataset implements Iterator, ArrayAccess, Countable
             while (isset($this->index[$idx]) && count($uids) < self::CHUNK_SIZE) {
                 if (isset($this->data[$idx]) && !is_string($this->data[$idx])) {
                     // skip objects that had the raw content in the cache (are not empty)
-                }
-                else {
+                } else {
                     $uids[$idx] = $this->index[$idx];
                 }
 

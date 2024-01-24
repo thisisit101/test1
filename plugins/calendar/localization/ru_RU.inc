@@ -285,4 +285,3 @@ $labels['arialabeleventresources'] = 'Ресурсы события';
 $labels['arialabelresourcesearchform'] = 'Форма поиска ресурсов';
 $labels['arialabelresourceselection'] = 'Доступные ресурсы';
 $labels['arialabeleventform'] = 'Форма редактирования события';
-?>

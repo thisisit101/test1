@@ -39,8 +39,8 @@ class kolab_files_autocomplete
 
         $search = rcube_utils::get_input_value('_search', rcube_utils::INPUT_GPC, true);
         $reqid  = rcube_utils::get_input_value('_reqid', rcube_utils::INPUT_GPC);
-        $users  = array();
-        $keys   = array();
+        $users  = [];
+        $keys   = [];
 
         if ($this->init_ldap()) {
             $max  = (int) $this->rc->config->get('autocomplete_max', 15);
@@ -64,28 +64,28 @@ class kolab_files_autocomplete
 
                 if ($user) {
                     $display = rcube_addressbook::compose_search_name($record);
-                    $user    = array('name' => $user, 'display' => $display);
+                    $user    = ['name' => $user, 'display' => $display];
                     $users[] = $user;
                     $keys[]  = $display ?: $user['name'];
                 }
             }
-/*
-            if ($this->rc->config->get('kolab_files_groups')) {
-                $prefix      = $this->rc->config->get('kolab_files_group_prefix');
-                $group_field = $this->rc->config->get('kolab_files_group_field', 'name');
-                $result      = $this->ldap->list_groups($search, $mode);
+            /*
+                        if ($this->rc->config->get('kolab_files_groups')) {
+                            $prefix      = $this->rc->config->get('kolab_files_group_prefix');
+                            $group_field = $this->rc->config->get('kolab_files_group_field', 'name');
+                            $result      = $this->ldap->list_groups($search, $mode);
 
-                foreach ($result as $record) {
-                    $group    = $record['name'];
-                    $group_id = is_array($record[$group_field]) ? $record[$group_field][0] : $record[$group_field];
+                            foreach ($result as $record) {
+                                $group    = $record['name'];
+                                $group_id = is_array($record[$group_field]) ? $record[$group_field][0] : $record[$group_field];
 
-                    if ($group) {
-                        $users[] = array('name' => ($prefix ? $prefix : '') . $group_id, 'display' => $group, 'type' => 'group');
-                        $keys[]  = $group;
-                    }
-                }
-            }
-*/
+                                if ($group) {
+                                    $users[] = array('name' => ($prefix ? $prefix : '') . $group_id, 'display' => $group, 'type' => 'group');
+                                    $keys[]  = $group;
+                                }
+                            }
+                        }
+            */
         }
 
         if (count($users)) {
@@ -149,10 +149,10 @@ class kolab_files_autocomplete
         // search in UID and name fields
         // $name_field can be in a form of <field>:<modifier> (#1490591)
         $name_field = preg_replace('/:.*$/', '', $name_field);
-        $search     = array_unique(array($name_field, $uid_field));
+        $search     = array_unique([$name_field, $uid_field]);
 
         $config['search_fields']   = $search;
-        $config['required_fields'] = array($uid_field);
+        $config['required_fields'] = [$uid_field];
 
         // set search filter
         if ($filter) {

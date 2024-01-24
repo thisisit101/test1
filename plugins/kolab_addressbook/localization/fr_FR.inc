@@ -63,4 +63,3 @@ $messages['bookupdateerror'] = 'Une erreur est survenue lors de la modification 
 $messages['bookcreateerror'] = 'Une erreur est survenue lors de la création du carnet d\'adresses.';
 $messages['nobooknamewarning'] = 'Merci de saisir un nom pour le carnet d\'adresses';
 $messages['noemailnamewarning'] = 'Merci de saisir une adresse de courriel ou un nom de contact.';
-?>

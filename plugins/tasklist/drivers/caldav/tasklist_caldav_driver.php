@@ -80,7 +80,7 @@ class tasklist_caldav_driver extends tasklist_driver
 
             $this->lists[$tasklist['id']] = $tasklist;
             $this->folders[$tasklist['id']] = $folder;
-//            $this->folders[$folder->name] = $folder;
+            //            $this->folders[$folder->name] = $folder;
         }
 
         return $this->lists;
@@ -96,8 +96,7 @@ class tasklist_caldav_driver extends tasklist_driver
             $editable = true;
             $rights = 'lrswikxtea';
             $alarms = true;
-        }
-        else {
+        } else {
             $alarms = false;
             $rights = 'lr';
             $editable = false;
@@ -119,7 +118,7 @@ class tasklist_caldav_driver extends tasklist_driver
             'listname' => $folder->get_foldername(),
             'editname' => $folder->get_foldername(),
             'color' => $folder->get_color('0000CC'),
-            'showalarms' => isset($prefs[$list_id]['showalarms']) ? $prefs[$list_id]['showalarms'] : $alarms,
+            'showalarms' => $prefs[$list_id]['showalarms'] ?? $alarms,
             'editable' => $editable,
             'rights'    => $rights,
             'norename' => $norename,
@@ -174,8 +173,7 @@ class tasklist_caldav_driver extends tasklist_driver
                     'class'    => 'user',
                     'parent'   => $parent_id,
                 ];
-            }
-            else if ($folder instanceof kolab_storage_folder_virtual) {
+            } elseif ($folder instanceof kolab_storage_folder_virtual) {
                 $lists[$list_id] = [
                     'id'       => $list_id,
                     'name'     => $fullname,
@@ -187,8 +185,7 @@ class tasklist_caldav_driver extends tasklist_driver
                     'class'    => 'folder',
                     'parent'   => $parent_id,
                 ];
-            }
-            else {
+            } else {
                 if (empty($this->lists[$list_id])) {
                     $this->lists[$list_id] = $this->folder_props($folder, $prefs);
                     $this->folders[$list_id] = $folder;
@@ -220,8 +217,7 @@ class tasklist_caldav_driver extends tasklist_driver
 
                 if ($folder->get_namespace() == 'personal') {
                     $folder->editable = true;
-                }
-                else if ($rights = $folder->get_myrights()) {
+                } elseif ($rights = $folder->get_myrights()) {
                     if (strpos($rights, 't') !== false || strpos($rights, 'd') !== false) {
                         $folder->editable = strpos($rights, 'i') !== false;
                     }
@@ -249,20 +245,20 @@ class tasklist_caldav_driver extends tasklist_driver
             if (($filter & self::FILTER_WRITEABLE) && !$folder->editable) {
                 continue;
             }
-/*
-            if (($filter & self::FILTER_INSERTABLE) && !$folder->insert) {
-                continue;
-            }
-            if (($filter & self::FILTER_ACTIVE) && !$folder->is_active()) {
-                continue;
-            }
-            if (($filter & self::FILTER_PRIVATE) && $folder->subtype != 'private') {
-                continue;
-            }
-            if (($filter & self::FILTER_CONFIDENTIAL) && $folder->subtype != 'confidential') {
-                continue;
-            }
-*/
+            /*
+                        if (($filter & self::FILTER_INSERTABLE) && !$folder->insert) {
+                            continue;
+                        }
+                        if (($filter & self::FILTER_ACTIVE) && !$folder->is_active()) {
+                            continue;
+                        }
+                        if (($filter & self::FILTER_PRIVATE) && $folder->subtype != 'private') {
+                            continue;
+                        }
+                        if (($filter & self::FILTER_CONFIDENTIAL) && $folder->subtype != 'confidential') {
+                            continue;
+                        }
+            */
             if ($personal || $shared) {
                 $ns = $folder->get_namespace();
                 if (!(($personal && $ns == 'personal') || ($shared && $ns == 'shared'))) {
@@ -324,8 +320,7 @@ class tasklist_caldav_driver extends tasklist_driver
         // force page reload to properly render folder hierarchy
         if (!empty($prop['parent'])) {
             $prop['_reload'] = true;
-        }
-        else {
+        } else {
             $folder = $this->get_folder($id);
             $prop += $this->folder_props($folder, []);
         }
@@ -360,12 +355,12 @@ class tasklist_caldav_driver extends tasklist_driver
                 if (isset($prefs['kolab_tasklists'][$id])) {
                     $this->rc->user->save_prefs($prefs);
                 }
-/*
-                // force page reload if folder name/hierarchy changed
-                if ($newfolder != $prop['oldname']) {
-                    $prop['_reload'] = true;
-                }
-*/
+                /*
+                                // force page reload if folder name/hierarchy changed
+                                if ($newfolder != $prop['oldname']) {
+                                    $prop['_reload'] = true;
+                                }
+                */
                 return true;
             }
         }
@@ -440,48 +435,48 @@ class tasklist_caldav_driver extends tasklist_driver
      */
     public function search_lists($query, $source)
     {
-/*
-        $this->search_more_results = false;
-        $this->lists = $this->folders = array();
+        /*
+                $this->search_more_results = false;
+                $this->lists = $this->folders = array();
 
-        // find unsubscribed IMAP folders that have "event" type
-        if ($source == 'folders') {
-            foreach ((array)kolab_storage::search_folders('task', $query, array('other')) as $folder) {
-                $this->folders[$folder->id] = $folder;
-                $this->lists[$folder->id] = $this->folder_props($folder, array());
-            }
-        }
-        // search other user's namespace via LDAP
-        else if ($source == 'users') {
-            $limit = $this->rc->config->get('autocomplete_max', 15) * 2;  // we have slightly more space, so display twice the number
-            foreach (kolab_storage::search_users($query, 0, array(), $limit * 10) as $user) {
-                $folders = array();
-                // search for tasks folders shared by this user
-                foreach (kolab_storage::list_user_folders($user, 'task', false) as $foldername) {
-                    $folders[] = new kolab_storage_folder($foldername, 'task');
-                }
-
-                if (count($folders)) {
-                    $userfolder = new kolab_storage_folder_user($user['kolabtargetfolder'], '', $user);
-                    $this->folders[$userfolder->id] = $userfolder;
-                    $this->lists[$userfolder->id] = $this->folder_props($userfolder, array());
-
-                    foreach ($folders as $folder) {
+                // find unsubscribed IMAP folders that have "event" type
+                if ($source == 'folders') {
+                    foreach ((array)kolab_storage::search_folders('task', $query, array('other')) as $folder) {
                         $this->folders[$folder->id] = $folder;
                         $this->lists[$folder->id] = $this->folder_props($folder, array());
-                        $count++;
+                    }
+                }
+                // search other user's namespace via LDAP
+                else if ($source == 'users') {
+                    $limit = $this->rc->config->get('autocomplete_max', 15) * 2;  // we have slightly more space, so display twice the number
+                    foreach (kolab_storage::search_users($query, 0, array(), $limit * 10) as $user) {
+                        $folders = array();
+                        // search for tasks folders shared by this user
+                        foreach (kolab_storage::list_user_folders($user, 'task', false) as $foldername) {
+                            $folders[] = new kolab_storage_folder($foldername, 'task');
+                        }
+
+                        if (count($folders)) {
+                            $userfolder = new kolab_storage_folder_user($user['kolabtargetfolder'], '', $user);
+                            $this->folders[$userfolder->id] = $userfolder;
+                            $this->lists[$userfolder->id] = $this->folder_props($userfolder, array());
+
+                            foreach ($folders as $folder) {
+                                $this->folders[$folder->id] = $folder;
+                                $this->lists[$folder->id] = $this->folder_props($folder, array());
+                                $count++;
+                            }
+                        }
+
+                        if ($count >= $limit) {
+                            $this->search_more_results = true;
+                            break;
+                        }
                     }
                 }
 
-                if ($count >= $limit) {
-                    $this->search_more_results = true;
-                    break;
-                }
-            }
-        }
-
-        return $this->get_lists();
-*/
+                return $this->get_lists();
+        */
         return [];
     }
 
@@ -507,8 +502,7 @@ class tasklist_caldav_driver extends tasklist_driver
         if (empty($lists)) {
             $lists = $this->_read_lists();
             $lists = array_keys($lists);
-        }
-        else if (is_string($lists)) {
+        } elseif (is_string($lists)) {
             $lists = explode(',', $lists);
         }
 
@@ -534,17 +528,13 @@ class tasklist_caldav_driver extends tasklist_driver
                 $counts['all']++;
                 if (empty($rec['date'])) {
                     $counts['later']++;
-                }
-                else if ($rec['date'] == $today) {
+                } elseif ($rec['date'] == $today) {
                     $counts['today']++;
-                }
-                else if ($rec['date'] == $tomorrow) {
+                } elseif ($rec['date'] == $tomorrow) {
                     $counts['tomorrow']++;
-                }
-                else if ($rec['date'] < $today) {
+                } elseif ($rec['date'] < $today) {
                     $counts['overdue']++;
-                }
-                else if ($rec['date'] > $tomorrow) {
+                } elseif ($rec['date'] > $tomorrow) {
                     $counts['later']++;
                 }
             }
@@ -571,8 +561,7 @@ class tasklist_caldav_driver extends tasklist_driver
         if (empty($lists)) {
             $lists = $this->_read_lists();
             $lists = array_keys($lists);
-        }
-        else if (is_string($lists)) {
+        } elseif (is_string($lists)) {
             $lists = explode(',', $lists);
         }
 
@@ -582,8 +571,7 @@ class tasklist_caldav_driver extends tasklist_driver
         $query = [];
         if (isset($filter['mask']) && ($filter['mask'] & tasklist::FILTER_MASK_COMPLETE)) {
             $query[] = ['tags', '~', 'x-complete'];
-        }
-        else if (empty($filter['since'])) {
+        } elseif (empty($filter['since'])) {
             $query[] = ['tags', '!~', 'x-complete'];
         }
 
@@ -669,8 +657,7 @@ class tasklist_caldav_driver extends tasklist_driver
         if (is_string($prop)) {
             $task = $this->get_task($prop);
             $prop = ['uid' => $task['uid'], 'list' => $task['list']];
-        }
-        else {
+        } else {
             $this->_parse_id($prop);
         }
 
@@ -716,14 +703,14 @@ class tasklist_caldav_driver extends tasklist_driver
         if (empty($this->bonnie_api)) {
             return false;
         }
-/*
-        list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($prop);
+        /*
+                list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($prop);
 
-        $result = $uid && $mailbox ? $this->bonnie_api->changelog('task', $uid, $mailbox, $msguid) : null;
-        if (is_array($result) && $result['uid'] == $uid) {
-            return $result['changes'];
-        }
-*/
+                $result = $uid && $mailbox ? $this->bonnie_api->changelog('task', $uid, $mailbox, $msguid) : null;
+                if (is_array($result) && $result['uid'] == $uid) {
+                    return $result['changes'];
+                }
+        */
         return false;
     }
 
@@ -741,27 +728,27 @@ class tasklist_caldav_driver extends tasklist_driver
         if (empty($this->bonnie_api)) {
             return false;
         }
-/*
-        $this->_parse_id($prop);
-        $uid     = $prop['uid'];
-        $list_id = $prop['list'];
-        list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($prop);
+        /*
+                $this->_parse_id($prop);
+                $uid     = $prop['uid'];
+                $list_id = $prop['list'];
+                list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($prop);
 
-        // call Bonnie API
-        $result = $this->bonnie_api->get('task', $uid, $rev, $mailbox, $msguid);
-        if (is_array($result) && $result['uid'] == $uid && !empty($result['xml'])) {
-            $format = kolab_format::factory('task');
-            $format->load($result['xml']);
-            $rec = $format->to_array();
-            $format->get_attachments($rec, true);
+                // call Bonnie API
+                $result = $this->bonnie_api->get('task', $uid, $rev, $mailbox, $msguid);
+                if (is_array($result) && $result['uid'] == $uid && !empty($result['xml'])) {
+                    $format = kolab_format::factory('task');
+                    $format->load($result['xml']);
+                    $rec = $format->to_array();
+                    $format->get_attachments($rec, true);
 
-            if ($format->is_valid()) {
-                $rec = self::_to_rcube_task($rec, $list_id, false);
-                $rec['rev'] = $result['rev'];
-                return $rec;
-            }
-        }
-*/
+                    if ($format->is_valid()) {
+                        $rec = self::_to_rcube_task($rec, $list_id, false);
+                        $rec['rev'] = $result['rev'];
+                        return $rec;
+                    }
+                }
+        */
         return false;
     }
 
@@ -780,30 +767,30 @@ class tasklist_caldav_driver extends tasklist_driver
         if (empty($this->bonnie_api)) {
             return false;
         }
-/*
-        $this->_parse_id($prop);
-        $uid     = $prop['uid'];
-        $list_id = $prop['list'];
-        list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($prop);
+        /*
+                $this->_parse_id($prop);
+                $uid     = $prop['uid'];
+                $list_id = $prop['list'];
+                list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($prop);
 
-        $folder  = $this->get_folder($list_id);
-        $success = false;
+                $folder  = $this->get_folder($list_id);
+                $success = false;
 
-        if ($folder && ($raw_msg = $this->bonnie_api->rawdata('task', $uid, $rev, $mailbox))) {
-            $imap = $this->rc->get_storage();
+                if ($folder && ($raw_msg = $this->bonnie_api->rawdata('task', $uid, $rev, $mailbox))) {
+                    $imap = $this->rc->get_storage();
 
-            // insert $raw_msg as new message
-            if ($imap->save_message($folder->name, $raw_msg, null, false)) {
-                $success = true;
+                    // insert $raw_msg as new message
+                    if ($imap->save_message($folder->name, $raw_msg, null, false)) {
+                        $success = true;
 
-                // delete old revision from imap and cache
-                $imap->delete_message($msguid, $folder->name);
-                $folder->cache->set($msguid, false);
-            }
-        }
+                        // delete old revision from imap and cache
+                        $imap->delete_message($msguid, $folder->name);
+                        $folder->cache->set($msguid, false);
+                    }
+                }
 
-        return $success;
-*/
+                return $success;
+        */
         return false;
     }
 
@@ -818,111 +805,111 @@ class tasklist_caldav_driver extends tasklist_driver
      */
     public function get_task_diff($prop, $rev1, $rev2)
     {
-/*
-        $this->_parse_id($prop);
-        $uid     = $prop['uid'];
-        $list_id = $prop['list'];
-        list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($prop);
+        /*
+                $this->_parse_id($prop);
+                $uid     = $prop['uid'];
+                $list_id = $prop['list'];
+                list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($prop);
 
-        // call Bonnie API
-        $result = $this->bonnie_api->diff('task', $uid, $rev1, $rev2, $mailbox, $msguid, $instance_id);
-        if (is_array($result) && $result['uid'] == $uid) {
-            $result['rev1'] = $rev1;
-            $result['rev2'] = $rev2;
+                // call Bonnie API
+                $result = $this->bonnie_api->diff('task', $uid, $rev1, $rev2, $mailbox, $msguid, $instance_id);
+                if (is_array($result) && $result['uid'] == $uid) {
+                    $result['rev1'] = $rev1;
+                    $result['rev2'] = $rev2;
 
-            $keymap = array(
-                'start'    => 'start',
-                'due'      => 'date',
-                'dstamp'   => 'changed',
-                'summary'  => 'title',
-                'alarm'    => 'alarms',
-                'attendee' => 'attendees',
-                'attach'   => 'attachments',
-                'rrule'    => 'recurrence',
-                'related-to' => 'parent_id',
-                'percent-complete' => 'complete',
-                'lastmodified-date' => 'changed',
-            );
-            $prop_keymaps = array(
-                'attachments' => array('fmttype' => 'mimetype', 'label' => 'name'),
-                'attendees'   => array('partstat' => 'status'),
-            );
-            $special_changes = array();
+                    $keymap = array(
+                        'start'    => 'start',
+                        'due'      => 'date',
+                        'dstamp'   => 'changed',
+                        'summary'  => 'title',
+                        'alarm'    => 'alarms',
+                        'attendee' => 'attendees',
+                        'attach'   => 'attachments',
+                        'rrule'    => 'recurrence',
+                        'related-to' => 'parent_id',
+                        'percent-complete' => 'complete',
+                        'lastmodified-date' => 'changed',
+                    );
+                    $prop_keymaps = array(
+                        'attachments' => array('fmttype' => 'mimetype', 'label' => 'name'),
+                        'attendees'   => array('partstat' => 'status'),
+                    );
+                    $special_changes = array();
 
-            // map kolab event properties to keys the client expects
-            array_walk($result['changes'], function(&$change, $i) use ($keymap, $prop_keymaps, $special_changes) {
-                if (array_key_exists($change['property'], $keymap)) {
-                    $change['property'] = $keymap[$change['property']];
-                }
-                if ($change['property'] == 'priority') {
-                    $change['property'] = 'flagged';
-                    $change['old'] = $change['old'] == 1 ? $this->plugin->gettext('yes') : null;
-                    $change['new'] = $change['new'] == 1 ? $this->plugin->gettext('yes') : null;
-                }
-                // map alarms trigger value
-                if ($change['property'] == 'alarms') {
-                    if (is_array($change['old']) && is_array($change['old']['trigger']))
-                        $change['old']['trigger'] = $change['old']['trigger']['value'];
-                    if (is_array($change['new']) && is_array($change['new']['trigger']))
-                        $change['new']['trigger'] = $change['new']['trigger']['value'];
-                }
-                // make all property keys uppercase
-                if ($change['property'] == 'recurrence') {
-                    $special_changes['recurrence'] = $i;
-                    foreach (array('old','new') as $m) {
-                        if (is_array($change[$m])) {
-                            $props = array();
-                            foreach ($change[$m] as $k => $v) {
-                                $props[strtoupper($k)] = $v;
+                    // map kolab event properties to keys the client expects
+                    array_walk($result['changes'], function(&$change, $i) use ($keymap, $prop_keymaps, $special_changes) {
+                        if (array_key_exists($change['property'], $keymap)) {
+                            $change['property'] = $keymap[$change['property']];
+                        }
+                        if ($change['property'] == 'priority') {
+                            $change['property'] = 'flagged';
+                            $change['old'] = $change['old'] == 1 ? $this->plugin->gettext('yes') : null;
+                            $change['new'] = $change['new'] == 1 ? $this->plugin->gettext('yes') : null;
+                        }
+                        // map alarms trigger value
+                        if ($change['property'] == 'alarms') {
+                            if (is_array($change['old']) && is_array($change['old']['trigger']))
+                                $change['old']['trigger'] = $change['old']['trigger']['value'];
+                            if (is_array($change['new']) && is_array($change['new']['trigger']))
+                                $change['new']['trigger'] = $change['new']['trigger']['value'];
+                        }
+                        // make all property keys uppercase
+                        if ($change['property'] == 'recurrence') {
+                            $special_changes['recurrence'] = $i;
+                            foreach (array('old','new') as $m) {
+                                if (is_array($change[$m])) {
+                                    $props = array();
+                                    foreach ($change[$m] as $k => $v) {
+                                        $props[strtoupper($k)] = $v;
+                                    }
+                                    $change[$m] = $props;
+                                }
                             }
-                            $change[$m] = $props;
+                        }
+                        // map property keys names
+                        if (is_array($prop_keymaps[$change['property']])) {
+                          foreach ($prop_keymaps[$change['property']] as $k => $dest) {
+                            if (is_array($change['old']) && array_key_exists($k, $change['old'])) {
+                                $change['old'][$dest] = $change['old'][$k];
+                                unset($change['old'][$k]);
+                            }
+                            if (is_array($change['new']) && array_key_exists($k, $change['new'])) {
+                                $change['new'][$dest] = $change['new'][$k];
+                                unset($change['new'][$k]);
+                            }
+                          }
+                        }
+
+                        if ($change['property'] == 'exdate') {
+                            $special_changes['exdate'] = $i;
+                        }
+                        else if ($change['property'] == 'rdate') {
+                            $special_changes['rdate'] = $i;
+                        }
+                    });
+
+                    // merge some recurrence changes
+                    foreach (array('exdate','rdate') as $prop) {
+                        if (array_key_exists($prop, $special_changes)) {
+                            $exdate = $result['changes'][$special_changes[$prop]];
+                            if (array_key_exists('recurrence', $special_changes)) {
+                                $recurrence = &$result['changes'][$special_changes['recurrence']];
+                            }
+                            else {
+                                $i = count($result['changes']);
+                                $result['changes'][$i] = array('property' => 'recurrence', 'old' => array(), 'new' => array());
+                                $recurrence = &$result['changes'][$i]['recurrence'];
+                            }
+                            $key = strtoupper($prop);
+                            $recurrence['old'][$key] = $exdate['old'];
+                            $recurrence['new'][$key] = $exdate['new'];
+                            unset($result['changes'][$special_changes[$prop]]);
                         }
                     }
-                }
-                // map property keys names
-                if (is_array($prop_keymaps[$change['property']])) {
-                  foreach ($prop_keymaps[$change['property']] as $k => $dest) {
-                    if (is_array($change['old']) && array_key_exists($k, $change['old'])) {
-                        $change['old'][$dest] = $change['old'][$k];
-                        unset($change['old'][$k]);
-                    }
-                    if (is_array($change['new']) && array_key_exists($k, $change['new'])) {
-                        $change['new'][$dest] = $change['new'][$k];
-                        unset($change['new'][$k]);
-                    }
-                  }
-                }
 
-                if ($change['property'] == 'exdate') {
-                    $special_changes['exdate'] = $i;
+                    return $result;
                 }
-                else if ($change['property'] == 'rdate') {
-                    $special_changes['rdate'] = $i;
-                }
-            });
-
-            // merge some recurrence changes
-            foreach (array('exdate','rdate') as $prop) {
-                if (array_key_exists($prop, $special_changes)) {
-                    $exdate = $result['changes'][$special_changes[$prop]];
-                    if (array_key_exists('recurrence', $special_changes)) {
-                        $recurrence = &$result['changes'][$special_changes['recurrence']];
-                    }
-                    else {
-                        $i = count($result['changes']);
-                        $result['changes'][$i] = array('property' => 'recurrence', 'old' => array(), 'new' => array());
-                        $recurrence = &$result['changes'][$i]['recurrence'];
-                    }
-                    $key = strtoupper($prop);
-                    $recurrence['old'][$key] = $exdate['old'];
-                    $recurrence['new'][$key] = $exdate['new'];
-                    unset($result['changes'][$special_changes[$prop]]);
-                }
-            }
-
-            return $result;
-        }
-*/
+        */
         return false;
     }
 
@@ -933,25 +920,25 @@ class tasklist_caldav_driver extends tasklist_driver
      */
     private function _resolve_task_identity($prop)
     {
-/*
-        $mailbox = $msguid = null;
+        /*
+                $mailbox = $msguid = null;
 
-        $this->_parse_id($prop);
-        $uid     = $prop['uid'];
-        $list_id = $prop['list'];
+                $this->_parse_id($prop);
+                $uid     = $prop['uid'];
+                $list_id = $prop['list'];
 
-        if ($folder = $this->get_folder($list_id)) {
-            $mailbox = $folder->get_mailbox_id();
+                if ($folder = $this->get_folder($list_id)) {
+                    $mailbox = $folder->get_mailbox_id();
 
-            // get task object from storage in order to get the real object uid an msguid
-            if ($rec = $folder->get_object($uid)) {
-                $msguid = $rec['_msguid'];
-                $uid = $rec['uid'];
-            }
-        }
+                    // get task object from storage in order to get the real object uid an msguid
+                    if ($rec = $folder->get_object($uid)) {
+                        $msguid = $rec['_msguid'];
+                        $uid = $rec['uid'];
+                    }
+                }
 
-        return array($uid, $mailbox, $msguid);
-*/
+                return array($uid, $mailbox, $msguid);
+        */
         return [];
     }
 
@@ -1032,9 +1019,10 @@ class tasklist_caldav_driver extends tasklist_driver
         // get alarm information stored in local database
         if (!empty($candidates)) {
             $alarm_ids = array_map([$this->rc->db, 'quote'], array_keys($candidates));
-            $result = $this->rc->db->query("SELECT *"
+            $result = $this->rc->db->query(
+                "SELECT *"
                 . " FROM " . $this->rc->db->table_name('kolab_alarms', true)
-                . " WHERE `alarm_id` IN (" . join(',', $alarm_ids) . ")"
+                . " WHERE `alarm_id` IN (" . implode(',', $alarm_ids) . ")"
                     . " AND `user_id` = ?",
                 $this->rc->user->ID
             );
@@ -1130,19 +1118,16 @@ class tasklist_caldav_driver extends tasklist_driver
             if (!empty($prop['id'])) {
                 if (!empty($prop['list'])) {
                     $list_id = !empty($prop['_fromlist']) ? $prop['_fromlist'] : $prop['list'];
-                    if (strpos($prop['id'], $list_id.':') === 0) {
-                        $prop['uid'] = substr($prop['id'], strlen($list_id)+1);
-                    }
-                    else {
+                    if (strpos($prop['id'], $list_id . ':') === 0) {
+                        $prop['uid'] = substr($prop['id'], strlen($list_id) + 1);
+                    } else {
                         $prop['uid'] = $prop['id'];
                     }
-                }
-                else {
+                } else {
                     $id = $prop['id'];
                 }
             }
-        }
-        else {
+        } else {
             $id = strval($prop);
             $prop = [];
         }
@@ -1150,11 +1135,10 @@ class tasklist_caldav_driver extends tasklist_driver
         // split 'id' into list + uid
         if (!empty($id)) {
             if (strpos($id, ':')) {
-                list($list, $uid) = explode(':', $id, 2);
+                [$list, $uid] = explode(':', $id, 2);
                 $prop['uid'] = $uid;
                 $prop['list'] = $list;
-            }
-            else {
+            } else {
                 $prop['uid'] = $id;
             }
         }
@@ -1210,18 +1194,17 @@ class tasklist_caldav_driver extends tasklist_driver
 
         if (isset($record['valarms'])) {
             $task['valarms'] = $record['valarms'];
-        }
-        else if (isset($record['alarms'])) {
+        } elseif (isset($record['alarms'])) {
             $task['alarms'] = $record['alarms'];
         }
 
         if (!empty($task['attendees'])) {
             foreach ((array) $task['attendees'] as $i => $attendee) {
                 if (isset($attendee['delegated-from']) && is_array($attendee['delegated-from'])) {
-                    $task['attendees'][$i]['delegated-from'] = join(', ', $attendee['delegated-from']);
+                    $task['attendees'][$i]['delegated-from'] = implode(', ', $attendee['delegated-from']);
                 }
                 if (isset($attendee['delegated-to']) && is_array($attendee['delegated-to'])) {
-                    $task['attendees'][$i]['delegated-to'] = join(', ', $attendee['delegated-to']);
+                    $task['attendees'][$i]['delegated-to'] = implode(', ', $attendee['delegated-to']);
                 }
             }
         }
@@ -1252,7 +1235,7 @@ class tasklist_caldav_driver extends tasklist_driver
         $object    = $task;
         $id_prefix = $task['list'] . ':';
 
-        $toDT = function($date) {
+        $toDT = function ($date) {
             // Convert DateTime into libcalendaring_datetime
             return libcalendaring_datetime::createFromFormat(
                 'Y-m-d\\TH:i:s',
@@ -1291,8 +1274,7 @@ class tasklist_caldav_driver extends tasklist_driver
 
         if (!empty($task['flagged'])) {
             $object['priority'] = 1;
-        }
-        else {
+        } else {
             $object['priority'] = isset($old['priority']) && $old['priority'] > 1 ? $old['priority'] : 0;
         }
 
@@ -1319,8 +1301,7 @@ class tasklist_caldav_driver extends tasklist_driver
         // allow sequence increments if I'm the organizer
         if ($this->plugin->is_organizer($object) && empty($object['_method'])) {
             unset($object['sequence']);
-        }
-        else if (isset($old['sequence']) && empty($object['_method'])) {
+        } elseif (isset($old['sequence']) && empty($object['_method'])) {
             $object['sequence'] = $old['sequence'];
         }
 
@@ -1353,11 +1334,14 @@ class tasklist_caldav_driver extends tasklist_driver
         $this->_parse_id($task);
 
         if (empty($task['list']) || !($folder = $this->get_folder($task['list']))) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Invalid list identifer to save task: " . print_r($task['list'], true)
+                    'message' => "Invalid list identifer to save task: " . print_r($task['list'], true),
                 ],
-                true, false);
+                true,
+                false
+            );
 
             return false;
         }
@@ -1392,11 +1376,14 @@ class tasklist_caldav_driver extends tasklist_driver
         $saved = $folder->save($object, 'task', !empty($old) ? $task['uid'] : null);
 
         if (!$saved) {
-            rcube::raise_error([
+            rcube::raise_error(
+                [
                     'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Error saving task object to Kolab server"
+                    'message' => "Error saving task object to Kolab server",
                 ],
-                true, false);
+                true,
+                false
+            );
 
             return false;
         }
@@ -1487,8 +1474,7 @@ class tasklist_caldav_driver extends tasklist_driver
         // get old revision of the object
         if (!empty($task['rev'])) {
             $task = $this->get_task_revison($task, $task['rev']);
-        }
-        else {
+        } else {
             $task = $this->get_task($task);
         }
 
@@ -1522,30 +1508,30 @@ class tasklist_caldav_driver extends tasklist_driver
     public function get_attachment_body($id, $task)
     {
         $this->_parse_id($task);
-/*
-        // get old revision of event
-        if ($task['rev']) {
-            if (empty($this->bonnie_api)) {
-                return false;
-            }
-
-            $cid = substr($id, 4);
-
-            // call Bonnie API and get the raw mime message
-            list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($task);
-            if ($msg_raw = $this->bonnie_api->rawdata('task', $uid, $task['rev'], $mailbox, $msguid)) {
-                // parse the message and find the part with the matching content-id
-                $message = rcube_mime::parse_message($msg_raw);
-                foreach ((array)$message->parts as $part) {
-                    if ($part->headers['content-id'] && trim($part->headers['content-id'], '<>') == $cid) {
-                        return $part->body;
+        /*
+                // get old revision of event
+                if ($task['rev']) {
+                    if (empty($this->bonnie_api)) {
+                        return false;
                     }
-                }
-            }
 
-            return false;
-        }
-*/
+                    $cid = substr($id, 4);
+
+                    // call Bonnie API and get the raw mime message
+                    list($uid, $mailbox, $msguid) = $this->_resolve_task_identity($task);
+                    if ($msg_raw = $this->bonnie_api->rawdata('task', $uid, $task['rev'], $mailbox, $msguid)) {
+                        // parse the message and find the part with the matching content-id
+                        $message = rcube_mime::parse_message($msg_raw);
+                        foreach ((array)$message->parts as $part) {
+                            if ($part->headers['content-id'] && trim($part->headers['content-id'], '<>') == $cid) {
+                                return $part->body;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+        */
 
         if ($storage = $this->get_folder($task['list'])) {
             return $storage->get_attachment($id, $task);
@@ -1561,15 +1547,15 @@ class tasklist_caldav_driver extends tasklist_driver
      */
     public function get_message_reference($uri_or_headers, $folder = null)
     {
-/*
-        if (is_object($uri_or_headers)) {
-            $uri_or_headers = kolab_storage_config::get_message_uri($uri_or_headers, $folder);
-        }
+        /*
+                if (is_object($uri_or_headers)) {
+                    $uri_or_headers = kolab_storage_config::get_message_uri($uri_or_headers, $folder);
+                }
 
-        if (is_string($uri_or_headers)) {
-            return kolab_storage_config::get_message_reference($uri_or_headers, 'task');
-        }
-*/
+                if (is_string($uri_or_headers)) {
+                    return kolab_storage_config::get_message_reference($uri_or_headers, 'task');
+                }
+        */
         return false;
     }
 
@@ -1581,20 +1567,20 @@ class tasklist_caldav_driver extends tasklist_driver
     public function get_message_related_tasks($headers, $folder)
     {
         return [];
-/*
-        $config = kolab_storage_config::get_instance();
-        $result = $config->get_message_relations($headers, $folder, 'task');
+        /*
+                $config = kolab_storage_config::get_instance();
+                $result = $config->get_message_relations($headers, $folder, 'task');
 
-        foreach ($result as $idx => $rec) {
-            $result[$idx] = $this->_to_rcube_task($rec, kolab_storage::folder_id($rec['_mailbox']));
-        }
+                foreach ($result as $idx => $rec) {
+                    $result[$idx] = $this->_to_rcube_task($rec, kolab_storage::folder_id($rec['_mailbox']));
+                }
 
-        return $result;
-*/
+                return $result;
+        */
     }
 
     /**
-     * 
+     *
      */
     public function tasklist_edit_form($action, $list, $fieldprop)
     {
@@ -1602,8 +1588,7 @@ class tasklist_caldav_driver extends tasklist_driver
 
         if (!empty($list['id']) && ($list = $this->lists[$list['id']])) {
             $folder_name = $this->get_folder($list['id'])->name;
-        }
-        else {
+        } else {
             $folder_name = '';
         }
 
@@ -1618,7 +1603,7 @@ class tasklist_caldav_driver extends tasklist_driver
             'properties' => [
                 'name'   => $this->rc->gettext('properties'),
                 'fields' => [],
-            ]
+            ],
         ];
 
         foreach (['name', 'showalarms'] as $f) {

@@ -59,4 +59,3 @@ $messages['bookupdateerror'] = 'Osoitekirjaa päivittäessä tapahtui virhe.';
 $messages['bookcreateerror'] = 'Osoitekirjaa luotaessa tapahtui virhe.';
 $messages['nobooknamewarning'] = 'Anna osoitekirjalle nimi.';
 $messages['noemailnamewarning'] = 'Anna sähköpostiosoite tai yhteystiedon nimi.';
-?>

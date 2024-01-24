@@ -33,4 +33,3 @@ $labels['createsuccess'] = '代理人の追加に成功しました。';
 $labels['createerror'] = '代理人の追加ができません。';
 $labels['arialabeldelegatedelete'] = '代理人削除ダイアログ';
 $labels['arialabeldelegateform'] = '代理人プロパティフォーム';
-?>

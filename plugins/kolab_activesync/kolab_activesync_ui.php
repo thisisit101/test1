@@ -25,14 +25,14 @@
 
 class kolab_activesync_ui
 {
-    public  $device = [];
+    public $device = [];
 
     private $rc;
     private $plugin;
     private $force_subscriptions = [];
     private $skin_path;
 
-    const SETUP_URL = 'https://kb.kolabenterprise.com/documentation/setting-up-an-activesync-client';
+    public const SETUP_URL = 'https://kb.kolabenterprise.com/documentation/setting-up-an-activesync-client';
 
 
     public function __construct($plugin)
@@ -131,9 +131,8 @@ class kolab_activesync_ui
 
         foreach ($this->plugin->list_folders() as $folder) {
             if (!empty($folder_types[$folder])) {
-                list($type, ) = explode('.', $folder_types[$folder]);
-            }
-            else {
+                [$type, ] = explode('.', $folder_types[$folder]);
+            } else {
                 $type = 'mail';
             }
 
@@ -142,7 +141,7 @@ class kolab_activesync_ui
 
                 if ($device_force_subscriptions && array_key_exists($folder, $device_force_subscriptions)) {
                     $subscribed[$folder] = intval($device_force_subscriptions[$folder]);
-                } else if (!empty($folder_meta[$folder]['FOLDER'][$imei]['S'])) {
+                } elseif (!empty($folder_meta[$folder]['FOLDER'][$imei]['S'])) {
                     $subscribed[$folder] = intval($folder_meta[$folder]['FOLDER'][$imei]['S']);
                 }
             }
@@ -161,8 +160,7 @@ class kolab_activesync_ui
 
             if ($use_fieldsets) {
                 $html .= html::tag('fieldset', 'subscriptionblock', html::tag('legend', $type, $label) . $table);
-            }
-            else {
+            } else {
                 $html .= html::div('subscriptionblock', html::tag('h3', $type, $label) . $table);
             }
         }
@@ -177,19 +175,21 @@ class kolab_activesync_ui
         $alarms = ($attrib['type'] == 'event' || $attrib['type'] == 'task');
 
         $table = new html_table(['cellspacing' => 0, 'class' => 'table-striped']);
-        $table->add_header([
+        $table->add_header(
+            [
                 'class'    => 'subscription checkbox-cell',
                 'title'    => $this->plugin->gettext('synchronize'),
-                'tabindex' => 0
+                'tabindex' => 0,
             ],
             !empty($attrib['syncicon']) ? html::img(['src' => $this->skin_path . $attrib['syncicon']]) : $this->plugin->gettext('synchronize')
         );
 
         if ($alarms) {
-            $table->add_header([
+            $table->add_header(
+                [
                     'class'    => 'alarm checkbox-cell',
                     'title'    => $this->plugin->gettext('withalarms'),
-                    'tabindex' => 0
+                    'tabindex' => 0,
                 ],
                 !empty($attrib['alarmicon']) ? html::img(['src' => $this->skin_path . $attrib['alarmicon']]) : $this->plugin->gettext('withalarms')
             );
@@ -205,12 +205,12 @@ class kolab_activesync_ui
             $foldername = $origname = kolab_storage::object_prettyname($folder);
 
             // find folder prefix to truncate (the same code as in kolab_addressbook plugin)
-            for ($i = count($names)-1; $i >= 0; $i--) {
-                if (strpos($foldername, $names[$i].' &raquo; ') === 0) {
-                    $length = strlen($names[$i].' &raquo; ');
+            for ($i = count($names) - 1; $i >= 0; $i--) {
+                if (strpos($foldername, $names[$i] . ' &raquo; ') === 0) {
+                    $length = strlen($names[$i] . ' &raquo; ');
                     $prefix = substr($foldername, 0, $length);
                     $count  = count(explode(' &raquo; ', $prefix));
-                    $foldername = str_repeat('&nbsp;&nbsp;', $count-1) . '&raquo; ' . substr($foldername, $length);
+                    $foldername = str_repeat('&nbsp;&nbsp;', $count - 1) . '&raquo; ' . substr($foldername, $length);
                     break;
                 }
             }
@@ -232,15 +232,17 @@ class kolab_activesync_ui
 
             $table->add('subscription checkbox-cell', $checkbox_sync->show(
                 !empty($subscribed[$folder]) ? $folder : null,
-                ['value' => $folder, 'id' => $folder_id, 'disabled' => $disabled]));
+                ['value' => $folder, 'id' => $folder_id, 'disabled' => $disabled]
+            ));
 
             if ($alarms) {
                 $table->add('alarm checkbox-cell', $checkbox_alarm->show(
                     intval($subscribed[$folder] ?? 0) > 1 ? $folder : null,
-                    ['value' => $folder, 'id' => $folder_id.'_alarm', 'disabled' => $disabled]));
+                    ['value' => $folder, 'id' => $folder_id . '_alarm', 'disabled' => $disabled]
+                ));
             }
 
-            $table->add(join(' ', $classes), html::label($folder_id, $foldername));
+            $table->add(implode(' ', $classes), html::label($folder_id, $foldername));
         }
 
         return $table->show();
@@ -252,13 +254,13 @@ class kolab_activesync_ui
         $meta        = $this->plugin->folder_meta();
         $folder_data = (array) ($meta[$folder_name] ? $meta[$folder_name]['FOLDER'] : null);
 
-        $table = new html_table(array('cellspacing' => 0, 'id' => 'folder-sync-options', 'class' => 'records-table'));
+        $table = new html_table(['cellspacing' => 0, 'id' => 'folder-sync-options', 'class' => 'records-table']);
 
         // table header
-        $table->add_header(array('class' => 'device'), $this->plugin->gettext('devicealias'));
-        $table->add_header(array('class' => 'subscription'), $this->plugin->gettext('synchronize'));
+        $table->add_header(['class' => 'device'], $this->plugin->gettext('devicealias'));
+        $table->add_header(['class' => 'subscription'], $this->plugin->gettext('synchronize'));
         if ($alarms) {
-            $table->add_header(array('class' => 'alarm'), $this->plugin->gettext('withalarms'));
+            $table->add_header(['class' => 'alarm'], $this->plugin->gettext('withalarms'));
         }
 
         // table records
@@ -266,8 +268,8 @@ class kolab_activesync_ui
             $info     = $this->plugin->device_info($device['ID']);
             $name     = $id;
             $title    = '';
-            $checkbox = new html_checkbox(array('name' => "_subscriptions[$id]", 'value' => 1,
-                'onchange' => 'return activesync_object.update_sync_data(this)'));
+            $checkbox = new html_checkbox(['name' => "_subscriptions[$id]", 'value' => 1,
+                'onchange' => 'return activesync_object.update_sync_data(this)']);
 
             if (!empty($info)) {
                 $_name = trim($info['friendlyname'] . ' ' . $info['os']);
@@ -281,14 +283,14 @@ class kolab_activesync_ui
             $disabled = $this->is_protected($folder_name, $device['TYPE']);
 
             $table->add_row();
-            $table->add(array('class' => 'device', 'title' => $title), $name);
-            $table->add('subscription checkbox-cell', $checkbox->show(!empty($folder_data[$id]['S']) ? 1 : 0, array('disabled' => $disabled)));
+            $table->add(['class' => 'device', 'title' => $title], $name);
+            $table->add('subscription checkbox-cell', $checkbox->show(!empty($folder_data[$id]['S']) ? 1 : 0, ['disabled' => $disabled]));
 
             if ($alarms) {
-                $checkbox_alarm = new html_checkbox(array('name' => "_alarms[$id]", 'value' => 1,
-                    'onchange' => 'return activesync_object.update_sync_data(this)'));
+                $checkbox_alarm = new html_checkbox(['name' => "_alarms[$id]", 'value' => 1,
+                    'onchange' => 'return activesync_object.update_sync_data(this)']);
 
-                $table->add('alarm checkbox-cell', $checkbox_alarm->show($folder_data[$id]['S'] > 1 ? 1 : 0, array('disabled' => $disabled)));
+                $table->add('alarm checkbox-cell', $checkbox_alarm->show($folder_data[$id]['S'] > 1 ? 1 : 0, ['disabled' => $disabled]));
             }
         }
 
@@ -298,13 +300,13 @@ class kolab_activesync_ui
     /**
      * Displays initial page (when no devices are registered)
      */
-    function init_message()
+    public function init_message()
     {
         $this->plugin->load_config();
 
-        $this->rc->output->add_handlers(array(
-                'initmessage' => array($this, 'init_message_content')
-        ));
+        $this->rc->output->add_handlers([
+                'initmessage' => [$this, 'init_message_content'],
+        ]);
 
         $this->rc->output->send('kolab_activesync.configempty');
     }
@@ -312,11 +314,11 @@ class kolab_activesync_ui
     /**
      * Handler for initmessage template object
      */
-    function init_message_content()
+    public function init_message_content()
     {
         $url  = $this->rc->config->get('activesync_setup_url', self::SETUP_URL);
-        $vars = array('url' => $url);
-        $msg  = $this->plugin->gettext(array('name' => 'nodevices', 'vars' => $vars));
+        $vars = ['url' => $url];
+        $msg  = $this->plugin->gettext(['name' => 'nodevices', 'vars' => $vars]);
 
         return $msg;
     }

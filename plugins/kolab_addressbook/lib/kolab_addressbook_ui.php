@@ -52,7 +52,7 @@ class kolab_addressbook_ui
 
         if (empty($this->rc->action)) {
             // Include stylesheet (for directorylist)
-            $this->plugin->include_stylesheet($this->plugin->local_skin_path().'/kolab_addressbook.css');
+            $this->plugin->include_stylesheet($this->plugin->local_skin_path() . '/kolab_addressbook.css');
 
             // include kolab folderlist widget if available
             if (in_array('libkolab', $this->plugin->api->loaded_plugins())) {
@@ -73,12 +73,12 @@ class kolab_addressbook_ui
 
                 // set CardDAV URI for specified ldap addressbook
                 if ($ldap_abook = $this->rc->config->get('kolab_addressbook_carddav_ldap')) {
-                    $dav_ldap_url = strtr($dav_url, array(
+                    $dav_ldap_url = strtr($dav_url, [
                         '%h' => $_SERVER['HTTP_HOST'],
                         '%u' => urlencode($this->rc->get_user_name()),
                         '%i' => 'ldap-directory',
                         '%n' => '',
-                    ));
+                    ]);
                     $this->rc->output->set_env('kolab_addressbook_carddav_ldap', $ldap_abook);
                     $this->rc->output->set_env('kolab_addressbook_carddav_ldap_url', $dav_ldap_url);
                 }
@@ -86,21 +86,26 @@ class kolab_addressbook_ui
 
             $idx = 0;
             foreach ($options as $command) {
-                $content = html::tag('li', $idx ? null : array('class' => 'separator_above'),
-                    $this->plugin->api->output->button(array(
-                        'label'    => 'kolab_addressbook.'.str_replace('-', '', $command),
+                $content = html::tag(
+                    'li',
+                    $idx ? null : ['class' => 'separator_above'],
+                    $this->plugin->api->output->button([
+                        'label'    => 'kolab_addressbook.' . str_replace('-', '', $command),
                         'class'    => str_replace('-', ' ', $command) . ' disabled',
                         'classact' => str_replace('-', ' ', $command) . ' active',
                         'command'  => $command,
-                        'type'     => 'link'
-                )));
+                        'type'     => 'link',
+                ])
+                );
                 $this->plugin->api->add_content($content, 'groupoptions');
                 $idx++;
             }
 
             // Link to Settings/Folders
             if ($this->plugin->driver instanceof kolab_contacts_driver) {
-                $content = html::tag('li', ['class' => 'separator_above'],
+                $content = html::tag(
+                    'li',
+                    ['class' => 'separator_above'],
                     $this->plugin->api->output->button([
                             'label'    => 'managefolders',
                             'type'     => 'link',
@@ -108,7 +113,8 @@ class kolab_addressbook_ui
                             'classact' => 'folders active',
                             'command'  => 'folders',
                             'task'     => 'settings',
-                    ]));
+                    ])
+                );
 
                 $this->plugin->api->add_content($content, 'groupoptions');
             }
@@ -146,13 +152,13 @@ class kolab_addressbook_ui
                     'kolab_addressbook.revisionrestoreconfirm'
                 );
 
-                $this->plugin->add_hook('render_page', array($this, 'render_audittrail_page'));
-                $this->plugin->register_handler('plugin.object_changelog_table', array('libkolab', 'object_changelog_table'));
+                $this->plugin->add_hook('render_page', [$this, 'render_audittrail_page']);
+                $this->plugin->register_handler('plugin.object_changelog_table', ['libkolab', 'object_changelog_table']);
             }
         }
         // include stylesheet for audit trail
-        else if ($this->rc->action == 'show' && $this->plugin->bonnie_api) {
-            $this->plugin->include_stylesheet($this->plugin->local_skin_path().'/kolab_addressbook.css', true);
+        elseif ($this->rc->action == 'show' && $this->plugin->bonnie_api) {
+            $this->plugin->include_stylesheet($this->plugin->local_skin_path() . '/kolab_addressbook.css', true);
             $this->rc->output->add_label('kolab_addressbook.showhistory');
         }
     }

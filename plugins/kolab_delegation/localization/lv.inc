@@ -11,4 +11,3 @@ $labels['mail'] = 'E-pasts';
 $labels['event'] = 'Kalendāri';
 $labels['savingdata'] = 'Saglabājam...';
 $labels['deleteconfirm'] = 'Apstiprinājums';
-?>

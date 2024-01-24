@@ -32,7 +32,7 @@ class kolab_auth_proxy extends rcube_plugin
     {
         // Only iRony for now
         if (defined('KOLAB_DAV_VERSION')) {
-            $this->add_hook('authenticate', array($this, 'authenticate'));
+            $this->add_hook('authenticate', [$this, 'authenticate']);
         }
     }
 
@@ -60,10 +60,10 @@ class kolab_auth_proxy extends rcube_plugin
             // be executed on each request
             $args['no-cache'] = true;
 
-            $this->add_hook('storage_connect', array($this, 'storage_connect'));
-//            $this->add_hook('managesieve_connect', array($this, 'storage_connect'));
-            $this->add_hook('smtp_connect', array($this, 'smtp_connect'));
-            $this->add_hook('ldap_connected', array($this, 'ldap_connected'));
+            $this->add_hook('storage_connect', [$this, 'storage_connect']);
+            //            $this->add_hook('managesieve_connect', array($this, 'storage_connect'));
+            $this->add_hook('smtp_connect', [$this, 'smtp_connect']);
+            $this->add_hook('ldap_connected', [$this, 'ldap_connected']);
         }
 
         return $args;
@@ -89,7 +89,7 @@ class kolab_auth_proxy extends rcube_plugin
      */
     public function smtp_connect($args)
     {
-        foreach (array('smtp_server', 'smtp_user', 'smtp_pass') as $prop) {
+        foreach (['smtp_server', 'smtp_user', 'smtp_pass'] as $prop) {
             $args[$prop] = $this->rc->config->get("kolab_auth_proxy_$prop", $args[$prop]);
         }
 

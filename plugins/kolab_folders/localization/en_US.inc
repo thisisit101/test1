@@ -8,7 +8,7 @@
  * For translation see https://www.transifex.com/projects/p/kolab/resource/kolab_folders/
  */
 
-$labels = array();
+$labels = [];
 
 $labels['folderctype'] = 'Content type';
 $labels['foldertypemail'] = 'Mail';
@@ -34,5 +34,3 @@ $labels['folderexpire'] = 'Delete messages older than';
 $labels['xdays'] = '$x days';
 
 $messages['defaultfolderexists'] = 'There is already default folder of specified type';
-
-?>

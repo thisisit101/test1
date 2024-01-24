@@ -40,10 +40,10 @@ class kolab_addressbook extends rcube_plugin
     private $ui;
     private $recurrent = false;
 
-    const GLOBAL_FIRST = 0;
-    const PERSONAL_FIRST = 1;
-    const GLOBAL_ONLY = 2;
-    const PERSONAL_ONLY = 3;
+    public const GLOBAL_FIRST = 0;
+    public const PERSONAL_FIRST = 1;
+    public const GLOBAL_ONLY = 2;
+    public const PERSONAL_ONLY = 3;
 
     /**
      * Startup method of a Roundcube plugin
@@ -66,29 +66,29 @@ class kolab_addressbook extends rcube_plugin
         $this->driver = new $driver_class($this);
 
         // register hooks
-        $this->add_hook('addressbooks_list', array($this, 'address_sources'));
-        $this->add_hook('addressbook_get', array($this, 'get_address_book'));
-        $this->add_hook('config_get', array($this, 'config_get'));
+        $this->add_hook('addressbooks_list', [$this, 'address_sources']);
+        $this->add_hook('addressbook_get', [$this, 'get_address_book']);
+        $this->add_hook('config_get', [$this, 'config_get']);
 
         if ($this->rc->task == 'addressbook') {
             $this->add_texts('localization');
 
             if ($this->driver instanceof kolab_contacts_driver) {
-                $this->add_hook('contact_form', array($this, 'contact_form'));
-                $this->add_hook('contact_photo', array($this, 'contact_photo'));
+                $this->add_hook('contact_form', [$this, 'contact_form']);
+                $this->add_hook('contact_photo', [$this, 'contact_photo']);
             }
 
-            $this->add_hook('template_object_directorylist', array($this, 'directorylist_html'));
+            $this->add_hook('template_object_directorylist', [$this, 'directorylist_html']);
 
             // Plugin actions
-            $this->register_action('plugin.book', array($this, 'book_actions'));
-            $this->register_action('plugin.book-save', array($this, 'book_save'));
-            $this->register_action('plugin.book-search', array($this, 'book_search'));
-            $this->register_action('plugin.book-subscribe', array($this, 'book_subscribe'));
+            $this->register_action('plugin.book', [$this, 'book_actions']);
+            $this->register_action('plugin.book-save', [$this, 'book_save']);
+            $this->register_action('plugin.book-search', [$this, 'book_search']);
+            $this->register_action('plugin.book-subscribe', [$this, 'book_subscribe']);
 
-            $this->register_action('plugin.contact-changelog', array($this, 'contact_changelog'));
-            $this->register_action('plugin.contact-diff', array($this, 'contact_diff'));
-            $this->register_action('plugin.contact-restore', array($this, 'contact_restore'));
+            $this->register_action('plugin.contact-changelog', [$this, 'contact_changelog']);
+            $this->register_action('plugin.contact-diff', [$this, 'contact_diff']);
+            $this->register_action('plugin.contact-restore', [$this, 'contact_restore']);
 
             // get configuration for the Bonnie API
             $this->bonnie_api = libkolab::get_bonnie_api();
@@ -99,27 +99,26 @@ class kolab_addressbook extends rcube_plugin
                 $this->ui = new kolab_addressbook_ui($this);
 
                 if ($this->bonnie_api) {
-                    $this->add_button(array(
+                    $this->add_button([
                         'command'    => 'contact-history-dialog',
                         'class'      => 'history contact-history disabled',
                         'classact'   => 'history contact-history active',
                         'innerclass' => 'icon inner',
                         'label'      => 'kolab_addressbook.showhistory',
-                        'type'       => 'link-menuitem'
-                    ), 'contactmenu');
+                        'type'       => 'link-menuitem',
+                    ], 'contactmenu');
                 }
             }
-        }
-        else if ($this->rc->task == 'settings') {
+        } elseif ($this->rc->task == 'settings') {
             $this->add_texts('localization');
-            $this->add_hook('preferences_list', array($this, 'prefs_list'));
-            $this->add_hook('preferences_save', array($this, 'prefs_save'));
+            $this->add_hook('preferences_list', [$this, 'prefs_list']);
+            $this->add_hook('preferences_save', [$this, 'prefs_save']);
         }
 
         if ($this->driver instanceof kolab_contacts_driver) {
-            $this->add_hook('folder_delete', array($this, 'prefs_folder_delete'));
-            $this->add_hook('folder_rename', array($this, 'prefs_folder_rename'));
-            $this->add_hook('folder_update', array($this, 'prefs_folder_update'));
+            $this->add_hook('folder_delete', [$this, 'prefs_folder_delete']);
+            $this->add_hook('folder_rename', [$this, 'prefs_folder_rename']);
+            $this->add_hook('folder_update', [$this, 'prefs_folder_update']);
         }
     }
 
@@ -141,10 +140,10 @@ class kolab_addressbook extends rcube_plugin
         // Disable all global address books
         // Assumes that all non-kolab_addressbook sources are global
         if ($abook_prio == self::PERSONAL_ONLY) {
-            $p['sources'] = array();
+            $p['sources'] = [];
         }
 
-        $sources = array();
+        $sources = [];
         foreach ($this->_list_sources() as $abook_id => $abook) {
             // register this address source
             $sources[$abook_id] = $this->driver->abook_prop($abook_id, $abook);
@@ -164,8 +163,7 @@ class kolab_addressbook extends rcube_plugin
                 $sources[$idx] = $value;
             }
             $p['sources'] = $sources;
-        }
-        else {
+        } else {
             // $p['sources'] = array_merge($p['sources'], $sources);
             foreach ($sources as $idx => $value) {
                 $p['sources'][$idx] = $value;
@@ -198,8 +196,7 @@ class kolab_addressbook extends rcube_plugin
                 || (defined('rcube_addressbook::TYPE_TRUSTED_SENDER') && $source['id'] == (string) rcube_addressbook::TYPE_TRUSTED_SENDER)
             ) {
                 $spec .= $this->addressbook_list_item($id, $source, $jsdata) . '</li>';
-            }
-            else {
+            } else {
                 $out .= $this->addressbook_list_item($id, $source, $jsdata) . '</li>';
             }
         }
@@ -212,9 +209,8 @@ class kolab_addressbook extends rcube_plugin
             if ($tree && !empty($tree->children)) {
                 $kolab .= $this->folder_tree_html($tree, $sources, $jsdata);
             }
-        }
-        else {
-            $filter = function($source) { return !empty($source['kolab']) && empty($source['hidden']); };
+        } else {
+            $filter = function ($source) { return !empty($source['kolab']) && empty($source['hidden']); };
             foreach (array_filter($sources, $filter) as $j => $source) {
                 $id = strval(strlen($source['id']) ? $source['id'] : $j);
                 $kolab .= $this->addressbook_list_item($id, $source, $jsdata) . '</li>';
@@ -223,8 +219,8 @@ class kolab_addressbook extends rcube_plugin
 
         $out .= $kolab . $spec;
 
-        $this->rc->output->set_env('contactgroups', array_filter($jsdata, function($src){ return isset($src['type']) && $src['type'] == 'group'; }));
-        $this->rc->output->set_env('address_sources', array_filter($jsdata, function($src){ return !isset($src['type']) || $src['type'] != 'group'; }));
+        $this->rc->output->set_env('contactgroups', array_filter($jsdata, function ($src) { return isset($src['type']) && $src['type'] == 'group'; }));
+        $this->rc->output->set_env('address_sources', array_filter($jsdata, function ($src) { return !isset($src['type']) || $src['type'] != 'group'; }));
 
         $args['content'] = html::tag('ul', $args, $out, html::$common_attrib);
         return $args;
@@ -239,12 +235,11 @@ class kolab_addressbook extends rcube_plugin
         foreach ($node->children as $folder) {
             $id = $folder->id;
             $source = $data[$id];
-            $is_collapsed = strpos($this->rc->config->get('collapsed_abooks',''), '&'.rawurlencode($id).'&') !== false;
+            $is_collapsed = strpos($this->rc->config->get('collapsed_abooks', ''), '&' . rawurlencode($id) . '&') !== false;
 
             if ($folder instanceof kolab_storage_folder_virtual) {
                 $source = $this->driver->abook_prop($folder->id, $folder);
-            }
-            else if (empty($source)) {
+            } elseif (empty($source)) {
                 $this->sources[$id] = new kolab_contacts($folder->name);
                 $source = $this->driver->abook_prop($id, $this->sources[$id]);
             }
@@ -261,7 +256,7 @@ class kolab_addressbook extends rcube_plugin
                 }
                 // ... and re-create the subtree
                 if (!empty($child_html)) {
-                    $content .= html::tag('ul', array('class' => 'groups', 'style' => ($is_collapsed ? "display:none;" : null)), $child_html);
+                    $content .= html::tag('ul', ['class' => 'groups', 'style' => ($is_collapsed ? "display:none;" : null)], $child_html);
                 }
             }
 
@@ -284,69 +279,76 @@ class kolab_addressbook extends rcube_plugin
         }
 
         // set class name(s)
-        $classes = array('addressbook');
-        if (!empty($source['group']))
+        $classes = ['addressbook'];
+        if (!empty($source['group'])) {
             $classes[] = $source['group'];
-        if ($current === $id)
+        }
+        if ($current === $id) {
             $classes[] = 'selected';
-        if (!empty($source['readonly']))
+        }
+        if (!empty($source['readonly'])) {
             $classes[] = 'readonly';
-        if (!empty($source['virtual']))
+        }
+        if (!empty($source['virtual'])) {
             $classes[] = 'virtual';
-        if (!empty($source['class_name']))
+        }
+        if (!empty($source['class_name'])) {
             $classes[] = $source['class_name'];
+        }
 
         $name = !empty($source['listname']) ? $source['listname'] : (!empty($source['name']) ? $source['name'] : $id);
         $label_id = 'kabt:' . $id;
-        $inner = (!empty($source['virtual']) ?
-            html::a(array('tabindex' => '0'), $name) :
-            html::a(array(
-                    'href' => $this->rc->url(array('_source' => $id)),
+        $inner = (
+            !empty($source['virtual']) ?
+            html::a(['tabindex' => '0'], $name) :
+            html::a([
+                    'href' => $this->rc->url(['_source' => $id]),
                     'rel' => $source['id'],
                     'id' => $label_id,
-                    'onclick' => "return " . rcmail_output::JS_OBJECT_NAME.".command('list','" . rcube::JQ($id) . "',this)",
-                ), $name)
+                    'onclick' => "return " . rcmail_output::JS_OBJECT_NAME . ".command('list','" . rcube::JQ($id) . "',this)",
+                ], $name)
         );
 
         if ($this->driver instanceof kolab_contacts_driver && isset($source['subscribed'])) {
-            $inner .= html::span(array(
+            $inner .= html::span([
                 'class' => 'subscribed',
                 'title' => $this->gettext('foldersubscribe'),
                 'role' => 'checkbox',
                 'aria-checked' => $source['subscribed'] ? 'true' : 'false',
-            ), '');
+            ], '');
         }
 
         // don't wrap in <li> but add a checkbox for search results listing
         if ($search_mode) {
-            $jsdata[$id]['group'] = join(' ', $classes);
+            $jsdata[$id]['group'] = implode(' ', $classes);
 
             if (!$source['virtual']) {
-                $inner .= html::tag('input', array(
+                $inner .= html::tag('input', [
                     'type' => 'checkbox',
                     'name' => '_source[]',
                     'value' => $id,
                     'checked' => false,
                     'aria-labelledby' => $label_id,
-                ));
+                ]);
             }
             return html::div(null, $inner);
         }
 
-        $out = html::tag('li', array(
+        $out = html::tag(
+            'li',
+            [
                 'id' => 'rcmli' . rcube_utils::html_identifier($id, true),
-                'class' => join(' ', $classes),
+                'class' => implode(' ', $classes),
                 'noclose' => true,
-            ),
+            ],
             html::div(!empty($source['subscribed']) ? 'subscribed' : null, $inner)
         );
 
-        $groupdata = array('out' => '', 'jsdata' => $jsdata, 'source' => $id);
+        $groupdata = ['out' => '', 'jsdata' => $jsdata, 'source' => $id];
         if ($source['groups']) {
             if (function_exists('rcmail_contact_groups')) {
                 $groupdata = rcmail_contact_groups($groupdata);
-            }
-            else {
+            } else {
                 // Roundcube >= 1.5
                 $groupdata = rcmail_action_contacts_index::contact_groups($groupdata);
             }
@@ -379,25 +381,25 @@ class kolab_addressbook extends rcube_plugin
         // Disable all global address books
         // Assumes that all non-kolab_addressbook sources are global
         if ($abook_prio == self::PERSONAL_ONLY) {
-            $sources = array();
+            $sources = [];
         }
 
         if (!is_array($sources)) {
-            $sources = array();
+            $sources = [];
         }
 
-        $kolab_sources = array();
+        $kolab_sources = [];
         foreach (array_keys($this->_list_sources()) as $abook_id) {
-            if (!in_array($abook_id, $sources))
+            if (!in_array($abook_id, $sources)) {
                 $kolab_sources[] = $abook_id;
+            }
         }
 
         // Add personal address sources to the list
         if (!empty($kolab_sources)) {
             if ($abook_prio == self::PERSONAL_FIRST) {
                 $sources = array_merge($kolab_sources, $sources);
-            }
-            else {
+            } else {
                 $sources = array_merge($sources, $kolab_sources);
             }
         }
@@ -423,8 +425,7 @@ class kolab_addressbook extends rcube_plugin
                 // flag source as writeable if 'i' right is given
                 if ($p['writeable'] && $this->rc->action == 'save' && strpos($p['instance']->rights, 'i') !== false) {
                     $p['instance']->readonly = false;
-                }
-                else if ($this->rc->action == 'delete' && strpos($p['instance']->rights, 't') !== false) {
+                } elseif ($this->rc->action == 'delete' && strpos($p['instance']->rights, 't') !== false) {
                     $p['instance']->readonly = false;
                 }
             }
@@ -478,11 +479,11 @@ class kolab_addressbook extends rcube_plugin
 
         // extend the list of contact fields to be displayed in the 'personal' section
         if (is_array($p['form']['personal'])) {
-            $p['form']['personal']['content']['profession']    = array('size' => 40);
-            $p['form']['personal']['content']['children']      = array('size' => 40);
-            $p['form']['personal']['content']['freebusyurl']   = array('size' => 40);
-            $p['form']['personal']['content']['pgppublickey']  = array('size' => 70);
-            $p['form']['personal']['content']['pkcs7publickey'] = array('size' => 70);
+            $p['form']['personal']['content']['profession']    = ['size' => 40];
+            $p['form']['personal']['content']['children']      = ['size' => 40];
+            $p['form']['personal']['content']['freebusyurl']   = ['size' => 40];
+            $p['form']['personal']['content']['pgppublickey']  = ['size' => 70];
+            $p['form']['personal']['content']['pkcs7publickey'] = ['size' => 70];
 
             // re-order fields according to the coltypes list
             $p['form']['contact']['content']  = $this->_sort_form_fields($p['form']['contact']['content'], $GLOBALS['CONTACTS']);
@@ -532,25 +533,24 @@ class kolab_addressbook extends rcube_plugin
         $contact = rcube_utils::get_input_value('cid', rcube_utils::INPUT_POST, true);
         $source = rcube_utils::get_input_value('source', rcube_utils::INPUT_POST);
 
-        list($uid, $mailbox, $msguid) = $this->_resolve_contact_identity($contact, $source);
+        [$uid, $mailbox, $msguid] = $this->_resolve_contact_identity($contact, $source);
 
         $result = $uid && $mailbox ? $this->bonnie_api->changelog('contact', $uid, $mailbox, $msguid) : null;
         if (is_array($result) && $result['uid'] == $uid) {
             if (is_array($result['changes'])) {
                 $rcmail = $this->rc;
                 $dtformat = $this->rc->config->get('date_format') . ' ' . $this->rc->config->get('time_format');
-                array_walk($result['changes'], function(&$change) use ($rcmail, $dtformat) {
-                  if ($change['date']) {
-                      $dt = rcube_utils::anytodatetime($change['date']);
-                      if ($dt instanceof DateTime) {
-                          $change['date'] = $rcmail->format_date($dt, $dtformat);
-                      }
-                  }
+                array_walk($result['changes'], function (&$change) use ($rcmail, $dtformat) {
+                    if ($change['date']) {
+                        $dt = rcube_utils::anytodatetime($change['date']);
+                        if ($dt instanceof DateTime) {
+                            $change['date'] = $rcmail->format_date($dt, $dtformat);
+                        }
+                    }
                 });
             }
             $this->rc->output->command('contact_render_changelog', $result['changes']);
-        }
-        else {
+        } else {
             $this->rc->output->command('contact_render_changelog', false);
         }
 
@@ -571,7 +571,7 @@ class kolab_addressbook extends rcube_plugin
         $rev1 = rcube_utils::get_input_value('rev1', rcube_utils::INPUT_POST);
         $rev2 = rcube_utils::get_input_value('rev2', rcube_utils::INPUT_POST);
 
-        list($uid, $mailbox, $msguid) = $this->_resolve_contact_identity($contact, $source);
+        [$uid, $mailbox, $msguid] = $this->_resolve_contact_identity($contact, $source);
 
         $result = $this->bonnie_api->diff('contact', $uid, $rev1, $rev2, $mailbox, $msguid);
         if (is_array($result) && $result['uid'] == $uid) {
@@ -580,7 +580,7 @@ class kolab_addressbook extends rcube_plugin
             $result['cid'] = $contact;
 
             // convert some properties, similar to kolab_contacts::_to_rcube_contact()
-            $keymap = array(
+            $keymap = [
                 'lastmodified-date' => 'changed',
                 'additional' => 'middlename',
                 'fn' => 'name',
@@ -590,13 +590,13 @@ class kolab_addressbook extends rcube_plugin
                 'note' => 'notes',
                 'role' => 'profession',
                 'title' => 'jobtitle',
-            );
+            ];
 
-            $propmap = array('email' => 'address', 'website' => 'url', 'phone' => 'number');
+            $propmap = ['email' => 'address', 'website' => 'url', 'phone' => 'number'];
             $date_format = $this->rc->config->get('date_format', 'Y-m-d');
 
             // map kolab object properties to keys and values the client expects
-            array_walk($result['changes'], function(&$change, $i) use ($keymap, $propmap, $date_format) {
+            array_walk($result['changes'], function (&$change, $i) use ($keymap, $propmap, $date_format) {
                 if (array_key_exists($change['property'], $keymap)) {
                     $change['property'] = $keymap[$change['property']];
                 }
@@ -611,7 +611,7 @@ class kolab_addressbook extends rcube_plugin
                     }
                 }
                 // format dates
-                else if ($change['property'] == 'birthday' || $change['property'] == 'anniversary') {
+                elseif ($change['property'] == 'birthday' || $change['property'] == 'anniversary') {
                     if ($old_ = rcube_utils::anytodatetime($change['old'])) {
                         $change['old_'] = $this->rc->format_date($old_, $date_format);
                     }
@@ -620,9 +620,9 @@ class kolab_addressbook extends rcube_plugin
                     }
                 }
                 // convert email, website, phone values
-                else if (array_key_exists($change['property'], $propmap)) {
+                elseif (array_key_exists($change['property'], $propmap)) {
                     $propname = $propmap[$change['property']];
-                    foreach (array('old','new') as $k) {
+                    foreach (['old','new'] as $k) {
                         $k_ = $k . '_';
                         if (!empty($change[$k])) {
                             $change[$k_] = html::quote($change[$k][$propname] ?: '--');
@@ -635,14 +635,15 @@ class kolab_addressbook extends rcube_plugin
                 }
                 // serialize address structs
                 if ($change['property'] == 'address') {
-                    foreach (array('old','new') as $k) {
+                    foreach (['old','new'] as $k) {
                         $k_ = $k . '_';
                         $change[$k]['zipcode'] = $change[$k]['code'];
-                        $template = $this->rc->config->get('address_template', '{'.join('} {', array_keys($change[$k])).'}');
-                        $composite = array();
+                        $template = $this->rc->config->get('address_template', '{' . implode('} {', array_keys($change[$k])) . '}');
+                        $composite = [];
                         foreach ($change[$k] as $p => $val) {
-                            if (strlen($val))
-                                $composite['{'.$p.'}'] = $val;
+                            if (strlen($val)) {
+                                $composite['{' . $p . '}'] = $val;
+                            }
                         }
                         $change[$k_] = preg_replace('/\{\w+\}/', '', strtr($template, $composite));
                         if ($change[$k]['type']) {
@@ -654,12 +655,16 @@ class kolab_addressbook extends rcube_plugin
                     $change['diff_'] = libkolab::html_diff($change['old_'], $change['new_'], true);
                 }
                 // localize gender values
-                else if ($change['property'] == 'gender') {
-                    if ($change['old']) $change['old_'] = $this->rc->gettext($change['old']);
-                    if ($change['new']) $change['new_'] = $this->rc->gettext($change['new']);
+                elseif ($change['property'] == 'gender') {
+                    if ($change['old']) {
+                        $change['old_'] = $this->rc->gettext($change['old']);
+                    }
+                    if ($change['new']) {
+                        $change['new_'] = $this->rc->gettext($change['new']);
+                    }
                 }
                 // translate 'key' entries in individual properties
-                else if ($change['property'] == 'key') {
+                elseif ($change['property'] == 'key') {
                     $p = $change['old'] ?: $change['new'];
                     $t = $p['type'];
                     $change['property'] = $t . 'publickey';
@@ -667,14 +672,13 @@ class kolab_addressbook extends rcube_plugin
                     $change['new'] = $change['new'] ? $change['new']['key'] : '';
                 }
                 // compute a nice diff of notes
-                else if ($change['property'] == 'notes') {
+                elseif ($change['property'] == 'notes') {
                     $change['diff_'] = libkolab::html_diff($change['old'], $change['new'], false);
                 }
             });
 
             $this->rc->output->command('contact_show_diff', $result);
-        }
-        else {
+        } else {
             $this->rc->output->command('display_message', $this->gettext('objectdiffnotavailable'), 'error');
         }
 
@@ -695,7 +699,7 @@ class kolab_addressbook extends rcube_plugin
         $source = rcube_utils::get_input_value('source', rcube_utils::INPUT_POST);
         $rev = rcube_utils::get_input_value('rev', rcube_utils::INPUT_POST);
 
-        list($uid, $mailbox, $msguid) = $this->_resolve_contact_identity($contact, $source, $folder);
+        [$uid, $mailbox, $msguid] = $this->_resolve_contact_identity($contact, $source, $folder);
 
         if ($folder && ($raw_msg = $this->bonnie_api->rawdata('contact', $uid, $rev, $mailbox))) {
             $imap = $this->rc->get_storage();
@@ -711,10 +715,9 @@ class kolab_addressbook extends rcube_plugin
         }
 
         if ($success) {
-            $this->rc->output->command('display_message', $this->gettext(array('name' => 'objectrestoresuccess', 'vars' => array('rev' => $rev))), 'confirmation');
+            $this->rc->output->command('display_message', $this->gettext(['name' => 'objectrestoresuccess', 'vars' => ['rev' => $rev]]), 'confirmation');
             $this->rc->output->command('close_contact_history_dialog', $contact);
-        }
-        else {
+        } else {
             $this->rc->output->command('display_message', $this->gettext('objectrestoreerror'), 'error');
         }
 
@@ -730,7 +733,7 @@ class kolab_addressbook extends rcube_plugin
             return false;
         }
 
-        list($uid, $mailbox, $msguid) = $this->_resolve_contact_identity($cid, $source);
+        [$uid, $mailbox, $msguid] = $this->_resolve_contact_identity($cid, $source);
 
         // call Bonnie API
         $result = $this->bonnie_api->get('contact', $uid, $rev, $mailbox, $msguid);
@@ -757,13 +760,12 @@ class kolab_addressbook extends rcube_plugin
     {
         $mailbox = $msguid = null;
 
-        $source = $this->get_address_book(array('id' => $abook));
+        $source = $this->get_address_book(['id' => $abook]);
         if ($source['instance']) {
             $uid = $source['instance']->id2uid($id);
             $list = kolab_storage::id_decode($abook);
-        }
-        else {
-            return array(null, $mailbox, $msguid);
+        } else {
+            return [null, $mailbox, $msguid];
         }
 
         // get resolve message UID and mailbox identifier
@@ -772,7 +774,7 @@ class kolab_addressbook extends rcube_plugin
             $msguid = $folder->cache->uid2msguid($uid);
         }
 
-        return array($uid, $mailbox, $msguid);
+        return [$uid, $mailbox, $msguid];
     }
 
     /**
@@ -812,7 +814,7 @@ class kolab_addressbook extends rcube_plugin
         }
 
         // Check that configuration is not disabled
-        $dont_override = (array) $this->rc->config->get('dont_override', array());
+        $dont_override = (array) $this->rc->config->get('dont_override', []);
         $prio          = $this->addressbook_prio();
 
         if (!in_array('kolab_addressbook_prio', $dont_override)) {
@@ -820,17 +822,17 @@ class kolab_addressbook extends rcube_plugin
             $this->add_texts('localization');
 
             $field_id = '_kolab_addressbook_prio';
-            $select   = new html_select(array('name' => $field_id, 'id' => $field_id));
+            $select   = new html_select(['name' => $field_id, 'id' => $field_id]);
 
             $select->add($this->gettext('globalfirst'), self::GLOBAL_FIRST);
             $select->add($this->gettext('personalfirst'), self::PERSONAL_FIRST);
             $select->add($this->gettext('globalonly'), self::GLOBAL_ONLY);
             $select->add($this->gettext('personalonly'), self::PERSONAL_ONLY);
 
-            $args['blocks']['main']['options']['kolab_addressbook_prio'] = array(
+            $args['blocks']['main']['options']['kolab_addressbook_prio'] = [
                 'title' => html::label($field_id, rcube::Q($this->gettext('addressbookprio'))),
                 'content' => $select->show($prio),
-            );
+            ];
         }
 
         return $args;
@@ -850,11 +852,11 @@ class kolab_addressbook extends rcube_plugin
         }
 
         // Check that configuration is not disabled
-        $dont_override = (array) $this->rc->config->get('dont_override', array());
+        $dont_override = (array) $this->rc->config->get('dont_override', []);
         $key           = 'kolab_addressbook_prio';
 
-        if (!in_array('kolab_addressbook_prio', $dont_override) || !isset($_POST['_'.$key])) {
-            $args['prefs'][$key] = (int) rcube_utils::get_input_value('_'.$key, rcube_utils::INPUT_POST);
+        if (!in_array('kolab_addressbook_prio', $dont_override) || !isset($_POST['_' . $key])) {
+            $args['prefs'][$key] = (int) rcube_utils::get_input_value('_' . $key, rcube_utils::INPUT_POST);
         }
 
         return $args;
@@ -870,11 +872,9 @@ class kolab_addressbook extends rcube_plugin
 
         if ($action == 'create') {
             $this->ui->book_edit();
-        }
-        else if ($action == 'edit') {
+        } elseif ($action == 'edit') {
             $this->ui->book_edit();
-        }
-        else if ($action == 'delete') {
+        } elseif ($action == 'delete') {
             $this->book_delete();
         }
     }
@@ -899,21 +899,21 @@ class kolab_addressbook extends rcube_plugin
 
         kolab_storage::$encode_ids = true;
         $search_more_results = false;
-        $this->sources = array();
-        $this->folders = array();
+        $this->sources = [];
+        $this->folders = [];
 
         // find unsubscribed IMAP folders that have "event" type
         if ($source == 'folders') {
-            foreach ((array)kolab_storage::search_folders('contact', $query, array('other')) as $folder) {
+            foreach ((array)kolab_storage::search_folders('contact', $query, ['other']) as $folder) {
                 $this->folders[$folder->id] = $folder;
                 $this->sources[$folder->id] = new kolab_contacts($folder->name);
             }
         }
         // search other user's namespace via LDAP
-        else if ($source == 'users') {
+        elseif ($source == 'users') {
             $limit = $this->rc->config->get('autocomplete_max', 15) * 2;  // we have slightly more space, so display twice the number
-            foreach (kolab_storage::search_users($query, 0, array(), $limit * 10) as $user) {
-                $folders = array();
+            foreach (kolab_storage::search_users($query, 0, [], $limit * 10) as $user) {
+                $folders = [];
                 // search for contact folders shared by this user
                 foreach (kolab_storage::list_user_folders($user, 'contact', false) as $foldername) {
                     $folders[] = new kolab_storage_folder($foldername, 'contact');
@@ -927,7 +927,8 @@ class kolab_addressbook extends rcube_plugin
 
                     foreach ($folders as $folder) {
                         $this->folders[$folder->id] = $folder;
-                        $this->sources[$folder->id] = new kolab_contacts($folder->name);;
+                        $this->sources[$folder->id] = new kolab_contacts($folder->name);
+                        ;
                         $count++;
                     }
                 }
@@ -948,10 +949,9 @@ class kolab_addressbook extends rcube_plugin
 
             // find parent
             do {
-              array_pop($imap_path);
-              $parent_id = kolab_storage::folder_id(join($delim, $imap_path));
-            }
-            while (count($imap_path) > 1 && empty($this->folders[$parent_id]));
+                array_pop($imap_path);
+                $parent_id = kolab_storage::folder_id(implode($delim, $imap_path));
+            } while (count($imap_path) > 1 && empty($this->folders[$parent_id]));
 
             // restore "real" parent ID
             if ($parent_id && empty($this->folders[$parent_id])) {
@@ -986,10 +986,12 @@ class kolab_addressbook extends rcube_plugin
         $id = rcube_utils::get_input_value('_source', rcube_utils::INPUT_GPC);
 
         if ($id && ($folder = kolab_storage::get_folder(kolab_storage::id_decode($id)))) {
-            if (isset($_POST['_permanent']))
+            if (isset($_POST['_permanent'])) {
                 $success |= $folder->subscribe(intval($_POST['_permanent']));
-            if (isset($_POST['_active']))
+            }
+            if (isset($_POST['_active'])) {
                 $success |= $folder->activate(intval($_POST['_active']));
+            }
 
             // list groups for this address book
             if (!empty($_POST['_groups'])) {
@@ -1005,8 +1007,7 @@ class kolab_addressbook extends rcube_plugin
 
         if ($success) {
             $this->rc->output->show_message('successfullysaved', 'confirmation');
-        }
-        else {
+        } else {
             $this->rc->output->show_message($this->gettext('errorsaving'), 'error');
         }
 
@@ -1031,8 +1032,7 @@ class kolab_addressbook extends rcube_plugin
             $this->rc->output->command('set_env', 'delimiter', $delimiter);
             $this->rc->output->command('list_contacts_clear');
             $this->rc->output->command('book_delete_done', $source);
-        }
-        else {
+        } else {
             $this->rc->output->show_message('kolab_addressbook.bookdeleteerror', 'error');
         }
 
@@ -1061,7 +1061,7 @@ class kolab_addressbook extends rcube_plugin
     /**
      * Hook for (contact) folder deletion
      */
-    function prefs_folder_delete($args)
+    public function prefs_folder_delete($args)
     {
         // ignore...
         if ($args['abort'] && !$args['result']) {
@@ -1074,7 +1074,7 @@ class kolab_addressbook extends rcube_plugin
     /**
      * Hook for (contact) folder renaming
      */
-    function prefs_folder_rename($args)
+    public function prefs_folder_rename($args)
     {
         // ignore...
         if ($args['abort'] && !$args['result']) {
@@ -1087,7 +1087,7 @@ class kolab_addressbook extends rcube_plugin
     /**
      * Hook for (contact) folder updates. Forward to folder_rename handler if name was changed
      */
-    function prefs_folder_update($args)
+    public function prefs_folder_update($args)
     {
         // ignore...
         if ($args['abort'] && !$args['result']) {
@@ -1110,12 +1110,11 @@ class kolab_addressbook extends rcube_plugin
 
         foreach ($bday_addressbooks as $i => $id) {
             $folder_name = kolab_storage::id_decode($id);
-            if ($oldname === $folder_name || strpos($folder_name, $oldname.$delimiter) === 0) {
+            if ($oldname === $folder_name || strpos($folder_name, $oldname . $delimiter) === 0) {
                 if ($newname) {  // rename
                     $new_folder = $newname . substr($folder_name, strlen($oldname));
                     $bday_addressbooks[$i] = kolab_storage::id_encode($new_folder);
-                }
-                else {  // delete
+                } else {  // delete
                     unset($bday_addressbooks[$i]);
                 }
                 $update = true;

@@ -11,4 +11,3 @@ $labels['event'] = 'Calendaris';
 $labels['task'] = 'Tasques';
 $labels['deletedelegate'] = 'Delete delegate';
 $labels['savingdata'] = 'S\'estan desant les dades...';
-?>

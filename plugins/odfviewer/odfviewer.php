@@ -28,7 +28,7 @@ class odfviewer extends rcube_plugin
 {
     public $task = 'mail|calendar|tasks';
 
-    private $odf_mimetypes = array(
+    private $odf_mimetypes = [
         'application/vnd.oasis.opendocument.chart',
         'application/vnd.oasis.opendocument.chart-template',
         'application/vnd.oasis.opendocument.formula',
@@ -42,12 +42,12 @@ class odfviewer extends rcube_plugin
         'application/vnd.oasis.opendocument.text-template',
         'application/vnd.oasis.opendocument.spreadsheet',
         'application/vnd.oasis.opendocument.spreadsheet-template',
-    );
+    ];
 
-    function init()
+    public function init()
     {
         // webODF only supports IE9 or higher
-        $ua = new rcube_browser;
+        $ua = new rcube_browser();
         if ($ua->ie && $ua->ver < 9) {
             return;
         }
@@ -59,32 +59,32 @@ class odfviewer extends rcube_plugin
             $rcmail->config->set('client_mimetypes', array_merge($mimetypes, $this->odf_mimetypes));
         }
 
-        $this->add_hook('message_part_get', array($this, 'get_part'));
+        $this->add_hook('message_part_get', [$this, 'get_part']);
     }
 
     /**
      * Handler for message attachment download
      */
-    function get_part($args)
+    public function get_part($args)
     {
         if (!$args['download'] && $args['mimetype'] && in_array($args['mimetype'], $this->odf_mimetypes)) {
             $rcmail = rcube::get_instance();
-            $params = array(
+            $params = [
                 'documentUrl' => $_SERVER['REQUEST_URI'] . '&_download=1',
                 'filename'    => $args['part']->filename ?: 'file.odt',
                 'type'        => $args['mimetype'],
-            );
+            ];
 
             // send webODF viewer page
             $html = file_get_contents($this->home . '/odf.html');
             header("Content-Type: text/html; charset=" . RCUBE_CHARSET);
-            echo strtr($html, array(
+            echo strtr($html, [
                 '%%PARAMS%%'             => rcube_output::json_serialize($params),
                 '%%viewer.css%%'         => $this->asset_path('viewer.css'),
                 '%%viewer.js%%'          => $this->asset_path('viewer.js'),
                 '%%ODFViewerPlugin.js%%' => $this->asset_path('ODFViewerPlugin.js'),
                 '%%webodf.js%%'          => $this->asset_path('webodf.js'),
-            ));
+            ]);
 
             $args['abort'] = true;
         }

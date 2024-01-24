@@ -23,8 +23,8 @@
 
 class kolab_storage_cache_event extends kolab_storage_cache
 {
-    protected $extra_cols = array('dtstart','dtend');
-    protected $data_props = array('categories', 'status', 'attendees'); // start, end
+    protected $extra_cols = ['dtstart','dtend'];
+    protected $data_props = ['categories', 'status', 'attendees']; // start, end
 
     /**
      * Helper method to convert the given Kolab object into a dataset to be written to cache
