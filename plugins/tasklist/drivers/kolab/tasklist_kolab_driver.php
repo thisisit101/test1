@@ -166,8 +166,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Get a list of available task lists from this source
      *
-     * @param integer Bitmask defining filter criterias.
-     *                See FILTER_* constants for possible values.
+     * @param int        $filter Bitmask defining filter criterias.
+     *                           See FILTER_* constants for possible values.
+     * @param array|null $tree   Folders tree
      */
     public function get_lists($filter = 0, &$tree = null)
     {
@@ -252,7 +253,7 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Get list of folders according to specified filters
      *
-     * @param integer Bitmask defining restrictions. See FILTER_* constants for possible values.
+     * @param int $filter Bitmask defining restrictions. See FILTER_* constants for possible values.
      *
      * @return array List of task folders
      */
@@ -296,18 +297,18 @@ class tasklist_kolab_driver extends tasklist_driver
                 continue;
             }
             /*
-                        if (($filter & self::FILTER_INSERTABLE) && !$folder->insert) {
-                            continue;
-                        }
-                        if (($filter & self::FILTER_ACTIVE) && !$folder->is_active()) {
-                            continue;
-                        }
-                        if (($filter & self::FILTER_PRIVATE) && $folder->subtype != 'private') {
-                            continue;
-                        }
-                        if (($filter & self::FILTER_CONFIDENTIAL) && $folder->subtype != 'confidential') {
-                            continue;
-                        }
+            if (($filter & self::FILTER_INSERTABLE) && !$folder->insert) {
+                continue;
+            }
+            if (($filter & self::FILTER_ACTIVE) && !$folder->is_active()) {
+                continue;
+            }
+            if (($filter & self::FILTER_PRIVATE) && $folder->subtype != 'private') {
+                continue;
+            }
+            if (($filter & self::FILTER_CONFIDENTIAL) && $folder->subtype != 'confidential') {
+                continue;
+            }
             */
             if ($personal || $shared) {
                 $ns = $folder->get_namespace();
@@ -325,8 +326,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Get the kolab_calendar instance for the given calendar ID
      *
-     * @param string List identifier (encoded imap folder name)
-     * @return object kolab_storage_folder Object nor null if list doesn't exist
+     * @param string $id List identifier (encoded imap folder name)
+     *
+     * @return kolab_storage_folder|null Object nor null if list doesn't exist
      */
     protected function get_folder($id)
     {
@@ -348,10 +350,11 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Create a new list assigned to the current user
      *
-     * @param array Hash array with list properties
+     * @param array $prop Hash array with list properties
      *        name: List name
      *       color: The color of the list
      *  showalarms: True if alarms are enabled
+     *
      * @return mixed ID of the new list on success, False on error
      */
     public function create_list(&$prop)
@@ -393,12 +396,13 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Update properties of an existing tasklist
      *
-     * @param array Hash array with list properties
+     * @param array $prop Hash array with list properties
      *          id: List Identifier
      *        name: List name
      *       color: The color of the list
      *  showalarms: True if alarms are enabled (if supported)
-     * @return boolean True on success, Fales on failure
+     *
+     * @return bool True on success, Fales on failure
      */
     public function edit_list(&$prop)
     {
@@ -441,11 +445,12 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Set active/subscribed state of a list
      *
-     * @param array Hash array with list properties
+     * @param array $prop Hash array with list properties
      *          id: List Identifier
      *      active: True if list is active, false if not
      *   permanent: True if list is to be subscribed permanently
-     * @return boolean True on success, Fales on failure
+     *
+     * @return bool True on success, Fales on failure
      */
     public function subscribe_list($prop)
     {
@@ -479,9 +484,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Delete the given list with all its contents
      *
-     * @param array Hash array with list properties
+     * @param array $prop Hash array with list properties
      *      id: list Identifier
-     * @return boolean True on success, Fales on failure
+     * @return bool True on success, Fales on failure
      */
     public function delete_list($prop)
     {
@@ -499,8 +504,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Search for shared or otherwise not listed tasklists the user has access
      *
-     * @param string Search string
-     * @param string Section/source to search
+     * @param string $query  Search string
+     * @param string $source Section/source to search
+     *
      * @return array List of tasklists
      */
     public function search_lists($query, $source)
@@ -569,7 +575,8 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Get number of tasks matching the given filter
      *
-     * @param array List of lists to count tasks of
+     * @param array $lists List of lists to count tasks of
+     *
      * @return array Hash array with counts grouped by status (all|flagged|completed|today|tomorrow|nodate)
      */
     public function count_tasks($lists = null)
@@ -624,13 +631,14 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Get all task records matching the given filter
      *
-     * @param array Hash array with filter criterias:
+     * @param array $filter Hash array with filter criterias:
      *  - mask:  Bitmask representing the filter selection (check against tasklist::FILTER_MASK_* constants)
      *  - from:  Date range start as string (Y-m-d)
      *  - to:    Date range end as string (Y-m-d)
      *  - search: Search query string
      *  - uid:   Task UIDs
-     * @param array List of lists to get tasks from
+     * @param array $lists  List of lists to get tasks from
+     *
      * @return array List of tasks records matchin the criteria
      */
     public function list_tasks($filter, $lists = null)
@@ -697,9 +705,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Return data of a specific task
      *
-     * @param mixed   Hash array with task properties or task UID
-     * @param integer Bitmask defining filter criterias for folders.
-     *                See FILTER_* constants for possible values.
+     * @param mixed $prop   Hash array with task properties or task UID
+     * @param int   $filter Bitmask defining filter criterias for folders.
+     *                      See FILTER_* constants for possible values.
      *
      * @return array Hash array with task properties or false if not found
      */
@@ -732,8 +740,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Get all decendents of the given task record
      *
-     * @param mixed  Hash array with task properties or task UID
-     * @param boolean True if all childrens children should be fetched
+     * @param mixed $prop      Hash array with task properties or task UID
+     * @param bool  $recursive True if all childrens children should be fetched
+     *
      * @return array List of all child task IDs
      */
     public function get_childs($prop, $recursive = false)
@@ -777,7 +786,8 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Provide a list of revisions for the given task
      *
-     * @param array  $task Hash array with task properties
+     * @param array $prop Hash array with task properties
+     *
      * @return array List of changes, each as a hash array
      * @see tasklist_driver::get_task_changelog()
      */
@@ -800,8 +810,8 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Return full data of a specific revision of an event
      *
-     * @param mixed  $task UID string or hash array with task properties
-     * @param mixed  $rev Revision number
+     * @param mixed $prop UID string or hash array with task properties
+     * @param mixed $rev  Revision number
      *
      * @return array Task object as hash array
      * @see tasklist_driver::get_task_revision()
@@ -839,10 +849,10 @@ class tasklist_kolab_driver extends tasklist_driver
      * Command the backend to restore a certain revision of a task.
      * This shall replace the current object with an older version.
      *
-     * @param mixed  $task UID string or hash array with task properties
-     * @param mixed  $rev Revision number
+     * @param mixed $prop UID string or hash array with task properties
+     * @param mixed $rev  Revision number
      *
-     * @return boolean True on success, False on failure
+     * @return bool True on success, False on failure
      * @see tasklist_driver::restore_task_revision()
      */
     public function restore_task_revision($prop, $rev)
@@ -878,8 +888,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Get a list of property changes beteen two revisions of a task object
      *
-     * @param array  $task Hash array with task properties
-     * @param mixed  $rev   Revisions: "from:to"
+     * @param array $prop Hash array with task properties
+     * @param mixed $rev1 Revision "from"
+     * @param mixed $rev2 Revision "to"
      *
      * @return array List of property changes, each as a hash array
      * @see tasklist_driver::get_task_diff()
@@ -1022,9 +1033,10 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Get a list of pending alarms to be displayed to the user
      *
-     * @param  integer Current time (unix timestamp)
-     * @param  mixed   List of list IDs to show alarms for (either as array or comma-separated string)
-     * @return array   A list of alarms, each encoded as hash array with task properties
+     * @param int   $time  Current time (unix timestamp)
+     * @param mixed $lists List of list IDs to show alarms for (either as array or comma-separated string)
+     *
+     * @return array A list of alarms, each encoded as hash array with task properties
      * @see tasklist_driver::pending_alarms()
      */
     public function pending_alarms($time, $lists = null)
@@ -1125,8 +1137,8 @@ class tasklist_kolab_driver extends tasklist_driver
      * (User) feedback after showing an alarm notification
      * This should mark the alarm as 'shown' or snooze it for the given amount of time
      *
-     * @param  string  Task identifier
-     * @param  integer Suspend the alarm for this number of seconds
+     * @param string $id     Task identifier
+     * @param int    $snooze Suspend the alarm for this number of seconds
      */
     public function dismiss_alarm($id, $snooze = 0)
     {
@@ -1157,7 +1169,7 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Remove alarm dismissal or snooze state
      *
-     * @param  string  Task identifier
+     * @param string $id Task identifier
      */
     public function clear_alarms($id)
     {
@@ -1221,7 +1233,7 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Extract uid + list identifiers from the given input
      *
-     * @param mixed array or string with task identifier(s)
+     * @param array|string $prop Array or string with task identifier(s)
      */
     private function _parse_id(&$prop)
     {
@@ -1435,7 +1447,8 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Add a single task to the database
      *
-     * @param array Hash array with task properties (see header of tasklist_driver.php)
+     * @param array $task Hash array with task properties (see header of tasklist_driver.php)
+     *
      * @return mixed New task ID on success, False on error
      */
     public function create_task($task)
@@ -1446,8 +1459,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Update an task entry with the given data
      *
-     * @param array Hash array with task properties (see header of tasklist_driver.php)
-     * @return boolean True on success, False on error
+     * @param array $task Hash array with task properties (see header of tasklist_driver.php)
+     *
+     * @return bool True on success, False on error
      */
     public function edit_task($task)
     {
@@ -1524,8 +1538,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Move a single task to another list
      *
-     * @param array   Hash array with task properties:
-     * @return boolean True on success, False on error
+     * @param array $task Hash array with task properties:
+     *
+     * @return bool True on success, False on error
      * @see tasklist_driver::move_task()
      */
     public function move_task($task)
@@ -1547,10 +1562,11 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Remove a single task from the database
      *
-     * @param array   Hash array with task properties:
-     *      id: Task identifier
-     * @param boolean Remove record irreversible (mark as deleted otherwise, if supported by the backend)
-     * @return boolean True on success, False on error
+     * @param array $task  Hash array with task properties:
+     *                     id: Task identifier
+     * @param bool  $force Remove record irreversible (mark as deleted otherwise, if supported by the backend)
+     *
+     * @return bool True on success, False on error
      */
     public function delete_task($task, $force = true)
     {
@@ -1574,9 +1590,9 @@ class tasklist_kolab_driver extends tasklist_driver
     /**
      * Restores a single deleted task (if supported)
      *
-     * @param array Hash array with task properties:
+     * @param array $prop Hash array with task properties:
      *      id: Task identifier
-     * @return boolean True on success, False on error
+     * @return bool True on success, False on error
      */
     public function undelete_task($prop)
     {

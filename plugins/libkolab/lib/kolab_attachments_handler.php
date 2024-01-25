@@ -35,7 +35,7 @@ class kolab_attachments_handler
 
     public static function ui()
     {
-        $rcmail = rcube::get_instance();
+        $rcmail = rcmail::get_instance();
         $self   = new self();
 
         $rcmail->output->add_handler('plugin.attachments_form', [$self, 'files_form']);

@@ -204,10 +204,10 @@ abstract class kolab_format
     /**
      * Convert the given date/time value into a cDateTime object
      *
-     * @param mixed         Date/Time value either as unix timestamp, date string or PHP DateTime object
-     * @param DateTimeZone  The timezone the date/time is in. Use global default if Null, local time if False
-     * @param boolean       True of the given date has no time component
-     * @param DateTimeZone  The timezone to convert the date to before converting to cDateTime
+     * @param mixed        Date/Time value either as unix timestamp, date string or PHP DateTime object
+     * @param DateTimeZone The timezone the date/time is in. Use global default if Null, local time if False
+     * @param bool         True of the given date has no time component
+     * @param DateTimeZone The timezone to convert the date to before converting to cDateTime
      *
      * @return cDateTime The libkolabxml date/time object
      */
@@ -241,7 +241,10 @@ abstract class kolab_format
         }
 
         if ($datetime instanceof DateTimeInterface) {
-            if ($dest_tz instanceof DateTimeZone && $dest_tz !== $datetime->getTimezone()) {
+            if ($dest_tz instanceof DateTimeZone
+                && $dest_tz !== $datetime->getTimezone()
+                && method_exists($datetime, 'setTimezone')
+            ) {
                 $datetime->setTimezone($dest_tz);
                 $tz = $dest_tz;
             }

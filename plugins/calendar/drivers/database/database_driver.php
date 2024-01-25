@@ -75,17 +75,18 @@ class database_driver extends calendar_driver
     private function _read_calendars()
     {
         $hidden = array_filter(explode(',', $this->rc->config->get('hidden_calendars', '')));
+        $db = $this->rc->get_dbh();
 
         if (!empty($this->rc->user->ID)) {
             $calendar_ids = [];
-            $result = $this->rc->db->query(
+            $result = $db->query(
                 "SELECT *, `calendar_id` AS id FROM `{$this->db_calendars}`"
                 . " WHERE `user_id` = ?"
                 . " ORDER BY `name`",
                 $this->rc->user->ID
             );
 
-            while ($result && ($arr = $this->rc->db->fetch_assoc($result))) {
+            while ($result && ($arr = $db->fetch_assoc($result))) {
                 $arr['showalarms'] = intval($arr['showalarms']);
                 $arr['active']     = !in_array($arr['id'], $hidden);
                 $arr['name']       = html::quote($arr['name']);
@@ -94,7 +95,7 @@ class database_driver extends calendar_driver
                 $arr['editable']  = true;
 
                 $this->calendars[$arr['calendar_id']] = $arr;
-                $calendar_ids[] = $this->rc->db->quote($arr['calendar_id']);
+                $calendar_ids[] = $db->quote($arr['calendar_id']);
             }
 
             $this->calendar_ids = implode(',', $calendar_ids);
@@ -1078,7 +1079,7 @@ class database_driver extends calendar_driver
      *
      * @see calendar_driver::load_events()
      */
-    public function load_events($start, $end, $query = null, $calendars = null, $virtual = 1, $modifiedsince = null)
+    public function load_events($start, $end, $query = null, $calendars = null, $virtual = true, $modifiedsince = null)
     {
         if (empty($calendars)) {
             $calendars = array_keys($this->calendars);

@@ -35,7 +35,7 @@ class kolab_files_autocomplete
     public function __construct($plugin)
     {
         $this->plugin = $plugin;
-        $this->rc     = rcube::get_instance();
+        $this->rc     = rcmail::get_instance();
 
         $search = rcube_utils::get_input_value('_search', rcube_utils::INPUT_GPC, true);
         $reqid  = rcube_utils::get_input_value('_reqid', rcube_utils::INPUT_GPC);

@@ -89,7 +89,7 @@ class kolab_tags_backend
         $tag    = array_merge($old_tag, $tag);
 
         // Update the object
-        $result = $config->save($tag, self::O_TYPE, $tag['uid']);
+        $result = $config->save($tag, self::O_TYPE);
 
         return $result ? $tag : false;
     }

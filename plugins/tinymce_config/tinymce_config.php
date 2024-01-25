@@ -41,7 +41,7 @@ class tinymce_config extends rcube_plugin
         $var    = 'window.rcmail_editor_settings';
         $script = sprintf("$var = \$.extend($var, %s);", json_encode($config));
 
-        $rcmail->output->add_script($script, 'foot');
+        $rcmail->output->add_script($script, 'foot'); // @phpstan-ignore-line
 
         return $args;
     }

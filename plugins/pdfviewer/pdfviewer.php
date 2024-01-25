@@ -49,7 +49,7 @@ class pdfviewer extends rcube_plugin
         }
 
         // extend list of mimetypes that should open in preview
-        $rcmail = rcube::get_instance();
+        $rcmail = rcmail::get_instance();
         if ($rcmail->action == 'preview' || $rcmail->action == 'show' || $rcmail->task == 'calendar' || $rcmail->task == 'tasks') {
             $mimetypes = (array)$rcmail->config->get('client_mimetypes');
             $rcmail->config->set('client_mimetypes', array_merge($mimetypes, $this->pdf_mimetypes));
@@ -70,7 +70,7 @@ class pdfviewer extends rcube_plugin
     {
         // redirect to viewer/viewer.html
         if (!$args['download'] && $args['mimetype'] && empty($_GET['_load']) && in_array($args['mimetype'], $this->pdf_mimetypes)) {
-            $rcmail   = rcube::get_instance();
+            $rcmail   = rcmail::get_instance();
             $file_url = $_SERVER['REQUEST_URI'] . '&_load=1';
             $location = $rcmail->output->asset_url($this->urlbase . 'viewer/viewer.html');
 

@@ -53,7 +53,7 @@ class odfviewer extends rcube_plugin
         }
 
         // extend list of mimetypes that should open in preview
-        $rcmail = rcube::get_instance();
+        $rcmail = rcmail::get_instance();
         if ($rcmail->action == 'preview' || $rcmail->action == 'show' || $rcmail->task == 'calendar' || $rcmail->task == 'tasks') {
             $mimetypes = (array)$rcmail->config->get('client_mimetypes');
             $rcmail->config->set('client_mimetypes', array_merge($mimetypes, $this->odf_mimetypes));
@@ -68,7 +68,7 @@ class odfviewer extends rcube_plugin
     public function get_part($args)
     {
         if (!$args['download'] && $args['mimetype'] && in_array($args['mimetype'], $this->odf_mimetypes)) {
-            $rcmail = rcube::get_instance();
+            $rcmail = rcmail::get_instance();
             $params = [
                 'documentUrl' => $_SERVER['REQUEST_URI'] . '&_download=1',
                 'filename'    => $args['part']->filename ?: 'file.odt',
@@ -94,7 +94,7 @@ class odfviewer extends rcube_plugin
 
     private function asset_path($path)
     {
-        $rcmail     = rcube::get_instance();
+        $rcmail     = rcmail::get_instance();
         $assets_dir = $rcmail->config->get('assets_dir');
 
         $mtime = @filemtime($this->home . '/' . $path);

@@ -75,7 +75,7 @@ class piwik_analytics extends rcube_plugin
 <!-- End Piwik Tag -->';
 
         // add script to end of page
-        $rcmail->output->add_footer($script);
+        $rcmail->output->add_footer($script); // @phpstan-ignore-line
 
         return $args;
     }

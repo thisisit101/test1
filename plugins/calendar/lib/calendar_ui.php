@@ -25,15 +25,26 @@
 
 class calendar_ui
 {
-    private $rc;
-    private $cal;
-    private $ready = false;
-
     public $screen;
     public $action;
     public $calendar;
 
+    /** @var rcmail */
+    private $rc;
 
+    /** @var calendar Calendar plugin */
+    private $cal;
+
+    /** @var bool */
+    private $ready = false;
+
+
+
+    /**
+     * Object constructor
+     *
+     * @param calendar Calendar plugin
+     */
     public function __construct($cal)
     {
         $this->cal    = $cal;

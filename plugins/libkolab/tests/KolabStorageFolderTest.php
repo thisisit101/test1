@@ -26,7 +26,7 @@ class KolabStorageFolderTest extends PHPUnit\Framework\TestCase
     public static function setUpBeforeClass(): void
     {
         // load libkolab plugin
-        $rcmail = rcube::get_instance();
+        $rcmail = rcmail::get_instance();
         $rcmail->plugins->load_plugin('libkolab', true, true);
 
         if (!kolab_format::supports(3)) {

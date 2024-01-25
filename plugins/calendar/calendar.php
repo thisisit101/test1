@@ -35,6 +35,8 @@ class calendar extends rcube_plugin
     public const SESSION_KEY = 'calendar_temp';
 
     public $task = '?(?!logout).*';
+
+    /** @var rcmail */
     public $rc;
     public $lib;
     public $resources_dir;
@@ -78,7 +80,7 @@ class calendar extends rcube_plugin
      */
     public function init()
     {
-        $this->rc = rcube::get_instance();
+        $this->rc = rcmail::get_instance();
 
         $this->register_task('calendar');
 
@@ -3203,6 +3205,7 @@ $("#rcmfd_new_category").keypress(function(event) {
     public function mail_messages_list($p)
     {
         if (!empty($p['cols']) && in_array('attachment', (array) $p['cols']) && !empty($p['messages'])) {
+            /** @var rcube_message_header $header */
             foreach ($p['messages'] as $header) {
                 $part = new StdClass();
                 $part->mimetype = $header->ctype;
@@ -3713,7 +3716,6 @@ $("#rcmfd_new_category").keypress(function(event) {
         $uid     = rcube_utils::get_input_value('_uid', rcube_utils::INPUT_POST);
         $mbox    = rcube_utils::get_input_value('_mbox', rcube_utils::INPUT_POST);
         $mime_id = rcube_utils::get_input_value('_part', rcube_utils::INPUT_POST);
-        $charset = RCUBE_CHARSET;
 
         // establish imap connection
         $imap = $this->rc->get_storage();
@@ -3721,13 +3723,9 @@ $("#rcmfd_new_category").keypress(function(event) {
 
         if ($uid && $mime_id) {
             $part = $imap->get_message_part($uid, $mime_id);
-            // $headers = $imap->get_message_headers($uid);
 
             if ($part) {
-                if (!empty($part->ctype_parameters['charset'])) {
-                    $charset = $part->ctype_parameters['charset'];
-                }
-                $events = $this->get_ical()->import($part, $charset);
+                $events = $this->get_ical()->import($part);
             }
         }
 

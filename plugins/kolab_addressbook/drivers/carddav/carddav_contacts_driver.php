@@ -74,6 +74,8 @@ class carddav_contacts_driver
         if ($folder) {
             return new carddav_contacts($folder);
         }
+
+        return null;
     }
 
     /**

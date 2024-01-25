@@ -314,7 +314,7 @@ class kolab_auth extends rcube_plugin
                         }
                     }
 
-                    if ($setting_name == 'skin') {
+                    if ($setting_name == 'skin' && $rcmail instanceof rcmail) {
                         if ($rcmail->output->type == 'html') {
                             $rcmail->output->set_skin($setting['value']);
                             $rcmail->output->set_env('skin', $setting['value']);
@@ -330,8 +330,9 @@ class kolab_auth extends rcube_plugin
                     // Some plugins e.g. kolab_2fa use 'startup' hook to
                     // register other hooks, but when called on 'authenticate' hook
                     // we're already after 'startup', so we'll call it directly
-                    if ($loaded && $startup && $plugin == 'kolab_2fa'
+                    if ($loaded && $startup && $plugin == 'kolab_2fa' && $rcmail instanceof rcmail
                         && ($plugin = $this->api->get_plugin($plugin))
+                        && method_exists($plugin, 'startup')
                     ) {
                         $plugin->startup(['task' => $rcmail->task, 'action' => $rcmail->action]);
                     }
@@ -788,7 +789,7 @@ class kolab_auth extends rcube_plugin
      */
     public function render_page($args)
     {
-        $rcmail  = rcube::get_instance();
+        $rcmail  = rcmail::get_instance();
         $tasks   = (array)$_SESSION['kolab_auth_allowed_tasks'];
         $tasks[] = 'logout';
 

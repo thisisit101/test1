@@ -50,7 +50,7 @@ class kolab_addressbook extends rcube_plugin
      */
     public function init()
     {
-        $this->rc = rcube::get_instance();
+        $this->rc = rcmail::get_instance();
 
         // load required plugin
         $this->require_plugin('libkolab');

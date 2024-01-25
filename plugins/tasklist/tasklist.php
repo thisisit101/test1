@@ -972,8 +972,9 @@ class tasklist extends rcube_plugin
     /**
      * Compare two task objects and return differing properties
      *
-     * @param array Event A
-     * @param array Event B
+     * @param array $a Event A
+     * @param array $b Event B
+     *
      * @return array List of differing task properties
      */
     public static function task_diff($a, $b)
@@ -1331,7 +1332,8 @@ class tasklist extends rcube_plugin
     /**
      * Compute the filter mask of the given task
      *
-     * @param array Hash array with Task record properties
+     * @param array $rec Hash array with Task record properties
+     *
      * @return int Filter mask
      */
     public function filter_mask($rec)
@@ -1802,7 +1804,7 @@ class tasklist extends rcube_plugin
         $this->ui->init_templates();
         $this->ui->tasklists();
 
-        $uid  = rcube_utils::get_input_value('_uid', rcube_utils::INPUT_GET);
+        $uid  = (int) rcube_utils::get_input_value('_uid', rcube_utils::INPUT_GET);
         $mbox = rcube_utils::get_input_value('_mbox', rcube_utils::INPUT_GET);
         $task = [];
 
@@ -2430,7 +2432,7 @@ class tasklist extends rcube_plugin
         // convert to datetime objects
         if (!empty($task['date'])) {
             $object['due'] = rcube_utils::anytodatetime($task['date'] . ' ' . $task['time'], $this->timezone);
-            if (empty($task['time'])) {
+            if ($object['due'] && empty($task['time'])) {
                 $object['due']->_dateonly = true;
             }
             unset($object['date']);
@@ -2438,7 +2440,7 @@ class tasklist extends rcube_plugin
 
         if (!empty($task['startdate'])) {
             $object['start'] = rcube_utils::anytodatetime($task['startdate'] . ' ' . $task['starttime'], $this->timezone);
-            if (empty($task['starttime'])) {
+            if ($object['start'] && empty($task['starttime'])) {
                 $object['start']->_dateonly = true;
             }
             unset($object['startdate']);
@@ -2473,7 +2475,7 @@ class tasklist extends rcube_plugin
         if (is_a($vtodo['due'], 'DateTime')) {
             $due = $this->lib->adjust_timezone($vtodo['due']);
             $task['date'] = $due->format('Y-m-d');
-            if (!$vtodo['due']->_dateonly) {
+            if (empty($vtodo['due']->_dateonly)) {
                 $task['time'] = $due->format('H:i');
             }
         }
@@ -2481,7 +2483,7 @@ class tasklist extends rcube_plugin
         if (is_a($vtodo['start'], 'DateTime')) {
             $start = $this->lib->adjust_timezone($vtodo['start']);
             $task['startdate'] = $start->format('Y-m-d');
-            if (!$vtodo['start']->_dateonly) {
+            if (empty($vtodo['start']->_dateonly)) {
                 $task['starttime'] = $start->format('H:i');
             }
         }

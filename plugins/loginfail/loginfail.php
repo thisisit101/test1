@@ -11,7 +11,7 @@ class loginfail extends rcube_plugin
 
     public function login_failed($args)
     {
-        $rcmail = rcube::get_instance();
+        $rcmail = rcmail::get_instance();
 
         $filename = $this->home . '/loginfail.html';
 

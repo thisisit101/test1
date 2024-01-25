@@ -153,7 +153,7 @@ class kolab_date_recurrence
 
         // determine a reasonable end date for an infinite recurrence
         if (empty($event['recurrence']['COUNT'])) {
-            if (!empty($event['start']) && $event['start'] instanceof DateTimeInterface) {
+            if (!empty($event['start']) && $event['start'] instanceof DateTime) {
                 $start_dt = clone $event['start'];
                 $start_dt->add(new DateInterval('P100Y'));
                 return $start_dt;
@@ -249,7 +249,7 @@ class kolab_date_recurrence
             return null;
         }
 
-        if ($this->allday) {
+        if ($this->allday && $start instanceof libcalendaring_datetime) {
             $start->_dateonly = true;
         }
 

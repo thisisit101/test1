@@ -162,7 +162,7 @@ class kolab_contacts extends rcube_addressbook
         $this->coltypes['phone']['subtypes']   = array_keys($format->phonetypes);
         $this->coltypes['address']['subtypes'] = array_keys($format->addresstypes);
 
-        $rcube = rcube::get_instance();
+        $rcube = rcmail::get_instance();
 
         // set localized labels for proprietary cols
         foreach ($this->coltypes as $col => $prop) {
@@ -191,7 +191,7 @@ class kolab_contacts extends rcube_addressbook
             }
         }
 
-        $this->action = rcube::get_instance()->action;
+        $this->action = $rcube->action;
     }
 
     /**
@@ -606,6 +606,7 @@ class kolab_contacts extends rcube_addressbook
             $this->readonly = true;  // set source to read-only
         } elseif (!empty($rev)) {
             $rcmail = rcube::get_instance();
+            /** @var ?kolab_addressbook $plugin */
             $plugin = $rcmail->plugins->get_plugin('kolab_addressbook');
             if ($plugin && ($object = $plugin->get_revision($id, kolab_storage::id_encode($this->imap_folder), $rev))) {
                 $rec = $this->_to_rcube_contact($object);

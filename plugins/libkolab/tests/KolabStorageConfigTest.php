@@ -31,7 +31,7 @@ class KolabStorageConfigTest extends PHPUnit\Framework\TestCase
 
     public static function setUpBeforeClass(): void
     {
-        $rcube = rcube::get_instance();
+        $rcube = rcmail::get_instance();
         $rcube->plugins->load_plugin('libkolab', true, true);
 
         if (!kolab_format::supports(3)) {

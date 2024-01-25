@@ -257,7 +257,7 @@ class wap_client extends rcube_plugin
      * @param string $action Action name
      * @param array  $post   POST arguments
      *
-     * @return kolab_client_api_result  Response
+     * @return array|null Response
      */
     protected function post($action, $post = [])
     {
@@ -307,7 +307,7 @@ class wap_client extends rcube_plugin
      *
      * @param Net_URL2 $url URL object
      *
-     * @return array Response data
+     * @return array|null Response data
      */
     protected function get_response($url)
     {
@@ -316,14 +316,14 @@ class wap_client extends rcube_plugin
             $response = $this->wap->send();
         } catch (Exception $e) {
             rcube::raise_error($e, true, false);
-            return;
+            return null;
         }
 
         try {
             $body = $response->getBody();
         } catch (Exception $e) {
             rcube::raise_error($e, true, false);
-            return;
+            return null;
         }
 
         if ($this->rc->config->get('wap_client_debug')) {
@@ -334,7 +334,7 @@ class wap_client extends rcube_plugin
 
         if (!is_array($body)) {
             rcube::raise_error("Failed to decode WAP response", true, false);
-            return;
+            return null;
         }
 
         return $body;

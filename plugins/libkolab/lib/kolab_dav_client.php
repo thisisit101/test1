@@ -650,9 +650,8 @@ class kolab_dav_client
     /**
      * Extract folder properties from a server 'response' element
      */
-    protected function getFolderPropertiesFromResponse(DOMNode $element)
+    protected function getFolderPropertiesFromResponse(DOMElement $element)
     {
-
         if ($href = $element->getElementsByTagName('href')->item(0)) {
             $href = $href->nodeValue;
             /*
@@ -717,7 +716,7 @@ class kolab_dav_client
     /**
      * Extract object properties from a server 'response' element
      */
-    protected function getObjectPropertiesFromResponse(DOMNode $element)
+    protected function getObjectPropertiesFromResponse(DOMElement $element)
     {
         $uid = null;
         if ($href = $element->getElementsByTagName('href')->item(0)) {

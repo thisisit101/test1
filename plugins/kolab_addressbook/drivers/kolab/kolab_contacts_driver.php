@@ -44,19 +44,6 @@ class kolab_contacts_driver
         // get all folders that have "contact" type
         $folders = kolab_storage::sort_folders(kolab_storage::get_folders('contact'));
 
-        if (PEAR::isError($folders)) {
-            rcube::raise_error(
-                [
-                    'code' => 600, 'file' => __FILE__, 'line' => __LINE__,
-                    'message' => "Failed to list contact folders from Kolab server:" . $folders->getMessage(),
-                ],
-                true,
-                false
-            );
-
-            return [];
-        }
-
         // we need at least one folder to prevent from errors in Roundcube core
         // when there's also no sql nor ldap addressbook (Bug #2086)
         if (empty($folders)) {
@@ -93,6 +80,8 @@ class kolab_contacts_driver
         if ($folder && $folder->type == 'contact') {
             return new kolab_contacts($folder->name);
         }
+
+        return null;
     }
 
     /**

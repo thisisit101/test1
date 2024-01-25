@@ -312,7 +312,7 @@ abstract class calendar_driver
      *
      * @return array A list of event objects (see header of this file for struct of an event)
      */
-    abstract public function load_events($start, $end, $query = null, $calendars = null, $virtual = 1, $modifiedsince = null);
+    abstract public function load_events($start, $end, $query = null, $calendars = null, $virtual = true, $modifiedsince = null);
 
     /**
      * Get number of events in the given calendar
@@ -501,8 +501,10 @@ abstract class calendar_driver
         $events = [];
 
         if (!empty($event['recurrence'])) {
-            $rcmail     = rcmail::get_instance();
-            $recurrence = new libcalendaring_recurrence($rcmail->plugins->get_plugin('calendar')->lib, $event);
+            $rcmail = rcmail::get_instance();
+            /** @var calendar $plugin */
+            $plugin = $rcmail->plugins->get_plugin('calendar');
+            $recurrence = new libcalendaring_recurrence($plugin->lib, $event);
             $recurrence_id_format = libcalendaring::recurrence_id_format($event);
 
             // determine a reasonable end date if none given

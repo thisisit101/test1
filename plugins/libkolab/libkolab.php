@@ -61,13 +61,14 @@ class libkolab extends rcube_plugin
         $this->add_texts('localization/', false);
 
         if (!empty($rcmail->output->type) && $rcmail->output->type == 'html') {
+            // @phpstan-ignore-next-line
             $rcmail->output->add_handler('libkolab.folder_search_form', [$this, 'folder_search_form']);
             $this->include_stylesheet($this->local_skin_path() . '/libkolab.css');
         }
 
         // embed scripts and templates for email message audit trail
         if (property_exists($rcmail, 'task') && $rcmail->task == 'mail' && self::get_bonnie_api()) {
-            if ($rcmail->output->type == 'html') {
+            if (!empty($rcmail->output->type) && $rcmail->output->type == 'html') {
                 $this->add_hook('render_page', [$this, 'bonnie_render_page']);
                 $this->include_script('libkolab.js');
 
@@ -177,7 +178,7 @@ class libkolab extends rcube_plugin
             return false;
         }
 
-        $rcmail = rcube::get_instance();
+        $rcmail = rcmail::get_instance();
         $msguid = rcube_utils::get_input_value('_uid', rcube_utils::INPUT_POST, true);
         $mailbox = rcube_utils::get_input_value('_mbox', rcube_utils::INPUT_POST);
 
@@ -275,7 +276,7 @@ class libkolab extends rcube_plugin
      */
     public static function object_changelog_table($attrib = [])
     {
-        $rcube = rcube::get_instance();
+        $rcube = rcmail::get_instance();
         $attrib += ['domain' => 'libkolab'];
 
         $table = new html_table(['cols' => 5, 'border' => 0, 'cellspacing' => 0]);
@@ -368,7 +369,7 @@ class libkolab extends rcube_plugin
      */
     public function folder_search_form($attrib)
     {
-        $rcmail = rcube::get_instance();
+        $rcmail = rcmail::get_instance();
         $attrib += [
             'gui-object'    => false,
             'wrapper'       => true,

@@ -37,25 +37,28 @@ class libcalendaring extends rcube_plugin
     public $dst_active;
     public $timezone_offset;
     public $ical_parts = [];
+
+    /** @var ?rcube_message Email message */
     public $ical_message;
 
+    /** @var array Configuration defaults */
     public $defaults = [
-        'calendar_date_format'  => "Y-m-d",
-        'calendar_date_short'   => "M-j",
-        'calendar_date_long'    => "F j Y",
-        'calendar_date_agenda'  => "l M-d",
-        'calendar_time_format'  => "H:m",
+        'calendar_date_format'  => 'Y-m-d',
+        'calendar_date_short'   => 'M-j',
+        'calendar_date_long'    => 'F j Y',
+        'calendar_date_agenda'  => 'l M-d',
+        'calendar_time_format'  => 'H:m',
         'calendar_first_day'    => 1,
         'calendar_first_hour'   => 6,
         'calendar_date_format_sets' => [
-            'Y-m-d' => ['d M Y',   'm-d',  'l m-d'],
-            'Y/m/d' => ['d M Y',   'm/d',  'l m/d'],
-            'Y.m.d' => ['d M Y',   'm.d',  'l m.d'],
-            'd-m-Y' => ['d M Y',   'd-m',  'l d-m'],
-            'd/m/Y' => ['d M Y',   'd/m',  'l d/m'],
-            'd.m.Y' => ['d M Y',  'd.m',  'l d.m'],
-            'j.n.Y' => ['d M Y',  'd.m',  'l d.m'],
-            'm/d/Y' => ['M d Y',   'm/d',  'l m/d'],
+            'Y-m-d' => ['d M Y', 'm-d', 'l m-d'],
+            'Y/m/d' => ['d M Y', 'm/d', 'l m/d'],
+            'Y.m.d' => ['d M Y', 'm.d', 'l m.d'],
+            'd-m-Y' => ['d M Y', 'd-m', 'l d-m'],
+            'd/m/Y' => ['d M Y', 'd/m', 'l d/m'],
+            'd.m.Y' => ['d M Y', 'd.m', 'l d.m'],
+            'j.n.Y' => ['d M Y', 'd.m', 'l d.m'],
+            'm/d/Y' => ['M d Y', 'm/d', 'l m/d'],
         ],
     ];
 
@@ -167,6 +170,8 @@ class libcalendaring extends rcube_plugin
 
     /**
      * Load iCalendar functions
+     *
+     * @return libcalendaring_vcalendar iCal parser 
      */
     public static function get_ical()
     {
@@ -207,7 +212,7 @@ class libcalendaring extends rcube_plugin
             $dt = rcube_utils::anytodatetime($dt);
         }
 
-        if ($dt instanceof DateTimeInterface && empty($dt->_dateonly) && !$dateonly) {
+        if ($dt instanceof DateTime && empty($dt->_dateonly) && !$dateonly) {
             $dt = $dt->setTimezone($this->timezone);
         }
 
@@ -519,7 +524,7 @@ class libcalendaring extends rcube_plugin
                     // convert seconds to minutes
                     if ($seg[2] == 'S') {
                         $seg[2] = 'M';
-                        $seg[1] = max(1, round($seg[1] / 60));
+                        $seg[1] = max(1, round(intval($seg[1]) / 60));
                     }
 
                     return [$seg[1], $m[1] . $seg[2], $m[1] . $seg[1] . $seg[2], $m[1] . $prefix . $seg[1] . $seg[2]];
@@ -610,7 +615,7 @@ class libcalendaring extends rcube_plugin
         }
 
         $text  = '';
-        $rcube = rcube::get_instance();
+        $rcube = rcmail::get_instance();
 
         switch ($action) {
             case 'EMAIL':
@@ -1171,6 +1176,7 @@ class libcalendaring extends rcube_plugin
 
         // check all message parts for .ics files
         foreach ((array)$this->ical_message->mime_parts as $part) {
+            /** @var rcube_message_part $part */
             if (self::part_is_vcalendar($part, $this->ical_message)) {
                 if (!empty($part->ctype_parameters['method'])) {
                     $itip_part = $part->mime_id;
@@ -1189,7 +1195,7 @@ class libcalendaring extends rcube_plugin
     /**
      * Getter for the parsed iCal objects attached to the current email message
      *
-     * @return object libcalendaring_vcalendar parser instance with the parsed objects
+     * @return libcalendaring_vcalendar Parser instance with the parsed objects
      */
     public function get_mail_ical_objects()
     {

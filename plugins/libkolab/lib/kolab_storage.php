@@ -1405,7 +1405,7 @@ class kolab_storage
      * To be run when none of subscribed folders (of specified type) is found
      *
      * @param string $type  Folder type
-     * @param string $props Folder properties (color, etc)
+     * @param array  $props Folder properties (color, etc)
      *
      * @return string Folder name
      */

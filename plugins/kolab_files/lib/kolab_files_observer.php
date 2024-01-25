@@ -15,6 +15,7 @@ class kolab_files_observer implements SplObserver
 
     public function update(SplSubject $subject): void
     {
+        /** @var HTTP_Request2 $subject */
         $event = $subject->getLastEvent();
 
         switch ($event['name']) {

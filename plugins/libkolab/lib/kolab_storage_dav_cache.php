@@ -494,6 +494,8 @@ class kolab_storage_dav_cache extends kolab_storage_cache
         if (!empty($list) && !empty($list[0])) {
             return $list[0];
         }
+
+        return null;
     }
 
     /**

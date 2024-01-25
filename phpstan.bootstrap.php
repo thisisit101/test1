@@ -1,10 +1,6 @@
 <?php
 
-// environment initialization
-
-//define('RCUBE_PLUGINS_DIR', realpath(__DIR__. '/../') . '/lib/plugins/');
-
-
+// environment initialization for PHPStan
 
 set_include_path(implode(PATH_SEPARATOR, [
     'program/lib',

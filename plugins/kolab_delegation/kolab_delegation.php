@@ -37,7 +37,7 @@ class kolab_delegation extends rcube_plugin
      */
     public function init()
     {
-        $this->rc = rcube::get_instance();
+        $this->rc = rcmail::get_instance();
 
         $this->require_plugin('libkolab');
         $this->require_plugin('kolab_auth');
@@ -472,8 +472,8 @@ class kolab_delegation extends rcube_plugin
         }
 
         if (!empty($delegate)) {
-            $input = new html_hiddenfield(['name' => $field_id, 'id' => $field_id, 'size' => 40]);
-            $input = rcube::Q($delegate['name']) . $input->show($id);
+            $input = new html_hiddenfield(['name' => $field_id, 'id' => $field_id, 'size' => 40, 'value' => $id]);
+            $input = rcube::Q($delegate['name']) . $input->show();
 
             $this->rc->output->set_env('active_delegate', $id);
             $this->rc->output->command('parent.enable_command', 'delegate-delete', true);

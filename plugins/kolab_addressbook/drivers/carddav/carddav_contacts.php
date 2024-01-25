@@ -137,7 +137,7 @@ class carddav_contacts extends rcube_addressbook
             }
         }
 
-        $this->action = rcube::get_instance()->action;
+        $this->action = rcmail::get_instance()->action;
     }
 
     /**

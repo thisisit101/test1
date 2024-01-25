@@ -32,7 +32,7 @@ class nextcloud_link extends rcube_plugin
      */
     public function init()
     {
-        $this->rc = rcube::get_instance();
+        $this->rc = rcmail::get_instance();
 
         if ($this->rc->output->type !== 'html' || !empty($this->rc->output->env['framed'])) {
             return;

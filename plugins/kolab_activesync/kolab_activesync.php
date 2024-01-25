@@ -43,7 +43,7 @@ class kolab_activesync extends rcube_plugin
      */
     public function init()
     {
-        $this->rc = rcube::get_instance();
+        $this->rc = rcmail::get_instance();
 
         $this->require_plugin('libkolab');
 

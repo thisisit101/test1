@@ -115,6 +115,8 @@ class kolab_driver extends calendar_driver
 
     /**
      * Convert kolab_storage_folder into kolab_calendar
+     *
+     * @return kolab_calendar
      */
     protected function _to_calendar($folder)
     {
@@ -292,7 +294,7 @@ class kolab_driver extends calendar_driver
      *
      * @param int Bitmask defining restrictions. See FILTER_* constants for possible values.
      *
-     * @return array List of calendars
+     * @return array<kolab_calendar> List of calendars
      */
     protected function filter_calendars($filter)
     {
@@ -1328,7 +1330,7 @@ class kolab_driver extends calendar_driver
                                 $recurrence_id = rcube_utils::anytodatetime($exception['_instance'], $old['start']->getTimezone());
                             }
 
-                            if ($recurrence_id instanceof DateTimeInterface) {
+                            if ($recurrence_id instanceof DateTime || $recurrence_id instanceof DateTimeImmutable) {
                                 $recurrence_id->add($date_shift);
                                 $event['recurrence']['EXCEPTIONS'][$i]['recurrence_date'] = $recurrence_id;
                                 $event['recurrence']['EXCEPTIONS'][$i]['_instance'] = $recurrence_id->format($recurrence_id_format);
@@ -1588,8 +1590,8 @@ class kolab_driver extends calendar_driver
     /**
      * Merge start/end date from the overlay event to the base event object
      *
-     * @param array The event object to be altered
-     * @param array The overlay event object to be merged over $event
+     * @param array $event   The event object to be altered
+     * @param array $overlay The overlay event object to be merged over $event
      */
     public static function merge_exception_dates(&$event, $overlay)
     {
@@ -1600,7 +1602,7 @@ class kolab_driver extends calendar_driver
 
         foreach (['start', 'end'] as $prop) {
             $value = $overlay[$prop];
-            if (isset($event[$prop]) && $event[$prop] instanceof DateTimeInterface) {
+            if (isset($event[$prop]) && ($event[$prop] instanceof DateTime || $event[$prop] instanceof DateTimeImmutable)) {
                 // set date value if overlay is an exception of the current instance
                 if (substr($overlay['_instance'], 0, 8) == substr($event['_instance'], 0, 8)) {
                     $event[$prop]->setDate(intval($value->format('Y')), intval($value->format('n')), intval($value->format('j')));
@@ -1618,16 +1620,16 @@ class kolab_driver extends calendar_driver
     /**
      * Get events from source.
      *
-     * @param int    Event's new start (unix timestamp)
-     * @param int    Event's new end (unix timestamp)
-     * @param string Search query (optional)
-     * @param mixed  List of calendar IDs to load events from (either as array or comma-separated string)
-     * @param bool   Include virtual events (optional)
-     * @param int    Only list events modified since this time (unix timestamp)
+     * @param int    $start         Event's new start (unix timestamp)
+     * @param int    $end           Event's new end (unix timestamp)
+     * @param string $search        Search query (optional)
+     * @param mixed  $calendars     List of calendar IDs to load events from (either as array or comma-separated string)
+     * @param bool   $virtual       Include virtual events (optional)
+     * @param int    $modifiedsince Only list events modified since this time (unix timestamp)
      *
      * @return array A list of event records
      */
-    public function load_events($start, $end, $search = null, $calendars = null, $virtual = 1, $modifiedsince = null)
+    public function load_events($start, $end, $search = null, $calendars = null, $virtual = true, $modifiedsince = null)
     {
         if ($calendars && is_string($calendars)) {
             $calendars = explode(',', $calendars);
@@ -2144,7 +2146,9 @@ class kolab_driver extends calendar_driver
         }
 
         // all-day events go from 12:00 - 13:00
-        if ($record['start'] instanceof DateTimeInterface && $record['end'] <= $record['start'] && !empty($record['allday'])) {
+        if (($record['start'] instanceof DateTime || $record['start'] instanceof DateTimeImmutable)
+            && $record['end'] <= $record['start'] && !empty($record['allday'])
+        ) {
             $record['end'] = clone $record['start'];
             $record['end']->add(new DateInterval('PT1H'));
         }
@@ -2604,9 +2608,9 @@ class kolab_driver extends calendar_driver
         $protected = !empty($options) && (!empty($options['norename']) || !empty($options['protected']));
         // Disable folder name input
         if ($protected) {
-            $input_name = new html_hiddenfield(['name' => 'name', 'id' => 'calendar-name']);
+            $input_name = new html_hiddenfield(['name' => 'name', 'id' => 'calendar-name', 'value' => $folder]);
             $formfields['name']['value'] = $this->storage->object_name($folder)
-                . $input_name->show($folder);
+                . $input_name->show();
         }
 
         // calendar name (default field)

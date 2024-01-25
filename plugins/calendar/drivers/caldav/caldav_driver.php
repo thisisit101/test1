@@ -469,7 +469,7 @@ class caldav_driver extends kolab_driver
      *
      * @return array A list of event records
      */
-    public function load_events($start, $end, $search = null, $calendars = null, $virtual = 1, $modifiedsince = null)
+    public function load_events($start, $end, $search = null, $calendars = null, $virtual = true, $modifiedsince = null)
     {
         if ($calendars && is_string($calendars)) {
             $calendars = explode(',', $calendars);

@@ -537,8 +537,12 @@ class kolab_storage_config
             $folders = (array) $search->get_parameters('MAILBOX');
 
             foreach ($folders as $folder) {
-                $set  = $search->get_set($folder);
-                $uids = $set->get();
+                if ($search instanceof rcube_result_multifolder) {
+                    $set  = $search->get_set($folder);
+                    $uids = $set->get();
+                } else {
+                    $uids = $search->get();
+                }
 
                 if (!empty($uids)) {
                     $msgs    = $storage->fetch_headers($folder, $uids, false);
@@ -554,7 +558,7 @@ class kolab_storage_config
 
             // update tag object with new members list
             $tag['members'] = array_unique($tag['members']);
-            kolab_storage_config::get_instance()->save($tag, 'relation', false);
+            kolab_storage_config::get_instance()->save($tag, 'relation');
         }
 
         return $result;
@@ -887,9 +891,9 @@ class kolab_storage_config
     /**
      * Find kolab objects assigned to specified e-mail message
      *
-     * @param rcube_message $message E-mail message
-     * @param string        $folder  Folder name
-     * @param string        $type    Result objects type
+     * @param rcube_message_header $message E-mail message
+     * @param string               $folder  Folder name
+     * @param string               $type    Result objects type
      *
      * @return array List of kolab objects
      */
