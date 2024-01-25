@@ -944,7 +944,7 @@ class libcalendaring_vcalendar implements Iterator
 
         if ($dt) {
             if ($utc) {
-                $dt->setTimeZone(new \DateTimeZone('UTC'));
+                $dt->setTimeZone(new DateTimeZone('UTC'));
                 $is_utc = true;
             } else {
                 $is_utc = ($tz = $dt->getTimezone()) && in_array($tz->getName(), ['UTC','GMT','Z']);
@@ -1092,7 +1092,7 @@ class libcalendaring_vcalendar implements Iterator
         $ve->UID = $event['uid'];
 
         // set DTSTAMP according to RFC 5545, 3.8.7.2.
-        $dtstamp = !empty($event['changed']) && empty($this->method) ? $event['changed'] : new DateTime('now', new \DateTimeZone('UTC'));
+        $dtstamp = !empty($event['changed']) && empty($this->method) ? $event['changed'] : new DateTime('now', new DateTimeZone('UTC'));
         $ve->DTSTAMP = $this->datetime_prop($cal, 'DTSTAMP', $dtstamp, true);
 
         // all-day events end the next day
@@ -1410,13 +1410,13 @@ class libcalendaring_vcalendar implements Iterator
      * Returns a VTIMEZONE component for a Olson timezone identifier
      * with daylight transitions covering the given date range.
      *
-     * @param string Timezone ID as used in PHP's Date functions
-     * @param integer Unix timestamp with first date/time in this timezone
-     * @param integer Unix timestap with last date/time in this timezone
+     * @param string $tzid                Timezone ID as used in PHP's Date functions
+     * @param int    $from                Unix timestamp with first date/time in this timezone
+     * @param int    $to                  Unix timestap with last date/time in this timezone
      * @param VObject\Component\VCalendar Optional VCalendar component
      *
-     * @return mixed A Sabre\VObject\Component object representing a VTIMEZONE definition
-     *               or false if no timezone information is available
+     * @return Sabre\VObject\Component|false Object representing a VTIMEZONE definition
+     *                                       or false if no timezone information is available
      */
     public static function get_vtimezone($tzid, $from = 0, $to = 0, $cal = null)
     {
@@ -1434,15 +1434,15 @@ class libcalendaring_vcalendar implements Iterator
 
         if (is_string($tzid)) {
             try {
-                $tz = new \DateTimeZone($tzid);
-            } catch (\Exception $e) {
-                return false;
+                $tz = new DateTimeZone($tzid);
+            } catch (Exception $e) {
+                // do nothing
             }
-        } elseif (is_a($tzid, '\\DateTimeZone')) {
+        } elseif ($tzid instanceof DateTimeZone) {
             $tz = $tzid;
         }
 
-        if (empty($tz) || !is_a($tz, '\\DateTimeZone')) {
+        if (empty($tz) || !$tz instanceof DateTimeZone) {
             return false;
         }
 
@@ -1466,9 +1466,8 @@ class libcalendaring_vcalendar implements Iterator
         $std = null;
         $dst = null;
         $t_dst = $t_std = 0;
-        foreach ($transitions as $i => $trans) {
-            $cmp = null;
 
+        foreach ($transitions as $i => $trans) {
             if (!isset($tzfrom)) {
                 $tzfrom = $trans['offset'] / 3600;
                 continue;
@@ -1484,21 +1483,20 @@ class libcalendaring_vcalendar implements Iterator
                 $cmp = $std;
             }
 
-            if ($cmp) {
-                $dt = new DateTime($trans['time']);
-                $offset = $trans['offset'] / 3600;
+            // FIXME: Imho $trans['time'] is UTC, shouldn't we consider timezone offset for DTSTART below?
+            $dt = new DateTime($trans['time']);
+            $offset = $trans['offset'] / 3600;
 
-                $cmp->DTSTART = $dt->format('Ymd\THis');
-                $cmp->TZOFFSETFROM = sprintf('%+03d%02d', floor($tzfrom), ($tzfrom - floor($tzfrom)) * 60);
-                $cmp->TZOFFSETTO   = sprintf('%+03d%02d', floor($offset), ($offset - floor($offset)) * 60);
+            $cmp->DTSTART = $dt->format('Ymd\THis');
+            $cmp->TZOFFSETFROM = sprintf('%+03d%02d', floor($tzfrom), ($tzfrom - floor($tzfrom)) * 60);
+            $cmp->TZOFFSETTO = sprintf('%+03d%02d', floor($offset), ($offset - floor($offset)) * 60);
 
-                if (!empty($trans['abbr'])) {
-                    $cmp->TZNAME = $trans['abbr'];
-                }
-
-                $tzfrom = $offset;
-                $vt->add($cmp);
+            if (!empty($trans['abbr'])) {
+                $cmp->TZNAME = $trans['abbr'];
             }
+
+            $tzfrom = $offset;
+            $vt->add($cmp);
 
             // we covered the entire date range
             if ($std && $dst && min($t_std, $t_dst) < $from && max($t_std, $t_dst) > $to) {

@@ -584,22 +584,22 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
 
         // Making sure VTIMEZOONE contains at least one STANDARD/DAYLIGHT component
         // when there's only one transition in specified time period (T5626)
-        $vtz = libcalendaring_vcalendar::get_vtimezone('Europe/Istanbul', strtotime('2019-10-04T15:00:00'));
+        $vtz = libcalendaring_vcalendar::get_vtimezone('Europe/Warsaw', strtotime('2023-10-04T15:00:00'));
 
         $this->assertInstanceOf('\Sabre\VObject\Component', $vtz);
 
         $dst = $vtz->select('DAYLIGHT');
         $std = $vtz->select('STANDARD');
 
-        $this->assertEmpty($dst);
-        $this->assertCount(1, $std);
-
+        $this->assertCount(1, $dst);
+        $this->assertCount(2, $std);
         $std = end($std);
-        $this->assertEquals('STANDARD', $std->name);
-        $this->assertEquals('20181009T150000', $std->DTSTART);
-        $this->assertEquals('+0300', $std->TZOFFSETFROM);
-        $this->assertEquals('+0300', $std->TZOFFSETTO);
-        $this->assertEquals('+03', $std->TZNAME);
+
+        $this->assertSame('STANDARD', $std->name);
+        $this->assertSame('20231029T010000', (string) $std->DTSTART);
+        $this->assertSame('+0200', (string) $std->TZOFFSETFROM);
+        $this->assertSame('+0100', (string) $std->TZOFFSETTO);
+        $this->assertSame('CET', (string) $std->TZNAME);
     }
 
     public function get_attachment_data($id, $event)
