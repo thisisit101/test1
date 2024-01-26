@@ -206,10 +206,10 @@ class libkolab extends rcube_plugin
     /**
      * Wrapper function to load and initalize the HTTP_Request2 Object
      *
-     * @param string|Net_Url2 Request URL
-     * @param string          Request method ('OPTIONS','GET','HEAD','POST','PUT','DELETE','TRACE','CONNECT')
-     * @param array           Configuration for this Request instance, that will be merged
-     *                        with default configuration
+     * @param string|Net_URL2 $url    Request URL
+     * @param string          $method Request method ('OPTIONS','GET','HEAD','POST','PUT','DELETE','TRACE','CONNECT')
+     * @param array           $config Configuration for this Request instance, that will be merged
+     *                                with default configuration
      *
      * @return HTTP_Request2 Request object
      */
@@ -352,7 +352,8 @@ class libkolab extends rcube_plugin
     /**
      * Return a date() format string to render identifiers for recurrence instances
      *
-     * @param array Hash array with event properties
+     * @param array $event Hash array with event properties
+     *
      * @return string Format string
      */
     public static function recurrence_id_format($event)

@@ -89,7 +89,7 @@ class kolab_user_calendar extends kolab_calendar
     /**
      * Getter for the IMAP folder owner
      *
-     * @param bool Return a fully qualified owner name (unused)
+     * @param bool $fully_qualified Return a fully qualified owner name (unused)
      *
      * @return string Name of the folder owner
      */
@@ -206,16 +206,16 @@ class kolab_user_calendar extends kolab_calendar
     }
 
     /**
-     * @param int    Event's new start (unix timestamp)
-     * @param int    Event's new end (unix timestamp)
-     * @param string Search query (optional)
-     * @param bool   Include virtual events (optional)
-     * @param array  Additional parameters to query storage
-     * @param array  Additional query to filter events
+     * @param int    $start        Event's new start (unix timestamp)
+     * @param int    $end          Event's new end (unix timestamp)
+     * @param string $search       Search query (optional)
+     * @param bool   $virtual      Include virtual events (optional)
+     * @param array  $query        Additional parameters to query storage
+     * @param array  $filter_query Additional query to filter events
      *
      * @return array A list of event records
      */
-    public function list_events($start, $end, $search = null, $virtual = 1, $query = [], $filter_query = null)
+    public function list_events($start, $end, $search = null, $virtual = true, $query = [], $filter_query = null)
     {
         // convert to DateTime for comparisons
         try {
@@ -279,11 +279,11 @@ class kolab_user_calendar extends kolab_calendar
     /**
      * Get number of events in the given calendar
      *
-     * @param int   Date range start (unix timestamp)
-     * @param int   Date range end (unix timestamp)
-     * @param array Additional query to filter events
+     * @param int   $start        Date range start (unix timestamp)
+     * @param int   $end          Date range end (unix timestamp)
+     * @param array $filter_query Additional query to filter events
      *
-     * @return integer Count
+     * @return int Count
      */
     public function count_events($start, $end = null, $filter_query = null)
     {

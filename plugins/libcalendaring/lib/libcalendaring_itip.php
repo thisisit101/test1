@@ -86,14 +86,15 @@ class libcalendaring_itip
     /**
      * Send an iTip mail message
      *
-     * @param array   Event object to send
-     * @param string  iTip method (REQUEST|REPLY|CANCEL)
-     * @param array   Hash array with recipient data (name, email)
-     * @param string  Mail subject
-     * @param string  Mail body text label
-     * @param object  Mail_mime object with message data
-     * @param boolean Request RSVP
-     * @return boolean True on success, false on failure
+     * @param array     $event     Event object to send
+     * @param string    $method    iTip method (REQUEST|REPLY|CANCEL)
+     * @param array     $recipient Hash array with recipient data (name, email)
+     * @param string    $subject   Mail subject
+     * @param string    $bodytext  Mail body text label
+     * @param Mail_mime $message   An object with message data
+     * @param bool      $rsvp      Request RSVP
+     *
+     * @return bool True on success, false on failure
      */
     public function send_itip_message($event, $method, $recipient, $subject, $bodytext, $message = null, $rsvp = true)
     {
@@ -199,12 +200,13 @@ class libcalendaring_itip
     }
 
     /**
-     * Helper function to build a Mail_mime object to send an iTip message
+     * Helper function to build a Mail_mime object to send an iTip message.
      *
-     * @param array   Event object to send
-     * @param string  iTip method (REQUEST|REPLY|CANCEL)
-     * @param boolean Request RSVP
-     * @return object Mail_mime object with message data
+     * @param array  $event  Event object to send
+     * @param string $method iTip method (REQUEST|REPLY|CANCEL)
+     * @param bool   $rsvp   Request RSVP
+     *
+     * @return Mail_mime An object with message data
      */
     public function compose_itip_message($event, $method, $rsvp = true)
     {
@@ -314,11 +316,12 @@ class libcalendaring_itip
     /**
      * Forward the given iTip event as delegation to another person
      *
-     * @param array Event object to delegate
-     * @param mixed Delegatee as string or hash array with keys 'name' and 'mailto'
-     * @param boolean The delegator's RSVP flag
-     * @param array List with indexes of new/updated attendees
-     * @return boolean True on success, False on failure
+     * @param array $event     Event object to delegate
+     * @param mixed $delegate  Delegatee as string or hash array with keys 'name' and 'mailto'
+     * @param bool  $rsvp      The delegator's RSVP flag
+     * @param array $attendees List with indexes of new/updated attendees
+     *
+     * @return bool True on success, False on failure
      */
     public function delegate_to(&$event, $delegate, $rsvp = false, &$attendees = [])
     {
@@ -959,8 +962,9 @@ class libcalendaring_itip
     /**
      * Create iTIP invitation token for later replies via URL
      *
-     * @param array Hash array with event properties
-     * @param string Attendee email address
+     * @param array  $event    Hash array with event properties
+     * @param string $attendee Attendee email address
+     *
      * @return string Invitation token
      */
     public function store_invitation($event, $attendee)
@@ -972,7 +976,7 @@ class libcalendaring_itip
     /**
      * Mark invitations for the given event as cancelled
      *
-     * @param array Hash array with event properties
+     * @param array $event Hash array with event properties
      */
     public function cancel_itip_invitation($event)
     {

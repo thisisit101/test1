@@ -42,8 +42,8 @@ class caldav_calendar extends kolab_storage_dav_folder
     /**
      * Factory method to instantiate a caldav_calendar object
      *
-     * @param string $id       Calendar ID (encoded IMAP folder name)
-     * @param object $calendar Calendar plugin object
+     * @param string   $id       Calendar ID (encoded IMAP folder name)
+     * @param calendar $calendar Calendar plugin object
      *
      * @return caldav_calendar Self instance
      */
@@ -201,16 +201,16 @@ class caldav_calendar extends kolab_storage_dav_folder
     }
 
     /**
-     * @param int    Event's new start (unix timestamp)
-     * @param int    Event's new end (unix timestamp)
-     * @param string Search query (optional)
-     * @param bool   Include virtual events (optional)
-     * @param array  Additional parameters to query storage
-     * @param array  Additional query to filter events
+     * @param int    $start        Event's new start (unix timestamp)
+     * @param int    $end          Event's new end (unix timestamp)
+     * @param string $search       Search query (optional)
+     * @param bool   $virtual      Include virtual events (optional)
+     * @param array  $query        Additional parameters to query storage
+     * @param array  $filter_query Additional query to filter events
      *
      * @return array A list of event records
      */
-    public function list_events($start, $end, $search = null, $virtual = 1, $query = [], $filter_query = null)
+    public function list_events($start, $end, $search = null, $virtual = true, $query = [], $filter_query = null)
     {
         // convert to DateTime for comparisons
         // #5190: make the range a little bit wider
@@ -368,9 +368,9 @@ class caldav_calendar extends kolab_storage_dav_folder
     /**
      * Get number of events in the given calendar
      *
-     * @param int   Date range start (unix timestamp)
-     * @param int   Date range end (unix timestamp)
-     * @param array Additional query to filter events
+     * @param int   $start        Date range start (unix timestamp)
+     * @param int   $end          Date range end (unix timestamp)
+     * @param array $filter_query Additional query to filter events
      *
      * @return int Number of events
      */
@@ -566,11 +566,11 @@ class caldav_calendar extends kolab_storage_dav_folder
     /**
      * Create instances of a recurring event
      *
-     * @param array    $event    Hash array with event properties
-     * @param DateTime $start    Start date of the recurrence window
-     * @param DateTime $end      End date of the recurrence window
-     * @param string   $event_id ID of a specific recurring event instance
-     * @param int      $limit    Max. number of instances to return
+     * @param array     $event    Hash array with event properties
+     * @param DateTime  $start    Start date of the recurrence window
+     * @param ?DateTime $end      End date of the recurrence window
+     * @param string    $event_id ID of a specific recurring event instance
+     * @param int       $limit    Max. number of instances to return
      *
      * @return array List of recurring event instances
      */

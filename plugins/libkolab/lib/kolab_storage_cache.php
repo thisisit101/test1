@@ -118,11 +118,11 @@ class kolab_storage_cache
     /**
      * Connect cache with a storage folder
      *
-     * @param kolab_storage_folder The storage folder instance to connect with
+     * @param kolab_storage_folder $folder The storage folder instance to connect with
      */
-    public function set_folder(kolab_storage_folder $storage_folder)
+    public function set_folder(kolab_storage_folder $folder)
     {
-        $this->folder = $storage_folder;
+        $this->folder = $folder;
 
         if (empty($this->folder->name) || !$this->folder->valid) {
             $this->ready = false;
@@ -481,10 +481,11 @@ class kolab_storage_cache
     /**
      * Read a single entry from cache or from IMAP directly
      *
-     * @param string Related IMAP message UID
-     * @param string Object type to read
-     * @param string IMAP folder name the entry relates to
-     * @param array  Hash array with object properties or null if not found
+     * @param string $msguid     Related IMAP message UID
+     * @param string $type       Object type to read
+     * @param string $foldername IMAP folder name the entry relates to
+     *
+     * @return array|null Hash array with object properties or null if not found
      */
     public function get($msguid, $type = null, $foldername = null)
     {
@@ -561,9 +562,9 @@ class kolab_storage_cache
     /**
      * Insert/Update a cache entry
      *
-     * @param string Related IMAP message UID
-     * @param mixed  Hash array with object properties to save or false to delete the cache entry
-     * @param string IMAP folder name the entry relates to
+     * @param string $msguid     Related IMAP message UID
+     * @param mixed  $object     Hash array with object properties to save or false to delete the cache entry
+     * @param string $foldername IMAP folder name the entry relates to
      */
     public function set($msguid, $object, $foldername = null)
     {
@@ -605,9 +606,9 @@ class kolab_storage_cache
     /**
      * Insert (or update) a cache entry
      *
-     * @param int    Related IMAP message UID
-     * @param mixed  Hash array with object properties to save or false to delete the cache entry
-     * @param int    Optional old message UID (for update)
+     * @param int   $msguid Related IMAP message UID
+     * @param mixed $object Hash array with object properties to save or false to delete the cache entry
+     * @param int   $olduid  Optional old message UID (for update)
      */
     public function save($msguid, $object, $olduid = null)
     {
@@ -664,10 +665,10 @@ class kolab_storage_cache
     /**
      * Move an existing cache entry to a new resource
      *
-     * @param string               Entry's IMAP message UID
-     * @param string               Entry's Object UID
-     * @param kolab_storage_folder Target storage folder instance
-     * @param string               Target entry's IMAP message UID
+     * @param string               $msguid     Entry's IMAP message UID
+     * @param string               $uid        Entry's Object UID
+     * @param kolab_storage_folder $target     Target storage folder instance
+     * @param string               $new_msguid Target entry's IMAP message UID
      */
     public function move($msguid, $uid, $target, $new_msguid = null)
     {
@@ -728,7 +729,7 @@ class kolab_storage_cache
     /**
      * Update resource URI for existing cache entries
      *
-     * @param string Target IMAP folder to move it to
+     * @param string $new_folder Target IMAP folder to move it to
      */
     public function rename($new_folder)
     {
@@ -754,11 +755,11 @@ class kolab_storage_cache
     /**
      * Select Kolab objects filtered by the given query
      *
-     * @param array Pseudo-SQL query as list of filter parameter triplets
-     *              triplet: array('<colname>', '<comparator>', '<value>')
-     * @param bool  Set true to only return UIDs instead of complete objects
-     * @param bool  Use fast mode to fetch only minimal set of information
-     *              (no xml fetching and parsing, etc.)
+     * @param array $query Pseudo-SQL query as list of filter parameter triplets
+     *                     triplet: array('<colname>', '<comparator>', '<value>')
+     * @param bool  $uids  Set true to only return UIDs instead of complete objects
+     * @param bool  $fast  Use fast mode to fetch only minimal set of information
+     *                     (no xml fetching and parsing, etc.)
      *
      * @return null|array|kolab_storage_dataset List of Kolab data objects
      *                                          (each represented as hash array) or UIDs
@@ -853,7 +854,7 @@ class kolab_storage_cache
     /**
      * Get number of objects mathing the given query
      *
-     * @param array  $query Pseudo-SQL query as list of filter parameter triplets
+     * @param array $query Pseudo-SQL query as list of filter parameter triplets
      *
      * @return int|null The number of objects of the given type, Null on error
      */
@@ -1006,9 +1007,10 @@ class kolab_storage_cache
     /**
      * Fetch messages from IMAP
      *
-     * @param array  List of message UIDs to fetch
-     * @param string Requested object type or * for all
-     * @param string IMAP folder to read from
+     * @param array  $index  List of message UIDs to fetch
+     * @param string $type   Requested object type or * for all
+     * @param string $folder IMAP folder to read from
+     *
      * @return array List of parsed Kolab objects
      */
     protected function _fetch($index, $type = null, $folder = null)
@@ -1107,8 +1109,8 @@ class kolab_storage_cache
     /**
      * Write records into cache using extended inserts to reduce the number of queries to be executed
      *
-     * @param int  Message UID. Set 0 to commit buffered inserts
-     * @param array Kolab object to cache
+     * @param int   $msguid Message UID. Set 0 to commit buffered inserts
+     * @param array $object Kolab object to cache
      */
     protected function _extended_insert($msguid, $object)
     {
@@ -1323,9 +1325,10 @@ class kolab_storage_cache
     /**
      * Resolve an object UID into an IMAP message UID
      *
-     * @param string  Kolab object UID
-     * @param boolean Include deleted objects
-     * @return int The resolved IMAP message UID
+     * @param string $uid     Kolab object UID
+     * @param bool   $deleted Include deleted objects
+     *
+     * @return int|null The resolved IMAP message UID
      */
     public function uid2msguid($uid, $deleted = false)
     {

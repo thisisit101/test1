@@ -292,7 +292,7 @@ class kolab_driver extends calendar_driver
     /**
      * Get list of calendars according to specified filters
      *
-     * @param int Bitmask defining restrictions. See FILTER_* constants for possible values.
+     * @param int $filter Bitmask defining restrictions. See FILTER_* constants for possible values.
      *
      * @return array<kolab_calendar> List of calendars
      */
@@ -350,7 +350,7 @@ class kolab_driver extends calendar_driver
     /**
      * Get the kolab_calendar instance for the given calendar ID
      *
-     * @param string Calendar identifier (encoded imap folder name)
+     * @param string $id Calendar identifier (encoded imap folder name)
      *
      * @return kolab_calendar Object nor null if calendar doesn't exist
      */
@@ -379,7 +379,7 @@ class kolab_driver extends calendar_driver
     /**
      * Create a new calendar assigned to the current user
      *
-     * @param array Hash array with calendar properties
+     * @param array $prop Hash array with calendar properties
      *    name: Calendar name
      *   color: The color of the calendar
      *
@@ -530,8 +530,8 @@ class kolab_driver extends calendar_driver
     /**
      * Search for shared or otherwise not listed calendars the user has access
      *
-     * @param string Search string
-     * @param string Section/source to search
+     * @param string $query  Search string
+     * @param string $source Section/source to search
      *
      * @return array List of calendars
      */
@@ -681,9 +681,9 @@ class kolab_driver extends calendar_driver
     /**
      * Extended event editing with possible changes to the argument
      *
-     * @param array  Hash array with event properties
-     * @param string New participant status
-     * @param array  List of hash arrays with updated attendees
+     * @param array  $event     Hash array with event properties
+     * @param string $status    New participant status
+     * @param array  $attendees List of hash arrays with updated attendees
      *
      * @return bool True on success, False on error
      */
@@ -775,7 +775,7 @@ class kolab_driver extends calendar_driver
      * Move a single event
      *
      * @see calendar_driver::move_event()
-     * @return boolean True on success, False on error
+     * @return bool True on success, False on error
      */
     public function move_event($event)
     {
@@ -793,7 +793,7 @@ class kolab_driver extends calendar_driver
      * Resize a single event
      *
      * @see calendar_driver::resize_event()
-     * @return boolean True on success, False on error
+     * @return bool True on success, False on error
      */
     public function resize_event($event)
     {
@@ -810,9 +810,9 @@ class kolab_driver extends calendar_driver
     /**
      * Remove a single event
      *
-     * @param array Hash array with event properties:
-     *      id: Event identifier
-     * @param bool  Remove record(s) irreversible (mark as deleted otherwise)
+     * @param array $event Hash array with event properties:
+     *                     - id: Event identifier
+     * @param bool  $force Remove record(s) irreversible (mark as deleted otherwise)
      *
      * @return bool True on success, False on error
      */
@@ -964,9 +964,9 @@ class kolab_driver extends calendar_driver
     /**
      * Restore a single deleted event
      *
-     * @param array Hash array with event properties:
-     *                    id: Event identifier
-     *              calendar: Event calendar
+     * @param array $event Hash array with event properties:
+     *                     - id: Event identifier
+     *                     - calendar: Event calendar
      *
      * @return bool True on success, False on error
      */
@@ -1562,9 +1562,9 @@ class kolab_driver extends calendar_driver
     /**
      * Merge certain properties from the overlay event to the base event object
      *
-     * @param array The event object to be altered
-     * @param array The overlay event object to be merged over $event
-     * @param array List of properties not allowed to be overwritten
+     * @param array  $event     The event object to be altered
+     * @param array  $overlay   The overlay event object to be merged over $event
+     * @param ?array $blacklist List of properties not allowed to be overwritten
      */
     public static function merge_exception_data(&$event, $overlay, $blacklist = null)
     {
@@ -1681,9 +1681,9 @@ class kolab_driver extends calendar_driver
     /**
      * Get number of events in the given calendar
      *
-     * @param mixed List of calendar IDs to count events (either as array or comma-separated string)
-     * @param int   Date range start (unix timestamp)
-     * @param int   Date range end (unix timestamp)
+     * @param mixed $calendars List of calendar IDs to count events (either as array or comma-separated string)
+     * @param int   $start     Date range start (unix timestamp)
+     * @param ?int  $end       Date range end (unix timestamp)
      *
      * @return array Hash array with counts grouped by calendar ID
      */
@@ -1946,9 +1946,9 @@ class kolab_driver extends calendar_driver
     /**
      * Create instances of a recurring event
      *
-     * @param array    Hash array with event properties
-     * @param DateTime Start date of the recurrence window
-     * @param DateTime End date of the recurrence window
+     * @param array    $event Hash array with event properties
+     * @param DateTime $start Start date of the recurrence window
+     * @param DateTime $end   End date of the recurrence window
      *
      * @return array List of recurring event instances
      */
@@ -2410,8 +2410,8 @@ class kolab_driver extends calendar_driver
     /**
      * Return full data of a specific revision of an event
      *
-     * @param array Hash array with event properties
-     * @param mixed $rev Revision number
+     * @param array $event Hash array with event properties
+     * @param mixed $rev   Revision number
      *
      * @return array Event object as hash array
      * @see calendar_driver::get_event_revison()
@@ -2430,6 +2430,7 @@ class kolab_driver extends calendar_driver
         // call Bonnie API
         $result = $this->bonnie_api->get('event', $uid, $rev, $mailbox, $msguid);
         if (is_array($result) && $result['uid'] == $uid && !empty($result['xml'])) {
+            /** @var kolab_format_event $format */
             $format = kolab_format::factory('event');
             $format->load($result['xml']);
             $event = $format->to_array();
@@ -2544,9 +2545,9 @@ class kolab_driver extends calendar_driver
     /**
      * Callback function to produce driver-specific calendar create/edit form
      *
-     * @param string Request action 'form-edit|form-new'
-     * @param array  Calendar properties (e.g. id, color)
-     * @param array  Edit form fields
+     * @param string $action     Request action 'form-edit|form-new'
+     * @param array  $calendar   Calendar properties (e.g. id, color)
+     * @param array  $formfields Edit form fields
      *
      * @return string HTML content of the form
      */

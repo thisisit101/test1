@@ -22,7 +22,8 @@ parameters:
         - '#Call to static method .* on an unknown class jqueryui#'
         - '#Access to an undefined property Kolab2FA\\.*::\$(username|secret)#'
         - '#Unsafe call to private method Firebase\\JWT\\JWT::.*#'
-        - '#PHPDoc tag#'
+        - '#Access to an undefined property Sabre\\VObject.*::\$.*#'
+        - '#invalid .*type vector#'
         - '#(cDateTime|EventCal)#'
 
     paths:

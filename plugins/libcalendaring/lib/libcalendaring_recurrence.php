@@ -60,8 +60,8 @@ class libcalendaring_recurrence
     /**
      * Initialize recurrence engine
      *
-     * @param array    The recurrence properties
-     * @param DateTime The recurrence start date
+     * @param array    $recurrence The recurrence properties
+     * @param DateTime $start      The recurrence start date
      */
     public function init($recurrence, $start)
     {

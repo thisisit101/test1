@@ -231,15 +231,15 @@ class kolab_invitation_calendar
     }
 
     /**
-     * @param int    Event's new start (unix timestamp)
-     * @param int    Event's new end (unix timestamp)
-     * @param string Search query (optional)
-     * @param bool   Include virtual events (optional)
-     * @param array  Additional parameters to query storage
+     * @param int    $start   Event's new start (unix timestamp)
+     * @param int    $end     Event's new end (unix timestamp)
+     * @param string $search  Search query (optional)
+     * @param bool   $virtual Include virtual events (optional)
+     * @param array  $query   Additional parameters to query storage
      *
      * @return array A list of event records
      */
-    public function list_events($start, $end, $search = null, $virtual = 1, $query = [])
+    public function list_events($start, $end, $search = null, $virtual = true, $query = [])
     {
         // get email addresses of the current user
         $user_emails = $this->cal->get_user_emails();
@@ -292,9 +292,9 @@ class kolab_invitation_calendar
     /**
      * Get number of events in the given calendar
      *
-     * @param int   Date range start (unix timestamp)
-     * @param int   Date range end (unix timestamp)
-     * @param array Additional query to filter events
+     * @param int   $start  Date range start (unix timestamp)
+     * @param int   $end    Date range end (unix timestamp)
+     * @param array $filter Additional query to filter events
      *
      * @return int Count
      */

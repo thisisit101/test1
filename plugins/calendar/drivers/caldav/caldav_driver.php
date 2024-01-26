@@ -276,7 +276,7 @@ class caldav_driver extends kolab_driver
     /**
      * Get the caldav_calendar instance for the given calendar ID
      *
-     * @param string Calendar identifier
+     * @param string $id Calendar identifier
      *
      * @return ?caldav_calendar Object nor null if calendar doesn't exist
      */
@@ -305,7 +305,7 @@ class caldav_driver extends kolab_driver
     /**
      * Create a new calendar assigned to the current user
      *
-     * @param array Hash array with calendar properties
+     * @param array $prop Hash array with calendar properties
      *    name: Calendar name
      *   color: The color of the calendar
      *
@@ -411,8 +411,8 @@ class caldav_driver extends kolab_driver
     /**
      * Search for shared or otherwise not listed calendars the user has access
      *
-     * @param string Search string
-     * @param string Section/source to search
+     * @param string $query  Search string
+     * @param string $source Section/source to search
      *
      * @return array List of calendars
      */
@@ -460,12 +460,12 @@ class caldav_driver extends kolab_driver
     /**
      * Get events from source.
      *
-     * @param int    Event's new start (unix timestamp)
-     * @param int    Event's new end (unix timestamp)
-     * @param string Search query (optional)
-     * @param mixed  List of calendar IDs to load events from (either as array or comma-separated string)
-     * @param bool   Include virtual events (optional)
-     * @param int    Only list events modified since this time (unix timestamp)
+     * @param int    $start         Event's new start (unix timestamp)
+     * @param int    $end           Event's new end (unix timestamp)
+     * @param string $search        Search query (optional)
+     * @param mixed  $calendars     List of calendar IDs to load events from (either as array or comma-separated string)
+     * @param bool   $virtual       Include virtual events (optional)
+     * @param int    $modifiedsince Only list events modified since this time (unix timestamp)
      *
      * @return array A list of event records
      */
@@ -521,9 +521,9 @@ class caldav_driver extends kolab_driver
     /**
      * Create instances of a recurring event
      *
-     * @param array    Hash array with event properties
-     * @param DateTime Start date of the recurrence window
-     * @param DateTime End date of the recurrence window
+     * @param array     $event Hash array with event properties
+     * @param DateTime  $start Start date of the recurrence window
+     * @param ?DateTime $end   End date of the recurrence window
      *
      * @return array List of recurring event instances
      */
@@ -597,8 +597,8 @@ class caldav_driver extends kolab_driver
     /**
      * Identify changes considered relevant for scheduling
      *
-     * @param array Hash array with NEW object properties
-     * @param array Hash array with OLD object properties
+     * @param array $object Hash array with NEW object properties
+     * @param array $old    Hash array with OLD object properties
      *
      * @return bool True if changes affect scheduling, False otherwise
      */
@@ -644,9 +644,9 @@ class caldav_driver extends kolab_driver
     /**
      * Callback function to produce driver-specific calendar create/edit form
      *
-     * @param string Request action 'form-edit|form-new'
-     * @param array  Calendar properties (e.g. id, color)
-     * @param array  Edit form fields
+     * @param string $action     Request action 'form-edit|form-new'
+     * @param array  $calendar   Calendar properties (e.g. id, color)
+     * @param array  $formfields Edit form fields
      *
      * @return string HTML content of the form
      */

@@ -52,7 +52,7 @@ class kolab_format_event extends kolab_format_xcal
     /**
      * Set event properties to the kolabformat object
      *
-     * @param array  Event data as hash array
+     * @param array $object Event data as hash array
      */
     public function set(&$object)
     {
@@ -139,9 +139,9 @@ class kolab_format_event extends kolab_format_xcal
     /**
      * Convert the Event object into a hash array data structure
      *
-     * @param array Additional data for merge
+     * @param array $data Additional data for merge
      *
-     * @return array  Event data as hash array
+     * @return array Event data as hash array
      */
     public function to_array($data = [])
     {
@@ -231,7 +231,8 @@ class kolab_format_event extends kolab_format_xcal
     /**
      * Getter for a single instance from a recurrence series or stored subcomponents
      *
-     * @param mixed The recurrence-id of the requested instance, either as string or a DateTime object
+     * @param mixed $recurrence_id The recurrence-id of the requested instance, either as string or a DateTime object
+     *
      * @return array Event data as hash array or null if not found
      */
     public function get_instance($recurrence_id)

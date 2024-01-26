@@ -276,8 +276,9 @@ class kolab_notes extends rcube_plugin
     /**
      * Search for shared or otherwise not listed folders the user has access
      *
-     * @param string Search string
-     * @param string Section/source to search
+     * @param string $query  Search string
+     * @param string $source Section/source to search
+     *
      * @return array List of notes folders
      */
     protected function search_lists($query, $source)
@@ -374,8 +375,9 @@ class kolab_notes extends rcube_plugin
     /**
      * Get the kolab_calendar instance for the given calendar ID
      *
-     * @param string List identifier (encoded imap folder name)
-     * @return object kolab_storage_folder Object nor null if list doesn't exist
+     * @param string $id List identifier (encoded imap folder name)
+     *
+     * @return ?kolab_storage_folder Object nor null if list doesn't exist
      */
     public function get_folder($id)
     {
@@ -388,7 +390,7 @@ class kolab_notes extends rcube_plugin
             }
         }
 
-        return $this->folders[$id];
+        return $this->folders[$id] ?? null;
     }
 
     /*******  UI functions  ********/
@@ -718,8 +720,9 @@ class kolab_notes extends rcube_plugin
     /**
      * Update an note record with the given data
      *
-     * @param array Hash array with note properties (id, list)
-     * @return boolean True on success, False on error
+     * @param array $note Hash array with note properties (id, list)
+     *
+     * @return bool True on success, False on error
      */
     private function save_note(&$note)
     {
@@ -813,9 +816,10 @@ class kolab_notes extends rcube_plugin
     /**
      * Remove a single note record from the backend
      *
-     * @param array   Hash array with note properties (id, list)
-     * @param boolean Remove record irreversible (mark as deleted otherwise)
-     * @return boolean True on success, False on error
+     * @param array $note  Hash array with note properties (id, list)
+     * @param bool  $force Remove record irreversible (mark as deleted otherwise)
+     *
+     * @return bool True on success, False on error
      */
     public function delete_note($note, $force = true)
     {
@@ -886,7 +890,8 @@ class kolab_notes extends rcube_plugin
     /**
      * Provide a list of revisions for the given object
      *
-     * @param array  $note Hash array with note properties
+     * @param array $note Hash array with note properties
+     *
      * @return array List of changes, each as a hash array
      */
     public function get_changelog($note)
@@ -908,8 +913,8 @@ class kolab_notes extends rcube_plugin
     /**
      * Return full data of a specific revision of a note record
      *
-     * @param mixed  $note UID string or hash array with note properties
-     * @param mixed  $rev Revision number
+     * @param mixed $note UID string or hash array with note properties
+     * @param mixed $rev Revision number
      *
      * @return array Note object as hash array
      */
@@ -940,8 +945,9 @@ class kolab_notes extends rcube_plugin
     /**
      * Get a list of property changes beteen two revisions of a note object
      *
-     * @param array  $$note Hash array with note properties
-     * @param mixed  $rev   Revisions: "from:to"
+     * @param array $note Hash array with note properties
+     * @param mixed $rev1   Revision: "from"
+     * @param mixed $rev2   Revision: "to"
      *
      * @return array List of property changes, each as a hash array
      */

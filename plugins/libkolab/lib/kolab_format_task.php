@@ -46,7 +46,7 @@ class kolab_format_task extends kolab_format_xcal
     /**
      * Set properties to the kolabformat object
      *
-     * @param array  Object data as hash array
+     * @param array $object Object data as hash array
      */
     public function set(&$object)
     {
@@ -94,9 +94,9 @@ class kolab_format_task extends kolab_format_xcal
     /**
      * Convert the Configuration object into a hash array data structure
      *
-     * @param array Additional data for merge
+     * @param array $data Additional data for merge
      *
-     * @return array  Config object data as hash array
+     * @return array Config object data as hash array
      */
     public function to_array($data = [])
     {

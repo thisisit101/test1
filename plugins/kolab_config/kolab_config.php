@@ -138,8 +138,8 @@ class kolab_config extends rcube_plugin
     /**
      * Load dictionary config objects from Kolab storage
      *
-     * @param string The language (2 chars) to load
-     * @param bool   Only load objects from default folder
+     * @param string $lang    The language (2 chars) to load
+     * @param bool   $default Only load objects from default folder
      *
      * @return array|null Dictionary object as hash array
      */

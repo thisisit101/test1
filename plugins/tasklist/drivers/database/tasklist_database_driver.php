@@ -204,8 +204,8 @@ class tasklist_database_driver extends tasklist_driver
     /**
      * Search for shared or otherwise not listed tasklists the user has access
      *
-     * @param string Search string
-     * @param string Section/source to search
+     * @param string $query  Search string
+     * @param string $source Section/source to search
      *
      * @return array List of tasklists
      */

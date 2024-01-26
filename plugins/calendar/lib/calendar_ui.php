@@ -43,7 +43,7 @@ class calendar_ui
     /**
      * Object constructor
      *
-     * @param calendar Calendar plugin
+     * @param calendar $cal Calendar plugin
      */
     public function __construct($cal)
     {

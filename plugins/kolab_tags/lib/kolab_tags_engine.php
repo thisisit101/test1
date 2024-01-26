@@ -534,7 +534,7 @@ class kolab_tags_engine
     /**
      * Builds member URI
      *
-     * @param array Message folder, UID, Search headers (Message-Id, Date)
+     * @param array $params Message folder, UID, Search headers (Message-Id, Date)
      *
      * @return string $url Member URI
      */

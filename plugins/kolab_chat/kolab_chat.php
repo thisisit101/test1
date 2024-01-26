@@ -140,7 +140,7 @@ class kolab_chat extends rcube_plugin
      * Handler for preferences_sections_list hook.
      * Adds Chat settings section into preferences sections list.
      *
-     * @param array Original parameters
+     * @param array $p Original parameters
      *
      * @return array Modified parameters
      */
@@ -157,7 +157,7 @@ class kolab_chat extends rcube_plugin
      * Handler for preferences_list hook.
      * Adds options blocks into Chat settings sections in Preferences.
      *
-     * @param array Original parameters
+     * @param array $p Original parameters
      *
      * @return array Modified parameters
      */
@@ -201,7 +201,7 @@ class kolab_chat extends rcube_plugin
      * Handler for preferences_save hook.
      * Executed on Chat settings form submit.
      *
-     * @param array Original parameters
+     * @param array $p Original parameters
      *
      * @return array Modified parameters
      */

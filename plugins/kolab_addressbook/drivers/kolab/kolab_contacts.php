@@ -157,6 +157,7 @@ class kolab_contacts extends rcube_addressbook
         }
 
         // extend coltypes configuration
+        /** @var kolab_format_contact $format */
         $format = kolab_format::factory('contact');
 
         $this->coltypes['phone']['subtypes']   = array_keys($format->phonetypes);
@@ -285,7 +286,7 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Save a search string for future listings
      *
-     * @param mixed Search params to use in listing method, obtained by get_search_set()
+     * @param mixed $filter Search params to use in listing method, obtained by get_search_set()
      */
     public function set_search_set($filter): void
     {
@@ -314,8 +315,8 @@ class kolab_contacts extends rcube_addressbook
     /**
      * List all active contact groups of this source
      *
-     * @param string Optional search string to match group name
-     * @param int    Search mode. Sum of self::SEARCH_*
+     * @param string $search Optional search string to match group name
+     * @param int    $mode   Search mode. Sum of self::SEARCH_*
      *
      * @return array Indexed list of contact groups, each a hash array
      */
@@ -339,9 +340,9 @@ class kolab_contacts extends rcube_addressbook
     /**
      * List the current set of contact records
      *
-     * @param array List of cols to show
-     * @param int   Only return this number of records, use negative values for tail
-     * @param bool  True to skip the count query (select only)
+     * @param array $cols    List of cols to show
+     * @param int   $subset  Only return this number of records, use negative values for tail
+     * @param bool  $nocount True to skip the count query (select only)
      *
      * @return array Indexed list of contact records, each a hash array
      */
@@ -579,7 +580,7 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Return the last result set
      *
-     * @return rcube_result_set Current result set or NULL if nothing selected yet
+     * @return ?rcube_result_set Current result set or NULL if nothing selected yet
      */
     public function get_result()
     {
@@ -589,10 +590,10 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Get a specific contact record
      *
-     * @param mixed Record identifier(s)
-     * @param bool  True to return record as associative array, otherwise a result set is returned
+     * @param mixed $id    Record identifier(s)
+     * @param bool  $assoc True to return record as associative array, otherwise a result set is returned
      *
-     * @return mixed Result object with all record fields or False if not found
+     * @return false|rcube_result_set Result object with all record fields or False if not found
      */
     public function get_record($id, $assoc = false)
     {
@@ -629,7 +630,7 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Get group assignments of a specific contact record
      *
-     * @param mixed Record identifier
+     * @param mixed $id Record identifier
      *
      * @return array List of assigned groups as ID=>Name pairs
      */
@@ -653,10 +654,10 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Create a new contact record
      *
-     * @param array Associative array with save data
+     * @param array $save_data Associative array with save data
      *  Keys:   Field name with optional section in the form FIELD:SECTION
      *  Values: Field value. Can be either a string or an array of strings for multiple values
-     * @param bool  True to check for duplicates first
+     * @param bool  $check     True to check for duplicates first
      *
      * @return mixed The created record ID on success, False on error
      */
@@ -706,8 +707,8 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Update a specific contact record
      *
-     * @param mixed Record identifier
-     * @param array Associative array with save data
+     * @param mixed $id        Record identifier
+     * @param array $save_data Associative array with save data
      *  Keys:   Field name with optional section in the form FIELD:SECTION
      *  Values: Field value. Can be either a string or an array of strings for multiple values
      *
@@ -741,8 +742,8 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Mark one or more contact records as deleted
      *
-     * @param array Record identifiers
-     * @param bool  Remove record(s) irreversible (mark as deleted otherwise)
+     * @param array $ids   Record identifiers
+     * @param bool  $force Remove record(s) irreversible (mark as deleted otherwise)
      *
      * @return int Number of records deleted
      */
@@ -794,7 +795,7 @@ class kolab_contacts extends rcube_addressbook
      * Undelete one or more contact records.
      * Only possible just after delete (see 2nd argument of delete() method).
      *
-     * @param array Record identifiers
+     * @param array $ids Record identifiers
      *
      * @return int Number of records restored
      */
@@ -850,9 +851,9 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Create a contact group with the given name
      *
-     * @param string The group name
+     * @param string $name The group name
      *
-     * @return mixed False on error, array with record props in success
+     * @return array|false False on error, array with record props in success
      */
     public function create_group($name)
     {
@@ -887,7 +888,7 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Delete the given group and all linked group members
      *
-     * @param string Group identifier
+     * @param string $gid Group identifier
      *
      * @return bool True on success, false if no data was changed
      */
@@ -919,9 +920,9 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Rename a specific contact group
      *
-     * @param string Group identifier
-     * @param string New name to set for this group
-     * @param string New group identifier (if changed, otherwise don't set)
+     * @param string $gid     Group identifier
+     * @param string $newname New name to set for this group
+     * @param string $newid   New group identifier (if changed, otherwise don't set)
      *
      * @return bool New name on success, false if no data was changed
      */
@@ -953,9 +954,10 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Add the given contact records the a certain group
      *
-     * @param string Group identifier
-     * @param array  List of contact identifiers to be added
-     * @return int   Number of contacts added
+     * @param string $gid Group identifier
+     * @param array  $ids List of contact identifiers to be added
+     *
+     * @return int Number of contacts added
      */
     public function add_to_group($gid, $ids)
     {
@@ -1029,9 +1031,10 @@ class kolab_contacts extends rcube_addressbook
     /**
      * Remove the given contact records from a certain group
      *
-     * @param string Group identifier
-     * @param array  List of contact identifiers to be removed
-     * @return int   Number of deleted group members
+     * @param string $gid Group identifier
+     * @param array  $ids List of contact identifiers to be removed
+     *
+     * @return int Number of deleted group members
      */
     public function remove_from_group($gid, $ids)
     {
@@ -1081,8 +1084,8 @@ class kolab_contacts extends rcube_addressbook
      * Check the given data before saving.
      * If input not valid, the message to display can be fetched using get_error()
      *
-     * @param array Associative array with contact data to save
-     * @param bool  Attempt to fix/complete data automatically
+     * @param array $save_data Associative array with contact data to save
+     * @param bool  $autofix   Attempt to fix/complete data automatically
      *
      * @return bool True if input is valid, False if not.
      */

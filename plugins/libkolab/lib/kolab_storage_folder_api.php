@@ -48,7 +48,7 @@ abstract class kolab_storage_folder_api
 
     /**
      * Is this folder set to be the default for its type
-     * @var boolean
+     * @var bool
      */
     public $default = false;
 
@@ -86,8 +86,9 @@ abstract class kolab_storage_folder_api
     /**
      * Returns the owner of the folder.
      *
-     * @param boolean  Return a fully qualified owner name (i.e. including domain for shared folders)
-     * @return string  The owner of this folder.
+     * @param bool $fully_qualified Return a fully qualified owner name (i.e. including domain for shared folders)
+     *
+     * @return string The owner of this folder.
      */
     public function get_owner($fully_qualified = false)
     {
@@ -220,7 +221,8 @@ abstract class kolab_storage_folder_api
     /**
      * Get the color value stored in metadata
      *
-     * @param string Default color value to return if not set
+     * @param string $default Default color value to return if not set
+     *
      * @return mixed Color value from IMAP metadata or $default is not set
      */
     public function get_color($default = null)
@@ -252,8 +254,9 @@ abstract class kolab_storage_folder_api
     /**
      * Sets IMAP metadata/annotations (SETMETADATA/SETANNOTATION)
      *
-     * @param array  $entries Entry-value array (use NULL value as NIL)
-     * @return boolean True on success, False on failure
+     * @param array $entries Entry-value array (use NULL value as NIL)
+     *
+     * @return bool True on success, False on failure
      */
     public function set_metadata($entries)
     {
@@ -331,7 +334,7 @@ abstract class kolab_storage_folder_api
     /**
      * Check activation status of this folder
      *
-     * @return boolean True if enabled, false if not
+     * @return bool True if enabled, false if not
      */
     public function is_active()
     {
@@ -341,7 +344,7 @@ abstract class kolab_storage_folder_api
     /**
      * Change activation status of this folder
      *
-     * @param boolean The desired subscription status: true = active, false = not active
+     * @param bool $active The desired subscription status: true = active, false = not active
      *
      * @return True on success, false on error
      */
@@ -353,7 +356,7 @@ abstract class kolab_storage_folder_api
     /**
      * Check subscription status of this folder
      *
-     * @return boolean True if subscribed, false if not
+     * @return bool True if subscribed, false if not
      */
     public function is_subscribed()
     {
@@ -363,9 +366,9 @@ abstract class kolab_storage_folder_api
     /**
      * Change subscription status of this folder
      *
-     * @param boolean The desired subscription status: true = subscribed, false = not subscribed
+     * @param bool $subscribed The desired subscription status: true = subscribed, false = not subscribed
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function subscribe($subscribed)
     {

@@ -44,7 +44,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Connect cache with a storage folder
      *
-     * @param kolab_storage_folder The storage folder instance to connect with
+     * @param kolab_storage_folder $storage_folder The storage folder instance to connect with
      */
     public function set_folder(kolab_storage_folder $storage_folder)
     {
@@ -254,9 +254,9 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Read a single entry from cache or from server directly
      *
-     * @param string Object UID
-     * @param string Object type to read
-     * @param string Unused (kept for compat. with the parent class)
+     * @param string $uid    Object UID
+     * @param string $type   Object type to read
+     * @param string $unused Unused (kept for compat. with the parent class)
      *
      * @return null|array An array of objects, NULL if not found
      */
@@ -289,7 +289,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Read multiple entries from the server directly
      *
-     * @param array Object UIDs
+     * @param array $uids Object UIDs
      *
      * @return false|array An array of objects, False on error
      */
@@ -301,9 +301,9 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Insert/Update a cache entry
      *
-     * @param string      Object UID
-     * @param array|false Hash array with object properties to save or false to delete the cache entry
-     * @param string      Unused (kept for compat. with the parent class)
+     * @param string      $uid    Object UID
+     * @param array|false $object Hash array with object properties to save or false to delete the cache entry
+     * @param string      $unused Unused (kept for compat. with the parent class)
      */
     public function set($uid, $object, $unused = null)
     {
@@ -326,9 +326,9 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Insert (or update) a cache entry
      *
-     * @param mixed  Hash array with object properties to save or false to delete the cache entry
-     * @param string Optional old message UID (for update)
-     * @param string Unused (kept for compat. with the parent class)
+     * @param mixed  $object Hash array with object properties to save or false to delete the cache entry
+     * @param string $olduid Optional old message UID (for update)
+     * @param string $unused Unused (kept for compat. with the parent class)
      */
     public function save($object, $olduid = null, $unused = null)
     {
@@ -378,10 +378,10 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Move an existing cache entry to a new resource
      *
-     * @param string               Entry's  UID
-     * @param kolab_storage_folder Target storage folder instance
-     * @param string Unused (kept for compat. with the parent class)
-     * @param string Unused (kept for compat. with the parent class)
+     * @param string               $uid     Entry's UID
+     * @param kolab_storage_folder $target  Target storage folder instance
+     * @param string               $unused1 Unused (kept for compat. with the parent class)
+     * @param string               $unused2 Unused (kept for compat. with the parent class)
      */
     public function move($uid, $target, $unused1 = null, $unused2 = null)
     {
@@ -391,7 +391,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Update resource URI for existing folder
      *
-     * @param string Target DAV folder to move it to
+     * @param string $new_folder Target DAV folder to move it to
      */
     public function rename($new_folder)
     {
@@ -401,11 +401,11 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Select Kolab objects filtered by the given query
      *
-     * @param array Pseudo-SQL query as list of filter parameter triplets
-     *   triplet: ['<colname>', '<comparator>', '<value>']
-     * @param bool  Set true to only return UIDs instead of complete objects
-     * @param bool  Use fast mode to fetch only minimal set of information
-     *              (no xml fetching and parsing, etc.)
+     * @param array $query Pseudo-SQL query as list of filter parameter triplets
+     *                     triplet: ['<colname>', '<comparator>', '<value>']
+     * @param bool  $uids  Set true to only return UIDs instead of complete objects
+     * @param bool  $fast  Use fast mode to fetch only minimal set of information
+     *                     (no xml fetching and parsing, etc.)
      *
      * @return array|null|kolab_storage_dataset List of Kolab data objects (each represented as hash array) or UIDs
      */
@@ -501,8 +501,8 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Write records into cache using extended inserts to reduce the number of queries to be executed
      *
-     * @param bool  Set to false to commit buffered insert, true to force an insert
-     * @param array Kolab object to cache
+     * @param bool  $force  Set to false to commit buffered insert, true to force an insert
+     * @param array $object Kolab object to cache
      */
     protected function _extended_insert($force, $object)
     {

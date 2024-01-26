@@ -55,10 +55,10 @@ class kolab_storage_cache_configuration extends kolab_storage_cache
     /**
      * Select Kolab objects filtered by the given query
      *
-     * @param array   Pseudo-SQL query as list of filter parameter triplets
-     * @param boolean Set true to only return UIDs instead of complete objects
-     * @param boolean Use fast mode to fetch only minimal set of information
-     *                (no xml fetching and parsing, etc.)
+     * @param array $query Pseudo-SQL query as list of filter parameter triplets
+     * @param bool  $uids  Set true to only return UIDs instead of complete objects
+     * @param bool  $fast  Use fast mode to fetch only minimal set of information
+     *                     (no xml fetching and parsing, etc.)
      *
      * @return array List of Kolab data objects (each represented as hash array) or UIDs
      */

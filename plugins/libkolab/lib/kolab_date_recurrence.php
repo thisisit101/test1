@@ -52,7 +52,7 @@ class kolab_date_recurrence
     /**
      * Default constructor
      *
-     * @param kolab_format_xcal The Kolab object to operate on
+     * @param kolab_format_xcal $object The Kolab object to operate on
      */
     public function __construct($object)
     {
@@ -76,7 +76,7 @@ class kolab_date_recurrence
     /**
      * Get date/time of the next occurence of this event
      *
-     * @param bool Return a Unix timestamp instead of a DateTime object
+     * @param bool $timestamp Return a Unix timestamp instead of a DateTime object
      *
      * @return DateTime|int|false Object/unix timestamp or False if recurrence ended
      */

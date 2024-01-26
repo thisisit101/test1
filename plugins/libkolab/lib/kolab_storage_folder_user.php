@@ -78,7 +78,7 @@ class kolab_storage_folder_user extends kolab_storage_folder_virtual
      * Check subscription status of this folder.
      * Subscription of a virtual user folder depends on the subscriptions of subfolders.
      *
-     * @return boolean True if subscribed, false if not
+     * @return bool True if subscribed, false if not
      */
     public function is_subscribed()
     {
@@ -102,7 +102,7 @@ class kolab_storage_folder_user extends kolab_storage_folder_virtual
     /**
      * Change subscription status of this folder
      *
-     * @param boolean The desired subscription status: true = subscribed, false = not subscribed
+     * @param bool $subscribed The desired subscription status: true = subscribed, false = not subscribed
      *
      * @return True on success, false on error
      */

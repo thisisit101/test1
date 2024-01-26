@@ -87,7 +87,7 @@ class kolab_format_contact extends kolab_format
     /**
      * Set contact properties to the kolabformat object
      *
-     * @param array  Contact data as hash array
+     * @param array $object Contact data as hash array
      */
     public function set(&$object)
     {
@@ -305,9 +305,9 @@ class kolab_format_contact extends kolab_format
     /**
      * Convert the Contact object into a hash array data structure
      *
-     * @param array Additional data for merge
+     * @param array $data Additional data for merge
      *
-     * @return array  Contact data as hash array
+     * @return array Contact data as hash array
      */
     public function to_array($data = [])
     {

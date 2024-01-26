@@ -100,9 +100,9 @@ abstract class kolab_format_xcal extends kolab_format
     /**
      * Convert common xcard properties into a hash array data structure
      *
-     * @param array Additional data for merge
+     * @param array $data Additional data for merge
      *
-     * @return array  Object data as hash array
+     * @return array Object data as hash array
      */
     public function to_array($data = [])
     {
@@ -322,7 +322,7 @@ abstract class kolab_format_xcal extends kolab_format
     /**
      * Set common xcal properties to the kolabformat object
      *
-     * @param array  Event data as hash array
+     * @param array $object Event data as hash array
      */
     public function set(&$object)
     {
@@ -735,10 +735,10 @@ abstract class kolab_format_xcal extends kolab_format
     /**
      * Identify changes considered relevant for scheduling
      *
-     * @param array Hash array with NEW object properties
-     * @param array Hash array with OLD object properties
+     * @param array $object Hash array with NEW object properties
+     * @param array $old    Hash array with OLD object properties
      *
-     * @return boolean True if changes affect scheduling, False otherwise
+     * @return bool True if changes affect scheduling, False otherwise
      */
     public function check_rescheduling($object, $old = null)
     {

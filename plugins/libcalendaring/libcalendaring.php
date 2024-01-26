@@ -171,7 +171,7 @@ class libcalendaring extends rcube_plugin
     /**
      * Load iCalendar functions
      *
-     * @return libcalendaring_vcalendar iCal parser 
+     * @return libcalendaring_vcalendar iCal parser
      */
     public static function get_ical()
     {
@@ -198,11 +198,11 @@ class libcalendaring extends rcube_plugin
     }
 
     /**
-     * Shift dates into user's current timezone
+     * Shift dates into user's current timezone.
      *
-     * @param mixed Any kind of a date representation (DateTime object, string or unix timestamp)
+     * @param mixed $dt Any kind of a date representation (DateTime object, string or unix timestamp)
      *
-     * @return object DateTime object in user's timezone
+     * @return DateTime DateTime object in user's timezone
      */
     public function adjust_timezone($dt, $dateonly = false)
     {
@@ -431,7 +431,7 @@ class libcalendaring extends rcube_plugin
     /**
      * Get a list of email addresses of the given user (from login and identities)
      *
-     * @param string User Email (default to current user)
+     * @param string $user User Email (default to current user)
      *
      * @return array Email addresses related to the user
      */
@@ -471,7 +471,7 @@ class libcalendaring extends rcube_plugin
      * @param string $status    The PARTSTAT value to set
      * @param bool   $recursive Recurive call
      *
-     * @return mixed Email address of the updated attendee or False if none matching found
+     * @return string|false Email address of the updated attendee or False if none matching found
      */
     public function set_partstat(&$event, $status, $recursive = true)
     {
@@ -658,8 +658,9 @@ class libcalendaring extends rcube_plugin
     /**
      * Get the next alarm (time & action) for the given event
      *
-     * @param array Record data
-     * @return array Hash array with alarm time/type or null if no alarms are configured
+     * @param array $rec Record data
+     *
+     * @return array|null Hash array with alarm time/type or null if no alarms are configured
      */
     public static function get_next_alarm($rec, $type = 'event')
     {
@@ -1238,10 +1239,10 @@ class libcalendaring extends rcube_plugin
     /**
      * Read the given mime message from IMAP and parse ical data
      *
-     * @param string Mailbox name
-     * @param string Message UID
-     * @param string Message part ID and object index (e.g. '1.2:0')
-     * @param string Object type filter (optional)
+     * @param string $mbox    Mailbox name
+     * @param string $uid     Message UID
+     * @param string $mime_id Message part ID and object index (e.g. '1.2:0')
+     * @param string $type    Object type filter (optional)
      *
      * @return array Hash array with the parsed iCal
      */
@@ -1295,10 +1296,10 @@ class libcalendaring extends rcube_plugin
     /**
      * Checks if specified message part is a vcalendar data
      *
-     * @param rcube_message_part Part object
-     * @param rcube_message      Message object
+     * @param rcube_message_part $part    Part object
+     * @param rcube_message      $message Message object
      *
-     * @return boolean True if part is of type vcard
+     * @return bool True if part is of type vcard
      */
     public static function part_is_vcalendar($part, $message = null)
     {
@@ -1351,7 +1352,8 @@ class libcalendaring extends rcube_plugin
     /**
      * Return a date() format string to render identifiers for recurrence instances
      *
-     * @param array Hash array with event properties
+     * @param array $event Hash array with event properties
+     *
      * @return string Format string
      */
     public static function recurrence_id_format($event)
@@ -1362,8 +1364,8 @@ class libcalendaring extends rcube_plugin
     /**
      * Return the identifer for the given instance of a recurring event
      *
-     * @param array Hash array with event properties
-     * @param bool  All-day flag from the main event
+     * @param array $event  Hash array with event properties
+     * @param ?bool $allday All-day flag from the main event
      *
      * @return mixed Format string or null if identifier cannot be generated
      */
@@ -1385,8 +1387,8 @@ class libcalendaring extends rcube_plugin
     /**
      * Check if a specified event is "identical" to the specified recurrence exception
      *
-     * @param array Hash array with occurrence properties
-     * @param array Hash array with exception properties
+     * @param array $event     Hash array with occurrence properties
+     * @param array $exception Hash array with exception properties
      *
      * @return bool
      */

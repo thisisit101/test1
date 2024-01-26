@@ -105,7 +105,7 @@ class database_driver extends calendar_driver
     /**
      * Get a list of available calendars from this source
      *
-     * @param integer Bitmask defining filter criterias
+     * @param int $filter Bitmask defining filter criterias
      *
      * @return array List of calendars
      */
@@ -159,9 +159,10 @@ class database_driver extends calendar_driver
     /**
      * Create a new calendar assigned to the current user
      *
-     * @param array Hash array with calendar properties
+     * @param array $prop Hash array with calendar properties
      *    name: Calendar name
      *   color: The color of the calendar
+     *
      * @return mixed ID of the calendar on success, False on error
      */
     public function create_calendar($prop)
@@ -262,8 +263,8 @@ class database_driver extends calendar_driver
     /**
      * Search for shared or otherwise not listed calendars the user has access
      *
-     * @param string Search string
-     * @param string Section/source to search
+     * @param string $query  Search string
+     * @param string $source Section/source to search
      *
      * @return array List of calendars
      */
@@ -276,7 +277,7 @@ class database_driver extends calendar_driver
     /**
      * Add a single event to the database
      *
-     * @param array Hash array with event properties
+     * @param array $event Hash array with event properties
      * @see calendar_driver::new_event()
      */
     public function new_event($event)
@@ -364,7 +365,7 @@ class database_driver extends calendar_driver
     /**
      * Update an event entry with the given data
      *
-     * @param array Hash array with event properties
+     * @param array $event Hash array with event properties
      * @see calendar_driver::edit_event()
      */
     public function edit_event($event)
@@ -516,11 +517,11 @@ class database_driver extends calendar_driver
     /**
      * Extended event editing with possible changes to the argument
      *
-     * @param array  Hash array with event properties
-     * @param string New participant status
-     * @param array  List of hash arrays with updated attendees
+     * @param array  $event     Hash array with event properties
+     * @param string $status    New participant status
+     * @param array  $attendees List of hash arrays with updated attendees
      *
-     * @return boolean True on success, False on error
+     * @return bool True on success, False on error
      */
     public function edit_rsvp(&$event, $status, $attendees)
     {
@@ -702,8 +703,8 @@ class database_driver extends calendar_driver
     /**
      * Save the given event record to database
      *
-     * @param array Event data
-     * @param boolean True if recurring events instances should be updated, too
+     * @param array $event            Event data
+     * @param bool  $update_recurring True if recurring events instances should be updated, too
      */
     private function _update_event($event, $update_recurring = true)
     {
@@ -904,7 +905,7 @@ class database_driver extends calendar_driver
     /**
      * Move a single event
      *
-     * @param array Hash array with event properties
+     * @param array $event Hash array with event properties
      * @see calendar_driver::move_event()
      */
     public function move_event($event)
@@ -916,7 +917,7 @@ class database_driver extends calendar_driver
     /**
      * Resize a single event
      *
-     * @param array Hash array with event properties
+     * @param array $event Hash array with event properties
      * @see calendar_driver::resize_event()
      */
     public function resize_event($event)
@@ -928,8 +929,8 @@ class database_driver extends calendar_driver
     /**
      * Remove a single event from the database
      *
-     * @param array   Hash array with event properties
-     * @param boolean Remove record irreversible (@TODO)
+     * @param array $event Hash array with event properties
+     * @param bool  $force Remove record irreversible (@TODO)
      *
      * @see calendar_driver::remove_event()
      */
@@ -1012,9 +1013,9 @@ class database_driver extends calendar_driver
     /**
      * Return data of a specific event
      *
-     * @param mixed   Hash array with event properties or event UID
-     * @param integer Bitmask defining the scope to search events in
-     * @param boolean If true, recurrence exceptions shall be added
+     * @param mixed $event Hash array with event properties or event UID
+     * @param int   $scope Bitmask defining the scope to search events in
+     * @param bool  $full  If true, recurrence exceptions shall be added
      *
      * @return array Hash array with event properties
      */
@@ -1158,11 +1159,11 @@ class database_driver extends calendar_driver
     /**
      * Get number of events in the given calendar
      *
-     * @param  mixed   List of calendar IDs to count events (either as array or comma-separated string)
-     * @param  integer Date range start (unix timestamp)
-     * @param  integer Date range end (unix timestamp)
+     * @param mixed $calendars List of calendar IDs to count events (either as array or comma-separated string)
+     * @param int   $start     Date range start (unix timestamp)
+     * @param ?int  $end       Date range end (unix timestamp)
      *
-     * @return array   Hash array with counts grouped by calendar ID
+     * @return array Hash array with counts grouped by calendar ID
      */
     public function count_events($calendars, $start, $end = null)
     {

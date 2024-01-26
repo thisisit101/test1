@@ -75,7 +75,7 @@ class resources_driver_ldap extends resources_driver
     /**
      * Return properties of a single resource
      *
-     * @param string $id Unique resource identifier
+     * @param string $dn Unique resource identifier
      *
      * @return array Resource object as hash array
      */

@@ -556,7 +556,7 @@ class kolab_delegation_engine
     /**
      * Update LDAP record of current user
      *
-     * @param array List of delegates
+     * @param array $list List of delegates
      */
     public function user_update_delegates($list)
     {
@@ -900,7 +900,7 @@ class kolab_delegation_engine
      * @param array $acl1 ACL rights array (or string)
      * @param array $acl2 ACL rights array (or string)
      *
-     * @param bool True if $acl1 contains all rights from $acl2
+     * @return bool True if $acl1 contains all rights from $acl2
      */
     public function acl_compare($acl1, $acl2)
     {
@@ -920,9 +920,7 @@ class kolab_delegation_engine
         $cnt1 = count($res);
         $cnt2 = count($acl2);
 
-        if ($cnt1 >= $cnt2) {
-            return true;
-        }
+        return $cnt1 >= $cnt2;
     }
 
     /**

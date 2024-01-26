@@ -40,7 +40,7 @@ class kolab_storage_dataset implements Iterator, ArrayAccess, Countable
     /**
      * Default constructor
      *
-     * @param object kolab_storage_cache instance to be used for fetching objects upon access
+     * @param kolab_storage_cache $cache Cache instance to be used for fetching objects upon access
      */
     public function __construct($cache)
     {

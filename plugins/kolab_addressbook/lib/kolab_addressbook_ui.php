@@ -177,7 +177,7 @@ class kolab_addressbook_ui
     /**
      * Handler for 'bookdetails' object returning form content for book create/edit
      *
-     * @param array $attr Object attributes
+     * @param array $attrib Object attributes
      *
      * @return string HTML output
      */

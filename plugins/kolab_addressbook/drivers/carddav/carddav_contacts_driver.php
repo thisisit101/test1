@@ -92,7 +92,7 @@ class carddav_contacts_driver
     /**
      * Delete address book folder
      *
-     * @param string $source Addressbook identifier
+     * @param string $folder Addressbook identifier
      *
      * @return bool
      */

@@ -29,7 +29,6 @@ use Sabre\VObject\DateTimeParser;
  *
  * Uses the Sabre VObject library, version 3.x.
  */
-
 class libcalendaring_vcalendar implements Iterator
 {
     private $timezone;
@@ -131,9 +130,9 @@ class libcalendaring_vcalendar implements Iterator
     /**
     * Import events from iCalendar format
     *
-    * @param string vCalendar input
-    * @param string Input charset (from envelope)
-    * @param bool   True if parsing exceptions should be forwarded to the caller
+    * @param string $vcal               vCalendar input
+    * @param string $charset            Input charset (from envelope)
+    * @param bool   $forward_exceptions True if parsing exceptions should be forwarded to the caller
     *
     * @return array List of events extracted from the input
     */
@@ -177,9 +176,9 @@ class libcalendaring_vcalendar implements Iterator
     /**
     * Read iCalendar events from a file
     *
-    * @param string File path to read from
-    * @param string Input charset (from envelope)
-    * @param bool   True if parsing exceptions should be forwarded to the caller
+    * @param string $filepath                File path to read from
+    * @param string $charset                 Input charset (from envelope)
+    * @param bool   $forward_exceptions True if parsing exceptions should be forwarded to the caller
     *
     * @return array List of events extracted from the file
     */
@@ -200,10 +199,11 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Open a file to read iCalendar events sequentially
      *
-     * @param  string File path to read from
-     * @param  string Input charset (from envelope)
-     * @param  boolean True if parsing exceptions should be forwarded to the caller
-     * @return boolean True if file contents are considered valid
+     * @param string $filepath           File path to read from
+     * @param string $charset            Input charset (from envelope)
+     * @param bool   $forward_exceptions True if parsing exceptions should be forwarded to the caller
+     *
+     * @return bool True if file contents are considered valid
      */
     public function fopen($filepath, $charset = 'UTF-8', $forward_exceptions = false)
     {
@@ -314,7 +314,8 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Import objects from an already parsed Sabre\VObject\Component object
      *
-     * @param object Sabre\VObject\Component to read from
+     * @param Sabre\VObject\Component $vobject Component to read from
+     *
      * @return array List of events extracted from the file
      */
     public function import_from_vobject($vobject)
@@ -398,7 +399,8 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Convert the given VEvent object to a libkolab compatible array representation
      *
-     * @param object Vevent object to convert
+     * @param Sabre\VObject\Component\VEvent|Sabre\VObject\Component\VTodo $ve VEvent object to convert
+     *
      * @return array Hash array with object properties
      */
     private function _to_array($ve)
@@ -929,11 +931,11 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Create a Sabre\VObject\Property instance from a PHP DateTime object
      *
-     * @param object   VObject\Document parent node to create property for
-     * @param string   Property name
-     * @param DateTime Date time object
-     * @param bool     Set as UTC date
-     * @param bool     Set as VALUE=DATE property
+     * @param VObject\Document $cal      Parent node to create property for
+     * @param string           $name     Property name
+     * @param DateTime         $dt       Date time object
+     * @param bool             $utc      Set as UTC date
+     * @param bool             $dateonly Set as VALUE=DATE property
      *
      * @return Sabre\VObject\Property
      */
@@ -1004,14 +1006,15 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Export events to iCalendar format
      *
-     * @param  array   Events as array
-     * @param  string  VCalendar method to advertise
-     * @param  boolean Directly send data to stdout instead of returning
-     * @param  callable Callback function to fetch attachment contents, false if no attachment export
-     * @param  boolean Add VTIMEZONE block with timezone definitions for the included events
-     * @return string  Events in iCalendar format (http://tools.ietf.org/html/rfc5545)
+     * @param array     $objects        Events as array
+     * @param ?string   $method         VCalendar method to advertise
+     * @param bool      $write          Directly send data to stdout instead of returning
+     * @param ?callable $get_attachment Optional callback function to fetch attachment contents
+     * @param bool      $with_timezones Add VTIMEZONE block with timezone definitions for the included events
+     *
+     * @return string Events in iCalendar format (http://tools.ietf.org/html/rfc5545)
      */
-    public function export($objects, $method = null, $write = false, $get_attachment = false, $with_timezones = true)
+    public function export($objects, $method = null, $write = false, $get_attachment = null, $with_timezones = true)
     {
         $this->method = $method;
 
@@ -1061,12 +1064,12 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Converts internal event representation to Sabre component
      *
-     * @param  array    Event
-     * @param  callable Callback function to fetch attachment contents, false if no attachment export
+     * @param array     $object         Event
+     * @param ?callable $get_attachment Optional callback function to fetch attachment contents
      *
      * @return Sabre\VObject\Component\VEvent Sabre component
      */
-    public function toSabreComponent($object, $get_attachment = false)
+    public function toSabreComponent($object, $get_attachment = null)
     {
         $vcal = new VObject\Component\VCalendar();
 
@@ -1078,10 +1081,10 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Build a valid iCal format block from the given event
      *
-     * @param  array    Hash array with event/task properties from libkolab
-     * @param  object   VCalendar object to append event to or false for directly sending data to stdout
-     * @param  callable Callback function to fetch attachment contents, false if no attachment export
-     * @param  object   RECURRENCE-ID property when serializing a recurrence exception
+     * @param array     $event          Hash array with event/task properties from libkolab
+     * @param VObject\Component\VCalendar $vcal VCalendar object to append event to or false for directly sending data to stdout
+     * @param ?callable $get_attachment Optional callback function to fetch attachment contents
+     * @param object    $recurrence_id  RECURRENCE-ID property when serializing a recurrence exception
      */
     private function _to_ical($event, $vcal, $get_attachment, $recurrence_id = null)
     {
@@ -1410,10 +1413,10 @@ class libcalendaring_vcalendar implements Iterator
      * Returns a VTIMEZONE component for a Olson timezone identifier
      * with daylight transitions covering the given date range.
      *
-     * @param string $tzid                Timezone ID as used in PHP's Date functions
-     * @param int    $from                Unix timestamp with first date/time in this timezone
-     * @param int    $to                  Unix timestap with last date/time in this timezone
-     * @param VObject\Component\VCalendar Optional VCalendar component
+     * @param string $tzid Timezone ID as used in PHP's Date functions
+     * @param int    $from Unix timestamp with first date/time in this timezone
+     * @param int    $to   Unix timestap with last date/time in this timezone
+     * @param Sabre\VObject\Component\VCalendar $cal Optional VCalendar component
      *
      * @return Sabre\VObject\Component|false Object representing a VTIMEZONE definition
      *                                       or false if no timezone information is available

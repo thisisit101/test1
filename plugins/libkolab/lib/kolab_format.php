@@ -161,10 +161,11 @@ abstract class kolab_format
     /**
      * Factory method to instantiate a kolab_format object of the given type and version
      *
-     * @param string Object type to instantiate
-     * @param float  Format version
-     * @param string Cached xml data to initialize with
-     * @return object kolab_format
+     * @param string $type    Object type to instantiate
+     * @param string $version Format version
+     * @param string $xmldata Cached xml data to initialize with
+     *
+     * @return kolab_format
      */
     public static function factory($type, $version = '3.0', $xmldata = null)
     {
@@ -189,8 +190,9 @@ abstract class kolab_format
     /**
      * Determine support for the given format version
      *
-     * @param float Format version to check
-     * @return boolean True if supported, False otherwise
+     * @param float $version Format version to check
+     *
+     * @return bool True if supported, False otherwise
      */
     public static function supports($version)
     {
@@ -204,10 +206,10 @@ abstract class kolab_format
     /**
      * Convert the given date/time value into a cDateTime object
      *
-     * @param mixed        Date/Time value either as unix timestamp, date string or PHP DateTime object
-     * @param DateTimeZone The timezone the date/time is in. Use global default if Null, local time if False
-     * @param bool         True of the given date has no time component
-     * @param DateTimeZone The timezone to convert the date to before converting to cDateTime
+     * @param mixed        $datetime Date/Time value either as unix timestamp, date string or PHP DateTime object
+     * @param DateTimeZone $tz       The timezone the date/time is in. Use global default if Null, local time if False
+     * @param bool         $dateonly True of the given date has no time component
+     * @param DateTimeZone $dest_tz  The timezone to convert the date to before converting to cDateTime
      *
      * @return cDateTime The libkolabxml date/time object
      */
@@ -278,8 +280,8 @@ abstract class kolab_format
     /**
      * Convert the given cDateTime into a PHP DateTime object
      *
-     * @param cDateTime    The libkolabxml datetime object
-     * @param DateTimeZone The timezone to convert the date to
+     * @param cDateTime    $cdt     The libkolabxml datetime object
+     * @param DateTimeZone $dest_tz The timezone to convert the date to
      *
      * @return libcalendaring_datetime PHP datetime instance
      */
@@ -320,7 +322,9 @@ abstract class kolab_format
     /**
      * Convert a libkolabxml vector to a PHP array
      *
-     * @param object vector Object
+     * @param vector $vec Object
+     * @param int    $max Max vector size
+     *
      * @return array Indexed array containing vector elements
      */
     public static function vector2array($vec, $max = PHP_INT_MAX)
@@ -335,8 +339,9 @@ abstract class kolab_format
     /**
      * Build a libkolabxml vector (string) from a PHP array
      *
-     * @param array Array with vector elements
-     * @return object vectors
+     * @param array $arr Array with vector elements
+     *
+     * @return vectors
      */
     public static function array2vector($arr)
     {
@@ -352,15 +357,16 @@ abstract class kolab_format
     /**
      * Parse the X-Kolab-Type header from MIME messages and return the object type in short form
      *
-     * @param string X-Kolab-Type header value
+     * @param string $type X-Kolab-Type header value
+     *
      * @return string Kolab object type (contact,event,task,note,etc.)
      */
-    public static function mime2object_type($x_kolab_type)
+    public static function mime2object_type($type)
     {
         return preg_replace(
             ['/dictionary.[a-z.]+$/', '/contact.distlist$/'],
             [ 'dictionary',            'distribution-list'],
-            substr($x_kolab_type, strlen(self::KTYPE_PREFIX))
+            substr($type, strlen(self::KTYPE_PREFIX))
         );
     }
 
@@ -386,7 +392,7 @@ abstract class kolab_format
     /**
      * Check for format errors after calling kolabformat::write*()
      *
-     * @return boolean True if there were errors, False if OK
+     * @return bool True if there were errors, False if OK
      */
     protected function format_errors()
     {
@@ -455,7 +461,8 @@ abstract class kolab_format
     /**
      * Get constant value for libkolab's version parameter
      *
-     * @param float Version value to convert
+     * @param float $v Version value to convert
+     *
      * @return int Constant value of either kolabobject::KolabV2 or kolabobject::KolabV3 or false if kolabobject module isn't available
      */
     protected function libversion($v = null)
@@ -498,8 +505,7 @@ abstract class kolab_format
     /**
      * Load Kolab object data from the given XML block
      *
-     * @param string XML data
-     * @return void
+     * @param string $xml XML data
      */
     public function load($xml)
     {
@@ -524,7 +530,8 @@ abstract class kolab_format
     /**
      * Write object data to XML format
      *
-     * @param float Format version to write
+     * @param float $version Format version to write
+     *
      * @return string XML data
      */
     public function write($version = null)
@@ -551,7 +558,7 @@ abstract class kolab_format
     /**
      * Set properties to the kolabformat object
      *
-     * @param array  Object data as hash array
+     * @param array $object Object data as hash array
      */
     public function set(&$object)
     {
@@ -597,9 +604,9 @@ abstract class kolab_format
     /**
      * Convert the Kolab object into a hash array data structure
      *
-     * @param array Additional data for merge
+     * @param array $data Additional data for merge
      *
-     * @return array  Kolab object data as hash array
+     * @return array Kolab object data as hash array
      */
     public function to_array($data = [])
     {
@@ -667,7 +674,7 @@ abstract class kolab_format
     /**
      * Utility function to extract object attachment data
      *
-     * @param array Hash array reference to append attachment data into
+     * @param array $object Hash array reference to append attachment data into
      */
     public function get_attachments(&$object, $all = false)
     {
@@ -706,8 +713,8 @@ abstract class kolab_format
     /**
      * Utility function to set attachment properties to the kolabformat object
      *
-     * @param array  Object data as hash array
-     * @param boolean True to always overwrite attachment information
+     * @param array $object Object data as hash array
+     * @param bool  $write  True to always overwrite attachment information
      */
     protected function set_attachments($object, $write = true)
     {

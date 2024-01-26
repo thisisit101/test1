@@ -274,7 +274,7 @@ class kolab_storage_config
     /**
      * Builds relation member URI
      *
-     * @param string|array Object UUID or Message folder, UID, Search headers (Message-Id, Date)
+     * @param string|array $params Object UUID or Message folder, UID, Search headers (Message-Id, Date)
      *
      * @return string $url Member URI
      */
@@ -793,7 +793,7 @@ class kolab_storage_config
     /**
      * Find objects linked with the given groupware object through a relation
      *
-     * @param string Object UUID
+     * @param string $uid Object UUID
      *
      * @return array List of related URIs
      */

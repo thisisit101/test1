@@ -57,7 +57,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     /**
      * Returns the owner of the folder.
      *
-     * @param bool Return a fully qualified owner name (i.e. including domain for shared folders)
+     * @param bool $fully_qualified Return a fully qualified owner name (i.e. including domain for shared folders)
      *
      * @return string The owner of this folder.
      */
@@ -177,7 +177,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     /**
      * Get the color value stored in metadata
      *
-     * @param string Default color value to return if not set
+     * @param string $default Default color value to return if not set
      *
      * @return mixed Color value from the folder metadata or $default if not set
      */
@@ -220,7 +220,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     /**
      * Change activation status of this folder
      *
-     * @param bool The desired subscription status: true = active, false = not active
+     * @param bool $active The desired subscription status: true = active, false = not active
      *
      * @return bool True on success, false on error
      */
@@ -242,7 +242,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     /**
      * Change subscription status of this folder
      *
-     * @param bool The desired subscription status: true = subscribed, false = not subscribed
+     * @param bool $subscribed The desired subscription status: true = subscribed, false = not subscribed
      *
      * @return True on success, false on error
      */
@@ -324,8 +324,8 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     /**
      * Move a Kolab object message to another IMAP folder
      *
-     * @param string                   Object UID
-     * @param kolab_storage_dav_folder Target folder to move object into
+     * @param string                   $uid           Object UID
+     * @param kolab_storage_dav_folder $target_folder Target folder to move object into
      *
      * @return bool True on success, false on failure
      */
@@ -411,9 +411,9 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     /**
      * Fetch the object the DAV server and convert to internal format
      *
-     * @param string The object UID to fetch
-     * @param string The object type expected (use wildcard '*' to accept all types)
-     * @param string Unused (kept for compat. with the parent class)
+     * @param string $uid    The object UID to fetch
+     * @param string $type   The object type expected (use wildcard '*' to accept all types)
+     * @param string $folder Unused (kept for compat. with the parent class)
      *
      * @return mixed Hash array representing the Kolab object, a kolab_format instance or false if not found
      */
@@ -440,7 +440,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     /**
      * Fetch multiple objects from the DAV server and convert to internal format
      *
-     * @param array The object UIDs to fetch
+     * @param array $uids The object UIDs to fetch
      *
      * @return mixed Hash array representing the Kolab objects
      */
@@ -498,7 +498,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     /**
      * Convert DAV object into PHP array
      *
-     * @param array Object data in kolab_dav_client::fetchData() format
+     * @param array $object Object data in kolab_dav_client::fetchData() format
      *
      * @return array|false Object properties, False on error
      */

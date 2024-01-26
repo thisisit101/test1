@@ -43,9 +43,9 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Default constructor
      *
-     * @param string The folder name/path
-     * @param string Expected folder type
-     * @param string Optional folder type if known
+     * @param string  $name            The folder name/path
+     * @param ?string $type            Expected folder type
+     * @param ?string $type_annotation Optional folder type if known
      */
     public function __construct($name, $type = null, $type_annotation = null)
     {
@@ -56,9 +56,9 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Set the IMAP folder this instance connects to
      *
-     * @param string The folder name/path
-     * @param string Expected folder type
-     * @param string Optional folder type if known
+     * @param string  $name            The folder name/path
+     * @param ?string $type            Expected folder type
+     * @param ?string $type_annotation Optional folder type if known
      */
     public function set_folder($name, $type = null, $type_annotation = null)
     {
@@ -179,7 +179,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Helper method to set an UID value to the given IMAP folder instance
      *
-     * @param string Folder's UID
+     * @param string $uid Folder's UID
      *
      * @return bool True on succes, False on failure
      */
@@ -214,7 +214,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Change activation status of this folder
      *
-     * @param bool The desired subscription status: true = active, false = not active
+     * @param bool $active The desired subscription status: true = active, false = not active
      *
      * @return True on success, false on error
      */
@@ -236,7 +236,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Change subscription status of this folder
      *
-     * @param bool The desired subscription status: true = subscribed, false = not subscribed
+     * @param bool $subscribed The desired subscription status: true = subscribed, false = not subscribed
      *
      * @return True on success, false on error
      */
@@ -248,8 +248,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Get number of objects stored in this folder
      *
-     * @param mixed Pseudo-SQL query as list of filter parameter triplets
-     *    or string with object type (e.g. contact, event, todo, journal, note, configuration)
+     * @param mixed $query Pseudo-SQL query as list of filter parameter triplets
+     *                     or string with object type (e.g. contact, event, todo, journal, note, configuration)
      *
      * @return int|null The number of objects of the given type, Null on error
      * @see self::select()
@@ -288,8 +288,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * List Kolab objects matching the given query
      *
-     * @param mixed Pseudo-SQL query as list of filter parameter triplets
-     *    or string with object type (e.g. contact, event, todo, journal, note, configuration)
+     * @param mixed $query Pseudo-SQL query as list of filter parameter triplets
+     *                     or string with object type (e.g. contact, event, todo, journal, note, configuration)
      *
      * @return array List of Kolab data objects (each represented as hash array)
      * @deprecated Use select()
@@ -302,10 +302,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Select Kolab objects matching the given query
      *
-     * @param mixed Pseudo-SQL query as list of filter parameter triplets
-     *              or string with object type (e.g. contact, event, todo, journal, note, configuration)
-     * @param bool  Use fast mode to fetch only minimal set of information
-     *              (no xml fetching and parsing, etc.)
+     * @param mixed $query Pseudo-SQL query as list of filter parameter triplets
+     *                     or string with object type (e.g. contact, event, todo, journal, note, configuration)
+     * @param bool  $fast  Use fast mode to fetch only minimal set of information
+     *                     (no xml fetching and parsing, etc.)
      *
      * @return null|array|kolab_storage_dataset List of Kolab data objects (each represented as hash array)
      */
@@ -325,7 +325,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Getter for object UIDs only
      *
-     * @param array Pseudo-SQL query as list of filter parameter triplets
+     * @param array $query Pseudo-SQL query as list of filter parameter triplets
+     *
      * @return array List of Kolab object UIDs
      */
     public function get_uids($query = [])
@@ -344,9 +345,9 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Setter for ORDER BY and LIMIT parameters for cache queries
      *
-     * @param array   List of columns to order by
-     * @param integer Limit result set to this length
-     * @param integer Offset row
+     * @param array $sortcols List of columns to order by
+     * @param int   $length   Limit result set to this length
+     * @param int   $offset   Offset row
      */
     public function set_order_and_limit($sortcols, $length = null, $offset = 0)
     {
@@ -388,13 +389,13 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * Fetch a Kolab object attachment which is stored in a separate part
      * of the mail MIME message that represents the Kolab record.
      *
-     * @param string   Object's UID
-     * @param string   The attachment's mime number
-     * @param string   IMAP folder where message is stored;
-     *                 If set, that also implies that the given UID is an IMAP UID
-     * @param bool     True to print the part content
-     * @param resource File pointer to save the message part
-     * @param bool     Disables charset conversion
+     * @param string   $uid     Object's UID
+     * @param string   $part    The attachment's mime number
+     * @param ?string  $mailbox IMAP folder where message is stored;
+     *                          If set, that also implies that the given UID is an IMAP UID
+     * @param bool     $print   True to print the part content
+     * @param resource $fp      File pointer to save the message part
+     * @param bool     $skip_charset_conv Disables charset conversion
      *
      * @return mixed The attachment content as binary string
      */
@@ -440,9 +441,9 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * Fetch the mime message from the storage server and extract
      * the Kolab groupware object from it
      *
-     * @param string The IMAP message UID to fetch
-     * @param string The object type expected (use wildcard '*' to accept all types)
-     * @param string The folder name where the message is stored
+     * @param string $msguid The IMAP message UID to fetch
+     * @param string $type   The object type expected (use wildcard '*' to accept all types)
+     * @param string $folder The folder name where the message is stored
      *
      * @return mixed Hash array representing the Kolab object, a kolab_format instance or false if not found
      */
@@ -742,8 +743,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
      * Save recurrence exceptions as individual objects.
      * The Kolab v2 format doesn't allow us to save fully embedded exception objects.
      *
-     * @param array Hash array with event properties
-     * @param string Object type
+     * @param array  $object Hash array with event properties
+     * @param string $type   Object type
      */
     private function save_recurrence_exceptions(&$object, $type = null)
     {
@@ -855,7 +856,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Restore a previously deleted object
      *
-     * @param string Object UID
+     * @param string $uid Object UID
+     *
      * @return mixed Message UID on success, false on error
      */
     public function undelete($uid)
@@ -880,8 +882,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Move a Kolab object message to another IMAP folder
      *
-     * @param string                      Object UID
-     * @param string|kolab_storage_folder IMAP folder to move object to
+     * @param string                      $uid           Object UID
+     * @param string|kolab_storage_folder $target_folder IMAP folder to move object to
      *
      * @return bool True on success, false on failure
      */
@@ -1149,11 +1151,11 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Triggers a URL.
      *
-     * @param string $url          The URL to be triggered.
-     * @param string $auth_user    Username to authenticate with
-     * @param string $auth_passwd  Password for basic auth
+     * @param string $url         The URL to be triggered.
+     * @param string $auth_user   Username to authenticate with
+     * @param string $auth_passwd Password for basic auth
      *
-     * @return bool|PEAR_Error  True if successfull.
+     * @return bool|PEAR_Error True if successfull.
      */
     private function trigger_url($url, $auth_user = null, $auth_passwd = null)
     {

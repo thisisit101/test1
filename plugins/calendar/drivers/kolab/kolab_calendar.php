@@ -45,8 +45,8 @@ class kolab_calendar extends kolab_storage_folder_api
     /**
      * Factory method to instantiate a kolab_calendar object
      *
-     * @param string  Calendar ID (encoded IMAP folder name)
-     * @param object  Calendar plugin object
+     * @param string   $id       Calendar ID (encoded IMAP folder name)
+     * @param calendar $calendar Calendar plugin object
      *
      * @return kolab_calendar Self instance
      */
@@ -54,7 +54,7 @@ class kolab_calendar extends kolab_storage_folder_api
     {
         $imap = $calendar->rc->get_storage();
         $imap_folder = kolab_storage::id_decode($id);
-        $info = $imap->folder_info($imap_folder, true);
+        $info = $imap->folder_info($imap_folder);
 
         if (
             empty($info)
@@ -256,16 +256,16 @@ class kolab_calendar extends kolab_storage_folder_api
     }
 
     /**
-     * @param  int    Event's new start (unix timestamp)
-     * @param  int    Event's new end (unix timestamp)
-     * @param  string Search query (optional)
-     * @param  bool   Include virtual events (optional)
-     * @param  array  Additional parameters to query storage
-     * @param  array  Additional query to filter events
+     * @param int    $start        Event's new start (unix timestamp)
+     * @param int    $end          Event's new end (unix timestamp)
+     * @param string $search       Search query (optional)
+     * @param bool   $virtual      Include virtual events (optional)
+     * @param array  $query        Additional parameters to query storage
+     * @param array  $filter_query Additional query to filter events
      *
      * @return array A list of event records
      */
-    public function list_events($start, $end, $search = null, $virtual = 1, $query = [], $filter_query = null)
+    public function list_events($start, $end, $search = null, $virtual = true, $query = [], $filter_query = null)
     {
         // convert to DateTime for comparisons
         // #5190: make the range a little bit wider
@@ -421,9 +421,9 @@ class kolab_calendar extends kolab_storage_folder_api
     /**
      * Get number of events in the given calendar
      *
-     * @param int   Date range start (unix timestamp)
-     * @param int   Date range end (unix timestamp)
-     * @param array Additional query to filter events
+     * @param int   $start        Date range start (unix timestamp)
+     * @param int   $end          Date range end (unix timestamp)
+     * @param array $filter_query Additional query to filter events
      *
      * @return int Count
      */

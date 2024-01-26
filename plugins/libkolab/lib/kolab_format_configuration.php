@@ -44,7 +44,7 @@ class kolab_format_configuration extends kolab_format
     /**
      * Set properties to the kolabformat object
      *
-     * @param array  Object data as hash array
+     * @param array $object Object data as hash array
      */
     public function set(&$object)
     {
@@ -146,9 +146,9 @@ class kolab_format_configuration extends kolab_format
     /**
      * Convert the Configuration object into a hash array data structure
      *
-     * @param array Additional data for merge
+     * @param array $data Additional data for merge
      *
-     * @return array  Config object data as hash array
+     * @return array Config object data as hash array
      */
     public function to_array($data = [])
     {

@@ -167,8 +167,8 @@ class kolab_storage
     /**
      * Get a list of storage folders for the given data type
      *
-     * @param string Data type to list folders for (contact,distribution-list,event,task,note)
-     * @param bool   Enable to return subscribed folders only (null to use configured subscription mode)
+     * @param string $type       Data type to list folders for (contact,distribution-list,event,task,note)
+     * @param ?bool  $subscribed Enable to return subscribed folders only (null to use configured subscription mode)
      *
      * @return array List of Kolab_Folder objects (folder names in UTF7-IMAP)
      */
@@ -188,7 +188,8 @@ class kolab_storage
     /**
      * Getter for the storage folder for the given type
      *
-     * @param string Data type to list folders for (contact,distribution-list,event,task,note)
+     * @param string $type Data type to list folders for (contact,distribution-list,event,task,note)
+     *
      * @return object kolab_storage_folder  The folder object
      */
     public static function get_default_folder($type)
@@ -205,8 +206,8 @@ class kolab_storage
     /**
      * Getter for a specific storage folder
      *
-     * @param string IMAP folder to access (UTF7-IMAP)
-     * @param string Expected folder type
+     * @param string $folder IMAP folder to access (UTF7-IMAP)
+     * @param string $type   Expected folder type
      *
      * @return object kolab_storage_folder  The folder object
      */
@@ -219,8 +220,9 @@ class kolab_storage
      * Getter for a single Kolab object, identified by its UID.
      * This will search all folders storing objects of the given type.
      *
-     * @param string Object UID
-     * @param string Object type (contact,event,task,journal,file,note,configuration)
+     * @param string $uid  Object UID
+     * @param string $type Object type (contact,event,task,journal,file,note,configuration)
+     *
      * @return array The Kolab object represented as hash array or false if not found
      */
     public static function get_object($uid, $type)
@@ -245,9 +247,9 @@ class kolab_storage
     /**
      * Execute cross-folder searches with the given query.
      *
-     * @param array  Pseudo-SQL query as list of filter parameter triplets
-     * @param string Folder type (contact,event,task,journal,file,note,configuration)
-     * @param int    Expected number of records or limit (for performance reasons)
+     * @param array  $query Pseudo-SQL query as list of filter parameter triplets
+     * @param string $type  Folder type (contact,event,task,journal,file,note,configuration)
+     * @param ?int   $limit Expected number of records or limit (for performance reasons)
      *
      * @return array List of Kolab data objects (each represented as hash array)
      * @see kolab_storage_format::select()
@@ -291,9 +293,9 @@ class kolab_storage
     /**
      * Compose an URL to query the free/busy status for the given user
      *
-     * @param string Email address of the user to get free/busy data for
-     * @param object DateTime Start of the query range (optional)
-     * @param object DateTime End of the query range (optional)
+     * @param string    $email Email address of the user to get free/busy data for
+     * @param ?DateTime $start Start of the query range (optional)
+     * @param ?DateTime $end   End of the query range (optional)
      *
      * @return ?string Fully qualified URL to query free/busy data
      */
@@ -367,6 +369,7 @@ class kolab_storage
      * Convert the given identifier back to it's raw value
      *
      * @param string $id Ascii identifier
+     *
      * @return string Raw identifier string
      */
     public static function id_decode($id)
@@ -377,7 +380,8 @@ class kolab_storage
     /**
      * Return the (first) path of the requested IMAP namespace
      *
-     * @param string  Namespace name (personal, shared, other)
+     * @param string $name Namespace name (personal, shared, other)
+     *
      * @return string IMAP root path for that namespace
      */
     public static function namespace_root($name)
@@ -849,11 +853,11 @@ class kolab_storage
     /**
      * Returns a list of folder names
      *
-     * @param string  Optional root folder
-     * @param string  Optional name pattern
-     * @param string  Data type to list folders for (contact,event,task,journal,file,note,mail,configuration)
-     * @param bool    Enable to return subscribed folders only (null to use configured subscription mode)
-     * @param array   Will be filled with folder-types data
+     * @param string $root       Optional root folder
+     * @param string $mbox       Optional name pattern
+     * @param string $filter     Data type to list folders for (contact,event,task,journal,file,note,mail,configuration)
+     * @param bool   $subscribed Enable to return subscribed folders only (null to use configured subscription mode)
+     * @param array  $folderdata Will be filled with folder-types data
      *
      * @return array List of folders
      */
@@ -979,9 +983,9 @@ class kolab_storage
     /**
      * Search for shared or otherwise not listed groupware folders the user has access
      *
-     * @param string Folder type of folders to search for
-     * @param string Search string
-     * @param array  Namespace(s) to exclude results from
+     * @param string $type       Folder type of folders to search for
+     * @param string $query      Search string
+     * @param array  $exclude_ns Namespace(s) to exclude results from
      *
      * @return array List of matching kolab_storage_folder objects
      */
@@ -1012,7 +1016,8 @@ class kolab_storage
     /**
      * Sort the given list of kolab folders by namespace/name
      *
-     * @param array List of kolab_storage_folder objects
+     * @param array $folders List of kolab_storage_folder objects
+     *
      * @return array Sorted list of folders
      */
     public static function sort_folders($folders)
@@ -1042,8 +1047,8 @@ class kolab_storage
     /**
      * Check the folder tree and add the missing parents as virtual folders
      *
-     * @param array $folders Folders list
-     * @param object $tree   Reference to the root node of the folder tree
+     * @param array  $folders Folders list
+     * @param object $tree    Reference to the root node of the folder tree
      *
      * @return array Flat folders list
      */
@@ -1234,7 +1239,7 @@ class kolab_storage
      * Check subscription status of this folder
      *
      * @param string $folder Folder name
-     * @param bool   $temp  Include temporary/session subscriptions
+     * @param bool   $temp   Include temporary/session subscriptions
      *
      * @return bool True if subscribed, false if not
      */
@@ -1508,11 +1513,11 @@ class kolab_storage
     /**
      * Search users in Kolab LDAP storage
      *
-     * @param mixed   $query    Search value (or array of field => value pairs)
-     * @param int     $mode     Matching mode: 0 - partial (*abc*), 1 - strict (=), 2 - prefix (abc*)
-     * @param array   $required List of fields that shall ot be empty
-     * @param int     $limit    Maximum number of records
-     * @param int     $count    Returns the number of records found
+     * @param mixed $query    Search value (or array of field => value pairs)
+     * @param int   $mode     Matching mode: 0 - partial (*abc*), 1 - strict (=), 2 - prefix (abc*)
+     * @param array $required List of fields that shall ot be empty
+     * @param int   $limit    Maximum number of records
+     * @param int   $count    Returns the number of records found
      *
      * @return array List of users
      */
@@ -1549,10 +1554,10 @@ class kolab_storage
     /**
      * Returns a list of IMAP folders shared by the given user
      *
-     * @param array   User entry from LDAP
-     * @param string  Data type to list folders for (contact,event,task,journal,file,note,mail,configuration)
-     * @param int     1 - subscribed folders only, 0 - all folders, 2 - all non-active
-     * @param array   Will be filled with folder-types data
+     * @param array  $user       User entry from LDAP
+     * @param string $type       Data type to list folders for (contact,event,task,journal,file,note,mail,configuration)
+     * @param int    $subscribed 1 - subscribed folders only, 0 - all folders, 2 - all non-active
+     * @param array  $folderdata Will be filled with folder-types data
      *
      * @return array List of folders
      */
@@ -1588,8 +1593,8 @@ class kolab_storage
     /**
      * Get a list of (virtual) top-level folders from the other users namespace
      *
-     * @param string Data type to list folders for (contact,event,task,journal,file,note,mail,configuration)
-     * @param bool   Enable to return subscribed folders only (null to use configured subscription mode)
+     * @param string $type       Data type to list folders for (contact,event,task,journal,file,note,mail,configuration)
+     * @param bool   $subscribed Enable to return subscribed folders only (null to use configured subscription mode)
      *
      * @return array List of kolab_storage_folder_user objects
      */

@@ -385,7 +385,7 @@ class calendar extends rcube_plugin
      * Handler for preferences_sections_list hook.
      * Adds Calendar settings sections into preferences sections list.
      *
-     * @param array Original parameters
+     * @param array $p Original parameters
      *
      * @return array Modified parameters
      */
@@ -403,7 +403,7 @@ class calendar extends rcube_plugin
      * Handler for preferences_list hook.
      * Adds options blocks into Calendar settings sections in Preferences.
      *
-     * @param array Original parameters
+     * @param array $p Original parameters
      *
      * @return array Modified parameters
      */
@@ -875,7 +875,7 @@ $("#rcmfd_new_category").keypress(function(event) {
      * Handler for preferences_save hook.
      * Executed on Calendar settings form submit.
      *
-     * @param array Original parameters
+     * @param array $p Original parameters
      *
      * @return array Modified parameters
      */
@@ -2064,8 +2064,8 @@ $("#rcmfd_new_category").keypress(function(event) {
     /**
      * Encode events as JSON
      *
-     * @param array Events as array
-     * @param bool  Add CSS class names according to calendar and categories
+     * @param array $events Events as array
+     * @param bool  $addcss Add CSS class names according to calendar and categories
      *
      * @return string JSON encoded events
      */
@@ -2724,8 +2724,8 @@ $("#rcmfd_new_category").keypress(function(event) {
     /**
      * Compare two event objects and return differing properties
      *
-     * @param array Event A
-     * @param array Event B
+     * @param array $a Event A
+     * @param array $b Event B
      *
      * @return array List of differing event properties
      */
@@ -2759,10 +2759,11 @@ $("#rcmfd_new_category").keypress(function(event) {
     /**
      * Update attendee properties on the given event object
      *
-     * @param array The event object to be altered
-     * @param array List of hash arrays each represeting an updated/added attendee
+     * @param array $event     The event object to be altered
+     * @param array $attendees List of hash arrays each represeting an updated/added attendee
+     * @param array $removed   List of attendees' addresses to remove
      */
-    public static function merge_attendee_data(&$event, $attendees, $removed = null)
+    public static function merge_attendee_data(&$event, $attendees, $removed = [])
     {
         if (!empty($attendees) && !is_array($attendees[0])) {
             $attendees = [$attendees];

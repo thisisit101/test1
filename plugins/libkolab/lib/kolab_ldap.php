@@ -299,7 +299,7 @@ class kolab_ldap extends rcube_ldap_generic
     /**
      * Get a specific LDAP record
      *
-     * @param string DN
+     * @param string $dn DN
      *
      * @return array Record data
      */
