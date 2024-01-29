@@ -59,7 +59,7 @@ abstract class resources_driver
      *
      * @param string $id Owner identifier
      *
-     * @return array Resource object as hash array
+     * @return ?array Resource owner object as hash array
      */
     public function get_resource_owner($id)
     {

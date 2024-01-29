@@ -296,7 +296,7 @@ abstract class calendar_driver
      *                     See FILTER_* constants for possible values.
      * @param bool  $full  If true, recurrence exceptions shall be added
      *
-     * @return array Event object as hash array
+     * @return ?array Event object as hash array
      */
     abstract public function get_event($event, $scope = 0, $full = false);
 
@@ -420,11 +420,11 @@ abstract class calendar_driver
      *         id: Event identifier
      *   calendar: Calendar identifier
      *
-     * @return string Attachment body
+     * @return string|false Attachment body
      */
     public function get_attachment_body($id, $event)
     {
-        return '';
+        return false;
     }
 
     /**
@@ -434,7 +434,7 @@ abstract class calendar_driver
      *                         or an URI from a stored link referencing a mail message.
      * @param string $folder  IMAP folder the message resides in
      *
-     * @return array An struct referencing the given IMAP message
+     * @return array|false An struct referencing the given IMAP message
      */
     public function get_message_reference($uri_or_headers, $folder = null)
     {
@@ -480,7 +480,7 @@ abstract class calendar_driver
      * @param int    $start Requested period start date/time as unix timestamp
      * @param int    $end   Requested period end date/time as unix timestamp
      *
-     * @return array List of busy timeslots within the requested range
+     * @return array|false List of busy timeslots within the requested range
      */
     public function get_freebusy_list($email, $start, $end)
     {
@@ -551,7 +551,7 @@ abstract class calendar_driver
      *         id: Event identifier
      *   calendar: Calendar identifier
      *
-     * @return array List of changes, each as a hash array:
+     * @return array|false List of changes, each as a hash array:
      *         rev: Revision number
      *        type: Type of the change (create, update, move, delete)
      *        date: Change date
@@ -573,7 +573,7 @@ abstract class calendar_driver
      * @param mixed $rev1 Old Revision
      * @param mixed $rev2 New Revision
      *
-     * @return array List of property changes, each as a hash array:
+     * @return array|false List of property changes, each as a hash array:
      *    property: Revision number
      *         old: Old property value
      *         new: Updated property value
@@ -591,7 +591,7 @@ abstract class calendar_driver
      *  calendar: Calendar identifier
      * @param mixed  $rev Revision number
      *
-     * @return array Event object as hash array
+     * @return array|false Event object as hash array
      * @see self::get_event()
      */
     public function get_event_revison($event, $rev)
@@ -608,7 +608,7 @@ abstract class calendar_driver
      *  calendar: Calendar identifier
      * @param mixed  $rev Revision number
      *
-     * @return boolean True on success, False on failure
+     * @return bool True on success, False on failure
      */
     public function restore_event_revision($event, $rev)
     {
@@ -794,7 +794,7 @@ abstract class calendar_driver
     public static function parse_contact($contact, $source)
     {
         if (!is_array($contact)) {
-            return;
+            return null;
         }
 
         if (!empty($contact['birthday']) && is_array($contact['birthday'])) {
@@ -802,7 +802,7 @@ abstract class calendar_driver
         }
 
         if (empty($contact['birthday'])) {
-            return;
+            return null;
         }
 
         try {
@@ -818,7 +818,7 @@ abstract class calendar_driver
                 true,
                 false
             );
-            return;
+            return null;
         }
 
         $rcmail       = rcmail::get_instance();

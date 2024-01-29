@@ -104,7 +104,7 @@ abstract class tasklist_driver
      *       color: The color of the list
      *  showalarms: True if alarms are enabled
      *
-     * @return mixed ID of the new list on success, False on error
+     * @return string|false ID of the new list on success, False on error
      */
     abstract public function create_list(&$prop);
 
@@ -218,7 +218,7 @@ abstract class tasklist_driver
      * @param int   $filter Bitmask defining filter criterias for folders.
      *                      See FILTER_* constants for possible values.
      *
-     * @return array Hash array with task properties or false if not found
+     * @return array|false Hash array with task properties or false if not found
      */
     abstract public function get_task($prop, $filter = 0);
 
@@ -329,7 +329,7 @@ abstract class tasklist_driver
      *                                                    referencing a mail message.
      * @param string                      $folder         IMAP folder the message resides in
      *
-     * @return array An struct referencing the given IMAP message
+     * @return array|false A struct referencing the given IMAP message
      */
     public function get_message_reference($uri_or_headers, $folder = null)
     {
@@ -371,7 +371,7 @@ abstract class tasklist_driver
      *         id: Task identifier
      *       list: List identifier
      *
-     * @return array List of changes, each as a hash array:
+     * @return array|false List of changes, each as a hash array:
      *         rev: Revision number
      *        type: Type of the change (create, update, move, delete)
      *        date: Change date
@@ -393,7 +393,7 @@ abstract class tasklist_driver
      * @param mixed  $rev1   Old Revision
      * @param mixed  $rev2   New Revision
      *
-     * @return array List of property changes, each as a hash array:
+     * @return array|false List of property changes, each as a hash array:
      *    property: Revision number
      *         old: Old property value
      *         new: Updated property value
@@ -411,7 +411,7 @@ abstract class tasklist_driver
      *       list: List identifier
      * @param mixed  $rev Revision number
      *
-     * @return array Task object as hash array
+     * @return array|false Task object as hash array
      * @see self::get_task()
      */
     public function get_task_revison($task, $rev)

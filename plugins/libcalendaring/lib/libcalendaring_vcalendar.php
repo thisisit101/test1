@@ -314,7 +314,7 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Import objects from an already parsed Sabre\VObject\Component object
      *
-     * @param Sabre\VObject\Component $vobject Component to read from
+     * @param VObject\Component $vobject Component to read from
      *
      * @return array List of events extracted from the file
      */
@@ -399,7 +399,7 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Convert the given VEvent object to a libkolab compatible array representation
      *
-     * @param Sabre\VObject\Component\VEvent|Sabre\VObject\Component\VTodo $ve VEvent object to convert
+     * @param VObject\Component\VEvent|VObject\Component\VTodo $ve VEvent object to convert
      *
      * @return array Hash array with object properties
      */
@@ -937,7 +937,7 @@ class libcalendaring_vcalendar implements Iterator
      * @param bool             $utc      Set as UTC date
      * @param bool             $dateonly Set as VALUE=DATE property
      *
-     * @return Sabre\VObject\Property
+     * @return VObject\Property
      */
     public function datetime_prop($cal, $name, $dt, $utc = false, $dateonly = null, $set_type = false)
     {
@@ -1002,7 +1002,6 @@ class libcalendaring_vcalendar implements Iterator
         return $params;
     }
 
-
     /**
      * Export events to iCalendar format
      *
@@ -1012,7 +1011,7 @@ class libcalendaring_vcalendar implements Iterator
      * @param ?callable $get_attachment Optional callback function to fetch attachment contents
      * @param bool      $with_timezones Add VTIMEZONE block with timezone definitions for the included events
      *
-     * @return string Events in iCalendar format (http://tools.ietf.org/html/rfc5545)
+     * @return string|true Events in iCalendar format (http://tools.ietf.org/html/rfc5545)
      */
     public function export($objects, $method = null, $write = false, $get_attachment = null, $with_timezones = true)
     {
@@ -1056,9 +1055,9 @@ class libcalendaring_vcalendar implements Iterator
         if ($write) {
             echo "END:VCALENDAR\r\n";
             return true;
-        } else {
-            return $vcal->serialize();
         }
+
+        return $vcal->serialize();
     }
 
     /**
@@ -1067,7 +1066,7 @@ class libcalendaring_vcalendar implements Iterator
      * @param array     $object         Event
      * @param ?callable $get_attachment Optional callback function to fetch attachment contents
      *
-     * @return Sabre\VObject\Component\VEvent Sabre component
+     * @return VObject\Component Sabre component
      */
     public function toSabreComponent($object, $get_attachment = null)
     {
@@ -1416,10 +1415,10 @@ class libcalendaring_vcalendar implements Iterator
      * @param string $tzid Timezone ID as used in PHP's Date functions
      * @param int    $from Unix timestamp with first date/time in this timezone
      * @param int    $to   Unix timestap with last date/time in this timezone
-     * @param Sabre\VObject\Component\VCalendar $cal Optional VCalendar component
+     * @param VObject\Component\VCalendar $cal Optional VCalendar component
      *
-     * @return Sabre\VObject\Component|false Object representing a VTIMEZONE definition
-     *                                       or false if no timezone information is available
+     * @return VObject\Component|false Object representing a VTIMEZONE definition
+     *                                 or false if no timezone information is available
      */
     public static function get_vtimezone($tzid, $from = 0, $to = 0, $cal = null)
     {
@@ -1552,8 +1551,6 @@ class libcalendaring_vcalendar implements Iterator
         if (empty($this->objects[$this->iteratorkey]) && $this->fp) {
             $this->_parse_next(true);
         }
-
-        return $this->valid();
     }
 
     #[\ReturnTypeWillChange]
@@ -1567,7 +1564,6 @@ class libcalendaring_vcalendar implements Iterator
     {
         return !empty($this->objects[$this->iteratorkey]);
     }
-
 }
 
 

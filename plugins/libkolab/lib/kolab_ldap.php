@@ -301,12 +301,12 @@ class kolab_ldap extends rcube_ldap_generic
      *
      * @param string $dn DN
      *
-     * @return array Record data
+     * @return array|null Record data
      */
     public function get_record($dn)
     {
         if (!$this->ready) {
-            return;
+            return null;
         }
 
         if ($rec = $this->get_entry($dn, $this->attributes)) {

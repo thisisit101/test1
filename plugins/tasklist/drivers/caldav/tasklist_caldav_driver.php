@@ -298,7 +298,7 @@ class tasklist_caldav_driver extends tasklist_driver
      *                    - color: The color of the list
      *                    - showalarms: True if alarms are enabled
      *
-     * @return mixed ID of the new list on success, False on error
+     * @return string|false ID of the new list on success, False on error
      */
     public function create_list(&$prop)
     {
@@ -723,7 +723,7 @@ class tasklist_caldav_driver extends tasklist_driver
      * @param mixed $prop UID string or hash array with task properties
      * @param mixed $rev  Revision number
      *
-     * @return array Task object as hash array
+     * @return array|false Task object as hash array
      * @see tasklist_driver::get_task_revision()
      */
     public function get_task_revison($prop, $rev)
@@ -804,7 +804,7 @@ class tasklist_caldav_driver extends tasklist_driver
      * @param mixed $rev1 Revision: "from"
      * @param mixed $rev2 Revision: "to"
      *
-     * @return array List of property changes, each as a hash array
+     * @return array|false List of property changes, each as a hash array
      * @see tasklist_driver::get_task_diff()
      */
     public function get_task_diff($prop, $rev1, $rev2)

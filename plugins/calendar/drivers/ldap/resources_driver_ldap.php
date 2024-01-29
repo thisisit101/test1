@@ -63,7 +63,7 @@ class resources_driver_ldap extends resources_driver
             $results = $ldap->list_records();
         }
 
-        if ($results instanceof ArrayAccess) {
+        if ($results instanceof Iterator) {
             foreach ($results as $i => $rec) {
                 $results[$i] = $this->decode_resource($rec);
             }

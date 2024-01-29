@@ -449,11 +449,11 @@ class kolab_delegation_engine
 
             $user = $this->parse_ldap_record($record);
 
-            if ($user['uid']) {
+            if ($uid = $user['uid']) {
                 $display = rcube_addressbook::compose_search_name($record);
-                $user    = ['name' => $user['uid'], 'display' => $display];
+                $user    = ['name' => $uid, 'display' => $display];
                 $users[] = $user;
-                $keys[]  = $display ?: $user['uid'];
+                $keys[]  = $display ?: $uid;
             }
         }
 

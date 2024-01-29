@@ -29,7 +29,7 @@ parameters:
     paths:
         - plugins
 
-    level: 2
+    level: 3
 
     scanDirectories:
         - program/include

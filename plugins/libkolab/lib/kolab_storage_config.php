@@ -276,7 +276,7 @@ class kolab_storage_config
      *
      * @param string|array $params Object UUID or Message folder, UID, Search headers (Message-Id, Date)
      *
-     * @return string $url Member URI
+     * @return string|null $url Member URI
      */
     public static function build_member_url($params)
     {
@@ -348,7 +348,7 @@ class kolab_storage_config
      *
      * @param string $url Member URI
      *
-     * @return array Message folder, UID, Search headers (Message-Id, Date)
+     * @return array|false Message folder, UID, Search headers (Message-Id, Date)
      */
     public static function parse_member_url($url)
     {
@@ -570,12 +570,12 @@ class kolab_storage_config
      * @param array $records   List of kolab objects
      * @param bool  $no_return Don't return anything
      *
-     * @return array List of tags
+     * @return array|null List of tags
      */
     public function apply_tags(&$records, $no_return = false)
     {
         if (empty($records) && $no_return) {
-            return;
+            return null;
         }
 
         // first convert categories into tags

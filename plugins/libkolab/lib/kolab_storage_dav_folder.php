@@ -200,7 +200,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     /**
      * Helper method to extract folder UID
      *
-     * @return string Folder's UID
+     * @return string|null Folder's UID
      */
     public function get_uid()
     {
@@ -244,7 +244,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
      *
      * @param bool $subscribed The desired subscription status: true = subscribed, false = not subscribed
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function subscribe($subscribed)
     {
@@ -723,6 +723,8 @@ class kolab_storage_dav_folder extends kolab_storage_folder
      */
     public function get_attachment($id, $event, $unused1 = null, $unused2 = false, $unused3 = null, $unused4 = false)
     {
+        /** @var array $event Overwrite type from the parent class */
+
         // Note: 'attachments' is defined when saving the data into the DAV server
         //       '_attachments' is defined after fetching the object from the DAV server
         if (is_int($id) && isset($event['attachments'][$id])) {

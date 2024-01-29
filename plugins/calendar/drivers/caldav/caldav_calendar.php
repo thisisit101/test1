@@ -450,7 +450,7 @@ class caldav_calendar extends kolab_storage_dav_folder
 
         $this->events = [$event['uid'] => $this->_to_driver_event($object, true)];
 
-        return true;
+        return $saved;
     }
 
     /**

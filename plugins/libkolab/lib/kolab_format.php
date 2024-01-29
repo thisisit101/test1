@@ -283,7 +283,7 @@ abstract class kolab_format
      * @param cDateTime    $cdt     The libkolabxml datetime object
      * @param DateTimeZone $dest_tz The timezone to convert the date to
      *
-     * @return libcalendaring_datetime PHP datetime instance
+     * @return libcalendaring_datetime|null PHP datetime instance, Null on invalid input
      */
     public static function php_datetime($cdt, $dest_tz = null)
     {
@@ -463,7 +463,7 @@ abstract class kolab_format
      *
      * @param float $v Version value to convert
      *
-     * @return int Constant value of either kolabobject::KolabV2 or kolabobject::KolabV3 or false if kolabobject module isn't available
+     * @return int|false Constant value of either kolabobject::KolabV2 or kolabobject::KolabV3 or false if kolabobject module isn't available
      */
     protected function libversion($v = null)
     {

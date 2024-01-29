@@ -113,7 +113,7 @@ class kolab_storage_dav
      * @param string $uid  Object UID
      * @param string $type Object type (contact,event,task,journal,file,note,configuration)
      *
-     * @return array The Kolab object represented as hash array or false if not found
+     * @return array|false The Kolab object represented as hash array or false if not found
      */
     public function get_object($uid, $type)
     {
@@ -312,7 +312,7 @@ class kolab_storage_dav
     public function folder_selector($type, $attrs, $current = '')
     {
         // TODO
-        return null;
+        return null; // @phpstan-ignore-line
     }
 
     /**
@@ -420,7 +420,7 @@ class kolab_storage_dav
      * @param string $folder Folder name
      * @param bool   $temp   Only subscribe temporarily for the current session
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function folder_subscribe($folder, $temp = false)
     {
@@ -434,7 +434,7 @@ class kolab_storage_dav
      * @param string $folder Folder name
      * @param bool   $temp   Only remove temporary subscription
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function folder_unsubscribe($folder, $temp = false)
     {
@@ -459,7 +459,7 @@ class kolab_storage_dav
      *
      * @param string $folder Folder name
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function folder_activate($folder)
     {
@@ -471,7 +471,7 @@ class kolab_storage_dav
      *
      * @param string $folder Folder name
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function folder_deactivate($folder)
     {

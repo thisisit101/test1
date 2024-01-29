@@ -958,14 +958,13 @@ class libcalendaring_itip
         return $table->show();
     }
 
-
     /**
      * Create iTIP invitation token for later replies via URL
      *
      * @param array  $event    Hash array with event properties
      * @param string $attendee Attendee email address
      *
-     * @return string Invitation token
+     * @return string|false Invitation token
      */
     public function store_invitation($event, $attendee)
     {
@@ -981,7 +980,6 @@ class libcalendaring_itip
     public function cancel_itip_invitation($event)
     {
         // empty stub
-        return false;
     }
 
     /**

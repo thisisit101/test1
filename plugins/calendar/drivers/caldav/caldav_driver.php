@@ -99,6 +99,8 @@ class caldav_driver extends kolab_driver
 
     /**
      * Convert kolab_storage_folder into caldav_calendar
+     *
+     * @return caldav_calendar|kolab_user_calendar
      */
     protected function _to_calendar($folder)
     {
@@ -278,7 +280,7 @@ class caldav_driver extends kolab_driver
      *
      * @param string $id Calendar identifier
      *
-     * @return ?caldav_calendar Object nor null if calendar doesn't exist
+     * @return caldav_calendar|caldav_invitation_calendar|null Object nor null if calendar doesn't exist
      */
     public function get_calendar($id)
     {

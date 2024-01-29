@@ -1011,7 +1011,7 @@ class kolab_storage_cache
      * @param string $type   Requested object type or * for all
      * @param string $folder IMAP folder to read from
      *
-     * @return array List of parsed Kolab objects
+     * @return kolab_storage_dataset List of parsed Kolab objects
      */
     protected function _fetch($index, $type = null, $folder = null)
     {
@@ -1109,8 +1109,8 @@ class kolab_storage_cache
     /**
      * Write records into cache using extended inserts to reduce the number of queries to be executed
      *
-     * @param int   $msguid Message UID. Set 0 to commit buffered inserts
-     * @param array $object Kolab object to cache
+     * @param int    $msguid Message UID. Set 0 to commit buffered inserts
+     * @param ?array $object Kolab object to cache
      */
     protected function _extended_insert($msguid, $object)
     {

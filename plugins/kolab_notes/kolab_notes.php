@@ -892,7 +892,7 @@ class kolab_notes extends rcube_plugin
      *
      * @param array $note Hash array with note properties
      *
-     * @return array List of changes, each as a hash array
+     * @return array|false List of changes, each as a hash array
      */
     public function get_changelog($note)
     {
@@ -916,7 +916,7 @@ class kolab_notes extends rcube_plugin
      * @param mixed $note UID string or hash array with note properties
      * @param mixed $rev Revision number
      *
-     * @return array Note object as hash array
+     * @return array|false Note object as hash array
      */
     public function get_revison($note, $rev)
     {
@@ -949,7 +949,7 @@ class kolab_notes extends rcube_plugin
      * @param mixed $rev1   Revision: "from"
      * @param mixed $rev2   Revision: "to"
      *
-     * @return array List of property changes, each as a hash array
+     * @return array|false List of property changes, each as a hash array
      */
     public function get_diff($note, $rev1, $rev2)
     {
@@ -1007,10 +1007,10 @@ class kolab_notes extends rcube_plugin
      * Command the backend to restore a certain revision of a note.
      * This shall replace the current object with an older version.
      *
-     * @param array  $note Hash array with note properties (id, list)
-     * @param mixed  $rev Revision number
+     * @param array $note Hash array with note properties (id, list)
+     * @param mixed $rev  Revision number
      *
-     * @return boolean True on success, False on failure
+     * @return bool True on success, False on failure
      */
     public function restore_revision($note, $rev)
     {
@@ -1152,7 +1152,7 @@ class kolab_notes extends rcube_plugin
 
                     // let the UI generate HTML and CSS representation for this calendar
                     $html = $this->ui->folder_list_item($id, $prop, $jsenv, true);
-                    $prop += (array)$jsenv[$id];
+                    $prop += $jsenv[$id] ?? [];
                     $prop['editname'] = $editname;
                     $prop['html'] = $html;
 

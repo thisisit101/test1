@@ -97,7 +97,7 @@ class kolab_contacts_driver
         $folder   = kolab_storage::get_folder($folderId);
 
         if ($folder && kolab_storage::folder_delete($folder->name)) {
-            return $folderId;
+            return true;
         }
 
         return false;

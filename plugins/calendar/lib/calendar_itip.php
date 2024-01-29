@@ -142,7 +142,7 @@ class calendar_itip extends libcalendaring_itip
      * @param array  $event    Hash array with event properties
      * @param string $attendee Attendee email address
      *
-     * @return string Invitation token
+     * @return string|false Invitation token
      */
     public function store_invitation($event, $attendee)
     {

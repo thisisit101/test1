@@ -720,7 +720,7 @@ class libcalendaring extends rcube_plugin
 
                 try {
                     $interval = new DateInterval(trim($alarm['trigger'], '+-'));
-                    $interval->invert = $alarm['trigger'][0] == '-';
+                    $interval->invert = $alarm['trigger'][0] == '-' ? 1 : 0;
                     $notify_time = clone $refdate;
                     $notify_time->add($interval);
                 } catch (Exception $e) {
@@ -1244,7 +1244,7 @@ class libcalendaring extends rcube_plugin
      * @param string $mime_id Message part ID and object index (e.g. '1.2:0')
      * @param string $type    Object type filter (optional)
      *
-     * @return array Hash array with the parsed iCal
+     * @return ?array Hash array with the parsed iCal
      */
     public function mail_get_itip_object($mbox, $uid, $mime_id, $type = null)
     {

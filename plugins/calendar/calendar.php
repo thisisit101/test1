@@ -1036,7 +1036,7 @@ $("#rcmfd_new_category").keypress(function(event) {
 
                     // let the UI generate HTML and CSS representation for this calendar
                     $html = $this->ui->calendar_list_item($id, $prop, $jsenv);
-                    $cal  = $jsenv[$id];
+                    $cal  = $jsenv[$id] ?? [];
                     $cal['editname'] = $editname;
                     $cal['html']     = $html;
 

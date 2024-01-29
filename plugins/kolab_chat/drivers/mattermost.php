@@ -266,7 +266,7 @@ class kolab_chat_mattermost
     /**
      * Returns the Mattermost channels list for the user
      *
-     * @return array Channels list (id, name, display_name, etc.)
+     * @return array|false Channels list (id, name, display_name, etc.)
      */
     protected function get_channels_list()
     {

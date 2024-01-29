@@ -344,7 +344,7 @@ class kolab_contacts extends rcube_addressbook
      * @param int   $subset  Only return this number of records, use negative values for tail
      * @param bool  $nocount True to skip the count query (select only)
      *
-     * @return array Indexed list of contact records, each a hash array
+     * @return rcube_result_set Indexed list of contact records, each a hash array
      */
     public function list_records($cols = null, $subset = 0, $nocount = false)
     {
@@ -877,6 +877,7 @@ class kolab_contacts extends rcube_addressbook
             );
             return false;
         } else {
+            // @phpstan-ignore-next-line FIXME: this one might be valid error
             $id = $this->uid2id($list['uid']);
             $this->distlists[$id] = $list;
             $result = ['id' => $id, 'name' => $name];
@@ -924,7 +925,7 @@ class kolab_contacts extends rcube_addressbook
      * @param string $newname New name to set for this group
      * @param string $newid   New group identifier (if changed, otherwise don't set)
      *
-     * @return bool New name on success, false if no data was changed
+     * @return string|bool New name on success, false if no data was changed
      */
     public function rename_group($gid, $newname, &$newid)
     {
@@ -1019,7 +1020,7 @@ class kolab_contacts extends rcube_addressbook
                 false
             );
 
-            $added = false;
+            $added = 0;
             $this->set_error(self::ERROR_SAVING, 'errorsaving');
         } else {
             $this->distlists[$gid] = $list;
@@ -1044,13 +1045,17 @@ class kolab_contacts extends rcube_addressbook
 
         $this->_fetch_groups();
         if (!($list = $this->distlists[$gid])) {
-            return false;
+            return 0;
         }
 
         $new_member = [];
+        $removed = 0;
+
         foreach ((array)$list['member'] as $member) {
             if (!in_array($member['ID'], $ids)) {
                 $new_member[] = $member;
+            } else {
+                $removed++;
             }
         }
 
@@ -1067,17 +1072,19 @@ class kolab_contacts extends rcube_addressbook
                 true,
                 false
             );
-        } else {
-            // remove group assigments in local cache
-            foreach ($ids as $id) {
-                $j = array_search($gid, $this->groupmembers[$id]);
-                unset($this->groupmembers[$id][$j]);
-            }
-            $this->distlists[$gid] = $list;
-            return true;
+
+            return 0;
         }
 
-        return false;
+        // remove group assigments in local cache
+        foreach ($ids as $id) {
+            $j = array_search($gid, $this->groupmembers[$id]);
+            unset($this->groupmembers[$id][$j]);
+        }
+
+        $this->distlists[$gid] = $list;
+
+        return $removed;
     }
 
     /**

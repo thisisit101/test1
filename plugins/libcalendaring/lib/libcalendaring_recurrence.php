@@ -153,7 +153,7 @@ class libcalendaring_recurrence
     {
         // recurrence end date is given
         if (isset($this->recurrence['UNTIL']) && $this->recurrence['UNTIL'] instanceof DateTimeInterface) {
-            return $this->recurrence['UNTIL'];
+            return $this->toDateTime($this->recurrence['UNTIL']);
         }
 
         // Run through all items till we reach the end, or limit of iterations
@@ -165,12 +165,13 @@ class libcalendaring_recurrence
         } catch (Exception $e) {
             // do nothing
         }
+
         /*
-                if (empty($end) && isset($this->event['start']) && $this->event['start'] instanceof DateTimeInterface) {
-                    // determine a reasonable end date if none given
-                    $end = clone $this->event['start'];
-                    $end->add(new DateInterval('P100Y'));
-                }
+        if (empty($end) && isset($this->event['start']) && $this->event['start'] instanceof DateTimeInterface) {
+            // determine a reasonable end date if none given
+            $end = clone $this->event['start'];
+            $end->add(new DateInterval('P100Y'));
+        }
         */
 
         return isset($end) ? $this->toDateTime($end) : false;

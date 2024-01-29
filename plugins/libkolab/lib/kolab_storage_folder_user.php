@@ -104,7 +104,7 @@ class kolab_storage_folder_user extends kolab_storage_folder_virtual
      *
      * @param bool $subscribed The desired subscription status: true = subscribed, false = not subscribed
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function subscribe($subscribed)
     {

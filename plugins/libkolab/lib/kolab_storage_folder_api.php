@@ -323,12 +323,12 @@ abstract class kolab_storage_folder_api
     /**
      * Helper method to extract folder UID metadata
      *
-     * @return string Folder's UID
+     * @return string|null Folder's UID
      */
     public function get_uid()
     {
         // To be implemented by extending classes
-        return false;
+        return null;
     }
 
     /**
@@ -346,7 +346,7 @@ abstract class kolab_storage_folder_api
      *
      * @param bool $active The desired subscription status: true = active, false = not active
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function activate($active)
     {

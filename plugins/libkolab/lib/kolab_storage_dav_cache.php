@@ -174,12 +174,12 @@ class kolab_storage_dav_cache extends kolab_storage_cache
                 foreach ($objects as $dav_object) {
                     if ($object = $this->folder->from_dav($dav_object)) {
                         $object['_raw'] = $dav_object['data'];
-                        $this->_extended_insert(false, $object);
+                        $this->_extended_insert(0, $object);
                         unset($object['_raw']);
                     }
                 }
 
-                $this->_extended_insert(true, null);
+                $this->_extended_insert(1, null);
 
                 // check time limit and abort sync if running too long
                 if (++$i % 25 == 0 && time() - $this->sync_start > $time_limit) {
@@ -328,7 +328,6 @@ class kolab_storage_dav_cache extends kolab_storage_cache
      *
      * @param mixed  $object Hash array with object properties to save or false to delete the cache entry
      * @param string $olduid Optional old message UID (for update)
-     * @param string $unused Unused (kept for compat. with the parent class)
      */
     public function save($object, $olduid = null, $unused = null)
     {
@@ -378,10 +377,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Move an existing cache entry to a new resource
      *
-     * @param string               $uid     Entry's UID
-     * @param kolab_storage_folder $target  Target storage folder instance
-     * @param string               $unused1 Unused (kept for compat. with the parent class)
-     * @param string               $unused2 Unused (kept for compat. with the parent class)
+     * @param string $uid Entry's UID
      */
     public function move($uid, $target, $unused1 = null, $unused2 = null)
     {
@@ -449,7 +445,7 @@ class kolab_storage_dav_cache extends kolab_storage_cache
      *
      * @param array $query Pseudo-SQL query as list of filter parameter triplets
      *
-     * @return int The number of objects of the given type
+     * @return int|null The number of objects of the given type, Null on error
      */
     public function count($query = [])
     {
@@ -501,8 +497,8 @@ class kolab_storage_dav_cache extends kolab_storage_cache
     /**
      * Write records into cache using extended inserts to reduce the number of queries to be executed
      *
-     * @param bool  $force  Set to false to commit buffered insert, true to force an insert
-     * @param array $object Kolab object to cache
+     * @param int    $force  Set to 0 to commit buffered insert, 1 to force an insert
+     * @param ?array $object Kolab object to cache
      */
     protected function _extended_insert($force, $object)
     {

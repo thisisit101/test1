@@ -1017,7 +1017,7 @@ class database_driver extends calendar_driver
      * @param int   $scope Bitmask defining the scope to search events in
      * @param bool  $full  If true, recurrence exceptions shall be added
      *
-     * @return array Hash array with event properties
+     * @return ?array Hash array with event properties
      */
     public function get_event($event, $scope = 0, $full = false)
     {
@@ -1072,7 +1072,7 @@ class database_driver extends calendar_driver
             return $this->cache[$id];
         }
 
-        return false;
+        return null;
     }
 
     /**

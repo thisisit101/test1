@@ -578,7 +578,7 @@ class kolab_folders extends rcube_plugin
      *
      * @param string $type Folder type
      *
-     * @return string Folder name
+     * @return ?string Folder name
      */
     public function get_default_folder($type)
     {

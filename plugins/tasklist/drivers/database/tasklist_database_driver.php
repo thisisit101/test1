@@ -109,7 +109,7 @@ class tasklist_database_driver extends tasklist_driver
      *
      * @param array $prop Hash array with list properties
      *
-     * @return mixed ID of the new list on success, False on error
+     * @return string|false ID of the new list on success, False on error
      * @see tasklist_driver::create_list()
      */
     public function create_list(&$prop)
@@ -137,7 +137,7 @@ class tasklist_database_driver extends tasklist_driver
      *
      * @param array $prop Hash array with list properties
      *
-     * @return bool True on success, Fales on failure
+     * @return bool|string True on success, Fales on failure
      * @see tasklist_driver::edit_list()
      */
     public function edit_list(&$prop)
@@ -152,7 +152,7 @@ class tasklist_database_driver extends tasklist_driver
             $this->rc->user->ID
         );
 
-        return $this->db->affected_rows($query);
+        return $this->db->affected_rows($query) > 0;
     }
 
     /**
@@ -366,12 +366,12 @@ class tasklist_database_driver extends tasklist_driver
      * @param int   $filter Bitmask defining filter criterias.
      *                      See FILTER_* constants for possible values.
      *
-     * @return array Hash array with task properties or false if not found
+     * @return array|false Hash array with task properties or false if not found
      */
     public function get_task($prop, $filter = 0)
     {
         if (is_string($prop)) {
-            $prop['uid'] = $prop;
+            $prop = ['uid' => $prop];
         }
 
         $query_col = !empty($prop['id']) ? 'task_id' : 'uid';

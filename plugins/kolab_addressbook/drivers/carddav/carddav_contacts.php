@@ -290,7 +290,7 @@ class carddav_contacts extends rcube_addressbook
      * @param int   $subset  Only return this number of records, use negative values for tail
      * @param bool  $nocount True to skip the count query (select only)
      *
-     * @return array Indexed list of contact records, each a hash array
+     * @return rcube_result_set Indexed list of contact records, each a hash array
      */
     public function list_records($cols = null, $subset = 0, $nocount = false)
     {
@@ -1004,7 +1004,7 @@ class carddav_contacts extends rcube_addressbook
      * @param string $gid Group identifier
      * @param array  $ids List of contact identifiers to be removed
      *
-     * @return bool
+     * @return int Numer of removed contacts
      */
     public function remove_from_group($gid, $ids)
     {
@@ -1013,7 +1013,7 @@ class carddav_contacts extends rcube_addressbook
         $list = $this->distlists[$gid];
 
         if (!$list) {
-            return false;
+            return 0;
         }
 
         if (!is_array($ids)) {
@@ -1021,9 +1021,12 @@ class carddav_contacts extends rcube_addressbook
         }
 
         $new_member = [];
+        $removed = 0;
         foreach ((array) $list['member'] as $member) {
             if (!in_array($member['ID'], $ids)) {
                 $new_member[] = $member;
+            } else {
+                $removed++;
             }
         }
 
@@ -1040,19 +1043,19 @@ class carddav_contacts extends rcube_addressbook
                 true,
                 false
             );
-        } else {
-            // remove group assigments in local cache
-            foreach ($ids as $id) {
-                $j = array_search($gid, $this->groupmembers[$id]);
-                unset($this->groupmembers[$id][$j]);
-            }
 
-            $this->distlists[$gid] = $list;
-
-            return true;
+            return 0;
         }
 
-        return false;
+        // remove group assigments in local cache
+        foreach ($ids as $id) {
+            $j = array_search($gid, $this->groupmembers[$id]);
+            unset($this->groupmembers[$id][$j]);
+        }
+
+        $this->distlists[$gid] = $list;
+
+        return $removed;
     }
 
     /**

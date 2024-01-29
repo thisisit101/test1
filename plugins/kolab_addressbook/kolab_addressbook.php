@@ -1022,7 +1022,7 @@ class kolab_addressbook extends rcube_plugin
     {
         $source = trim(rcube_utils::get_input_value('_source', rcube_utils::INPUT_GPC, true));
 
-        if ($source && ($result = $this->driver->folder_delete($source))) {
+        if ($source && $this->driver->folder_delete($source)) {
             $storage   = $this->rc->get_storage();
             $delimiter = $storage->get_hierarchy_delimiter();
 

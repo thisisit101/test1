@@ -1026,7 +1026,7 @@ class tasklist extends rcube_plugin
                     if (empty($list['_reload'])) {
                         $this->load_ui();
                         $list['html'] = $this->ui->tasklist_list_item($insert_id, $list, $jsenv);
-                        $list += (array)$jsenv[$insert_id];
+                        $list += $jsenv[$insert_id] ?? [];
                     }
                     $this->rc->output->command('plugin.insert_tasklist', $list);
                     $success = true;
@@ -1034,11 +1034,9 @@ class tasklist extends rcube_plugin
                 break;
 
             case 'edit':
-                if ($newid = $this->driver->edit_list($list)) {
-                    $list['oldid'] = $list['id'];
-                    $list['id'] = $newid;
+                $list['oldid'] = $list['id'];
+                if ($success = $this->driver->edit_list($list)) {
                     $this->rc->output->command('plugin.update_tasklist', $list);
-                    $success = true;
                 }
                 break;
 
@@ -1065,7 +1063,7 @@ class tasklist extends rcube_plugin
 
                     // let the UI generate HTML and CSS representation for this calendar
                     $html = $this->ui->tasklist_list_item($id, $prop, $jsenv);
-                    $prop += (array)$jsenv[$id];
+                    $prop += $jsenv[$id] ?? [];
                     $prop['editname'] = $editname;
                     $prop['html'] = $html;
 

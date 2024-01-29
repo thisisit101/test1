@@ -190,7 +190,7 @@ class kolab_storage
      *
      * @param string $type Data type to list folders for (contact,distribution-list,event,task,note)
      *
-     * @return object kolab_storage_folder  The folder object
+     * @return kolab_storage_folder|null The folder object
      */
     public static function get_default_folder($type)
     {
@@ -209,7 +209,7 @@ class kolab_storage
      * @param string $folder IMAP folder to access (UTF7-IMAP)
      * @param string $type   Expected folder type
      *
-     * @return object kolab_storage_folder  The folder object
+     * @return kolab_storage_folder|null The folder object
      */
     public static function get_folder($folder, $type = null)
     {
@@ -223,7 +223,7 @@ class kolab_storage
      * @param string $uid  Object UID
      * @param string $type Object type (contact,event,task,journal,file,note,configuration)
      *
-     * @return array The Kolab object represented as hash array or false if not found
+     * @return array|false The Kolab object represented as hash array or false if not found
      */
     public static function get_object($uid, $type)
     {
@@ -864,7 +864,7 @@ class kolab_storage
     public static function list_folders($root = '', $mbox = '*', $filter = null, $subscribed = null, &$folderdata = [])
     {
         if (!self::setup()) {
-            return null;
+            return [];
         }
 
         // use IMAP subscriptions
@@ -1192,7 +1192,7 @@ class kolab_storage
      *
      * @param string $folder Folder name (UTF7-IMAP)
      *
-     * @return string Folder type
+     * @return string|null Folder type
      */
     public static function folder_type($folder)
     {
@@ -1412,12 +1412,12 @@ class kolab_storage
      * @param string $type  Folder type
      * @param array  $props Folder properties (color, etc)
      *
-     * @return string Folder name
+     * @return string|null Folder name
      */
     public static function create_default_folder($type, $props = [])
     {
         if (!self::setup()) {
-            return;
+            return null;
         }
 
         $folders = self::$imap->get_metadata('*', [kolab_storage::CTYPE_KEY_PRIVATE]);
@@ -1442,7 +1442,7 @@ class kolab_storage
             }
 
             if (!$default_name) {
-                return;
+                return null;
             }
 
             $folder = rcube_charset::convert($default_name, RCUBE_CHARSET, 'UTF7-IMAP');
@@ -1455,7 +1455,7 @@ class kolab_storage
 
             if (!self::$imap->folder_exists($folder)) {
                 if (!self::$imap->create_folder($folder)) {
-                    return;
+                    return null;
                 }
             }
 

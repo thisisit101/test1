@@ -148,7 +148,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
     /**
      * Helper method to extract folder UID metadata
      *
-     * @return string Folder's UID
+     * @return string|null Folder's UID
      */
     public function get_uid()
     {
@@ -216,7 +216,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
      *
      * @param bool $active The desired subscription status: true = active, false = not active
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function activate($active)
     {
@@ -238,7 +238,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
      *
      * @param bool $subscribed The desired subscription status: true = subscribed, false = not subscribed
      *
-     * @return True on success, false on error
+     * @return bool True on success, false on error
      */
     public function subscribe($subscribed)
     {
@@ -407,9 +407,10 @@ class kolab_storage_folder extends kolab_storage_folder_api
             if (substr($part, 0, 2) == 'i:') {
                 // attachment data is stored in XML
                 if ($object = $this->cache->get($msguid)) {
+                    $object['_attachments'] = [];
+
                     // load data from XML (attachment content is not stored in cache)
-                    if ($object['_formatobj'] && isset($object['_size'])) {
-                        $object['_attachments'] = [];
+                    if (isset($object['_formatobj']) && isset($object['_size'])) {
                         $object['_formatobj']->get_attachments($object);
                     }
 

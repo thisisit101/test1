@@ -160,9 +160,12 @@ class kolab_bonnie_api_client
     /**
      * Do the HTTP request
      *
-     * @param  string  $payload  Data to send
+     * @param array $payload Data to send
+     * @param bool  $sign    Enable signed request
+     *
+     * @return array
      */
-    protected function send_request($payload, $sign = true)
+    protected function send_request(array $payload, $sign = true)
     {
         try {
             $payload_ = json_encode($payload);
@@ -175,6 +178,7 @@ class kolab_bonnie_api_client
             }
 
             $this->_debug('REQUEST', $payload, $this->headers);
+
             $request = libkolab::http_request($this->url, 'POST', ['timeout' => $this->timeout]);
             $request->setHeader($this->headers);
             $request->setAuth($this->username, $this->password);
@@ -198,7 +202,7 @@ class kolab_bonnie_api_client
             return ['id' => $payload['id'], 'error' => $e->getMessage(), 'code' => -32000];
         }
 
-        return is_array($result) ? $result : [];
+        return isset($result) && is_array($result) ? $result : [];
     }
 
     /**

@@ -352,7 +352,7 @@ class kolab_driver extends calendar_driver
      *
      * @param string $id Calendar identifier (encoded imap folder name)
      *
-     * @return kolab_calendar Object nor null if calendar doesn't exist
+     * @return kolab_calendar|kolab_invitation_calendar|null Object nor null if calendar doesn't exist
      */
     public function get_calendar($id)
     {
@@ -585,7 +585,7 @@ class kolab_driver extends calendar_driver
      * Fetch a single event
      *
      * @see calendar_driver::get_event()
-     * @return array Hash array with event properties, false if not found
+     * @return ?array Hash array with event properties, false if not found
      */
     public function get_event($event, $scope = 0, $full = false)
     {
@@ -621,7 +621,7 @@ class kolab_driver extends calendar_driver
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -1843,7 +1843,7 @@ class kolab_driver extends calendar_driver
     public function list_attachments($event)
     {
         if (!($storage = $this->get_calendar($event['calendar']))) {
-            return false;
+            return [];
         }
 
         $event = $storage->get_event($event['id']);
@@ -2260,7 +2260,7 @@ class kolab_driver extends calendar_driver
      *
      * @param array $event Hash array with event properties
      *
-     * @return array List of changes, each as a hash array
+     * @return array|false List of changes, each as a hash array
      * @see calendar_driver::get_event_changelog()
      */
     public function get_event_changelog($event)
@@ -2286,7 +2286,7 @@ class kolab_driver extends calendar_driver
      * @param mixed $rev1  Old Revision
      * @param mixed $rev2  New Revision
      *
-     * @return array List of property changes, each as a hash array
+     * @return array|false List of property changes, each as a hash array
      * @see calendar_driver::get_event_diff()
      */
     public function get_event_diff($event, $rev1, $rev2)
@@ -2413,7 +2413,7 @@ class kolab_driver extends calendar_driver
      * @param array $event Hash array with event properties
      * @param mixed $rev   Revision number
      *
-     * @return array Event object as hash array
+     * @return array|false Event object as hash array
      * @see calendar_driver::get_event_revison()
      */
     public function get_event_revison($event, $rev, $internal = false)
