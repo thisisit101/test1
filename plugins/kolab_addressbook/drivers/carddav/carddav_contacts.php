@@ -87,7 +87,6 @@ class carddav_contacts extends rcube_addressbook
     private $filter;
     private $result;
     private $namespace;
-    private $action;
 
     // list of fields used for searching in "All fields" mode
     private $search_fields = [
@@ -136,8 +135,6 @@ class carddav_contacts extends rcube_addressbook
                 }
             }
         }
-
-        $this->action = rcmail::get_instance()->action;
     }
 
     /**

@@ -27,7 +27,6 @@ class kolab_bonnie_api
 {
     public $ready = false;
 
-    private $config = [];
     private $client = null;
 
 
@@ -36,8 +35,6 @@ class kolab_bonnie_api
      */
     public function __construct($config)
     {
-        $this->config = $config;
-
         $this->client = new kolab_bonnie_api_client($config['uri'], $config['timeout'] ?: 30, (bool)$config['debug']);
 
         $this->client->set_secret($config['secret']);

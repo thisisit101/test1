@@ -165,7 +165,7 @@ abstract class kolab_format
      * @param string $version Format version
      * @param string $xmldata Cached xml data to initialize with
      *
-     * @return kolab_format
+     * @return kolab_format|PEAR_Error
      */
     public static function factory($type, $version = '3.0', $xmldata = null)
     {
@@ -174,6 +174,7 @@ abstract class kolab_format
         }
 
         if (!self::supports($version)) {
+            // @phpstan-ignore-next-line
             return PEAR::raiseError("No support for Kolab format version " . $version);
         }
 
@@ -184,6 +185,7 @@ abstract class kolab_format
             return new $classname($xmldata, $version);
         }
 
+        // @phpstan-ignore-next-line
         return PEAR::raiseError("Failed to load Kolab Format wrapper for type " . $type);
     }
 

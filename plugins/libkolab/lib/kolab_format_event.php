@@ -220,7 +220,7 @@ class kolab_format_event extends kolab_format_xcal
             $object['exceptions'] = $recurrence_exceptions;
 
             // also link with recurrence.EXCEPTIONS for compatibility
-            if (!empty($object['recurrence']) && isset($object['exceptions'])) {
+            if (!empty($object['recurrence'])) {
                 $object['recurrence']['EXCEPTIONS'] = &$object['exceptions'];
             }
         }

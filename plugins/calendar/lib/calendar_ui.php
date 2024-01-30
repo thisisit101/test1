@@ -227,6 +227,7 @@ class calendar_ui
         $calendars = $this->cal->driver->list_calendars(0, $tree);
 
         // walk folder tree
+        // @phpstan-ignore-next-line
         if (is_object($tree)) {
             $html = $this->list_tree_html($tree, $calendars, $jsenv, $attrib);
 
@@ -284,7 +285,7 @@ class calendar_ui
             if (!empty($folder->children)) {
                 $content .= html::tag(
                     'ul',
-                    ['style' => $is_collapsed ? "display:none;" : null],
+                    ['style' => $is_collapsed ? "display:none;" : null], // @phpstan-ignore-line
                     $this->list_tree_html($folder, $data, $jsenv, $attrib)
                 );
             }

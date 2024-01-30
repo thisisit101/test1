@@ -148,7 +148,7 @@ class kolab_files extends rcube_plugin
 
         require_once $this->home . '/lib/kolab_files_autocomplete.php';
 
-        new kolab_files_autocomplete($this);
+        new kolab_files_autocomplete();
     }
 
     /**

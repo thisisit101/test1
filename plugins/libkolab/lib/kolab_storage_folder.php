@@ -414,6 +414,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
                         $object['_formatobj']->get_attachments($object);
                     }
 
+                    // @phpstan-ignore-next-line
                     foreach ($object['_attachments'] as $attach) {
                         if ($attach['id'] == $part) {
                             if ($print) {
@@ -779,7 +780,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
                     $object['recurrence']['UNTIL'] = $untildate;
                     unset($object['recurrence']['COUNT']);
                 } else {
-                    if (!$exdates[$exception['start']->format('Y-m-d')]) {
+                    if (empty($exdates[$exception['start']->format('Y-m-d')])) {
                         $object['recurrence']['EXDATE'][] = clone $exception['start'];
                     }
                     unset($exception['recurrence']);
@@ -1023,6 +1024,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
             if (empty($att['content']) && !empty($att['id'])) {
                 // @TODO: use IMAP CATENATE to skip attachment fetch+push operation
                 $msguid = !empty($object['_copyfrom']) ? $object['_copyfrom'] : (!empty($object['_msguid']) ? $object['_msguid'] : $object['uid']);
+                // @phpstan-ignore-next-line
                 if ($is_file) {
                     $att['path'] = tempnam($temp_dir, 'rcmAttmnt');
                     if (($fp = fopen($att['path'], 'w')) && $this->get_attachment($msguid, $att['id'], $object['_mailbox'], false, $fp, true)) {
@@ -1043,6 +1045,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
             // directly to IMAP, see rcube_imap_generic::append().
             // I.e. use file handles where possible
             if (!empty($att['path'])) {
+                // @phpstan-ignore-next-line
                 if ($is_file && $binary) {
                     $files[] = fopen($att['path'], 'r');
                     $mime->addAttachment($marker, $att['mimetype'], $name, false, $encoding, 'attachment', '', '', '', null, null, '', RCUBE_CHARSET, $headers);
@@ -1050,6 +1053,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
                     $mime->addAttachment($att['path'], $att['mimetype'], $name, true, $encoding, 'attachment', '', '', '', null, null, '', RCUBE_CHARSET, $headers);
                 }
             } else {
+                // @phpstan-ignore-next-line
                 if (is_resource($att['content']) && $is_file && $binary) {
                     $files[] = $att['content'];
                     $mime->addAttachment($marker, $att['mimetype'], $name, false, $encoding, 'attachment', '', '', '', null, null, '', RCUBE_CHARSET, $headers);
@@ -1086,6 +1090,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
             $message = $tmp;
         }
         // write complete message body into temp file
+        // @phpstan-ignore-next-line
         elseif ($is_file) {
             // use common temp dir
             $body_file = tempnam($temp_dir, 'rcmMsg');
@@ -1141,6 +1146,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
         }
 
         if ($result instanceof PEAR_Error) {
+            // @phpstan-ignore-next-line
             return PEAR::raiseError(
                 sprintf("Failed triggering folder %s. Error was: %s", $this->name, $result->getMessage())
             );
@@ -1171,6 +1177,7 @@ class kolab_storage_folder extends kolab_storage_folder_api
             $result = $request->send();
             // rcube::write_log('trigger', $result->getBody());
         } catch (Exception $e) {
+            // @phpstan-ignore-next-line
             return PEAR::raiseError($e->getMessage());
         }
 

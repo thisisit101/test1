@@ -831,8 +831,7 @@ class libcalendaring_vcalendar implements Iterator
                         $busyEnd = DateTimeParser::parse($busyEnd);
                         if ($busyEnd instanceof \DateInterval) {
                             $tmp = clone $busyStart;
-                            $tmp->add($busyEnd);
-                            $busyEnd = $tmp;
+                            $busyEnd = $tmp->add($busyEnd);
                         }
 
                         if ($busyEnd && $busyEnd > $busyStart) {
@@ -895,7 +894,7 @@ class libcalendaring_vcalendar implements Iterator
             foreach ($prop->getParts() as $val) {
                 try {
                     [$start, $end] = explode('/', $val);
-                    $start = DateTimeParser::parseDateTime($start);
+                    $start = self::toDateTime(DateTimeParser::parseDateTime($start));
 
                     // This is a duration value.
                     if ($end[0] === 'P') {
@@ -903,10 +902,10 @@ class libcalendaring_vcalendar implements Iterator
                         $end = clone $start;
                         $end->add($dur);
                     } else {
-                        $end = DateTimeParser::parseDateTime($end);
+                        $end = self::toDateTime(DateTimeParser::parseDateTime($end));
                     }
 
-                    $dt[] = [self::toDateTime($start), self::toDateTime($end)];
+                    $dt[] = [$start, $end];
                 } catch (Exception $e) {
                     // ignore single date parse errors
                 }
@@ -1080,10 +1079,10 @@ class libcalendaring_vcalendar implements Iterator
     /**
      * Build a valid iCal format block from the given event
      *
-     * @param array     $event          Hash array with event/task properties from libkolab
+     * @param array                       $event          Hash array with event/task properties from libkolab
      * @param VObject\Component\VCalendar $vcal VCalendar object to append event to or false for directly sending data to stdout
-     * @param ?callable $get_attachment Optional callback function to fetch attachment contents
-     * @param object    $recurrence_id  RECURRENCE-ID property when serializing a recurrence exception
+     * @param ?callable                   $get_attachment Optional callback function to fetch attachment contents
+     * @param VObject\Property            $recurrence_id  RECURRENCE-ID property when serializing a recurrence exception
      */
     private function _to_ical($event, $vcal, $get_attachment, $recurrence_id = null)
     {
@@ -1517,6 +1516,8 @@ class libcalendaring_vcalendar implements Iterator
 
     /**
      * Convert DateTime into libcalendaring_datetime
+     *
+     * @return libcalendaring_datetime
      */
     private static function toDateTime($date)
     {

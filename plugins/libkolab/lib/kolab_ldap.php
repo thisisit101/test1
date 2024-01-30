@@ -30,7 +30,6 @@ class kolab_ldap extends rcube_ldap_generic
     private $debug = false;
     private $fieldmap = [];
     private $parse_replaces = [];
-    private $rcache;
     private $ready = false;
 
 

@@ -121,8 +121,8 @@ class caldav_driver extends kolab_driver
     /**
      * Get a list of available calendars from this source.
      *
-     * @param int    $filter Bitmask defining filter criterias
-     * @param object $tree   Reference to hierarchical folder tree object
+     * @param int                           $filter Bitmask defining filter criterias
+     * @param ?kolab_storage_folder_virtual $tree   Reference to hierarchical folder tree object
      *
      * @return array List of calendars
      */
@@ -136,9 +136,9 @@ class caldav_driver extends kolab_driver
 
         // include virtual folders for a full folder tree
         /*
-                if (!is_null($tree)) {
-                    $folders = $this->storage->folder_hierarchy($folders, $tree);
-                }
+        if (!is_null($tree)) {
+            $folders = $this->storage->folder_hierarchy($folders, $tree);
+        }
         */
         $parents = array_keys($this->calendars);
 
@@ -189,7 +189,7 @@ class caldav_driver extends kolab_driver
                 'title'     => '', // $cal->get_title(),
                 'color'     => $cal->get_color(),
                 'editable'  => $cal->editable,
-                'group'     => $is_user ? 'other user' : $cal->get_namespace(),
+                'group'     => $is_user ? 'other user' : $cal->get_namespace(), // @phpstan-ignore-line
                 'active'    => !isset($prefs[$cal->id]['active']) || !empty($prefs[$cal->id]['active']),
                 'owner'     => $cal->get_owner(),
                 'removable' => !$cal->default,
@@ -198,6 +198,7 @@ class caldav_driver extends kolab_driver
                 'driver' => 'caldav',
             ];
 
+            // @phpstan-ignore-next-line
             if (!$is_user) {
                 $calendars[$cal->id] += [
                     'default'    => $cal->default,

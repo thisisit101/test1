@@ -652,7 +652,8 @@ class tasklist extends rcube_plugin
             }
 
             // yes, raw input matched a (valid) date
-            if (strlen($date_str) && strtotime($date_str) && ($date = new DateTime($date_str, $this->timezone))) {
+            if (strlen($date_str) && strtotime($date_str)) {
+                $date = new DateTime($date_str, $this->timezone);
                 $rec['date'] = $date->format('Y-m-d');
                 if (!empty($has_time)) {
                     $rec['time'] = $date->format('H:i');
@@ -983,7 +984,7 @@ class tasklist extends rcube_plugin
         $ignore = ['changed' => 1, 'attachments' => 1];
 
         foreach (array_unique(array_merge(array_keys($a), array_keys($b))) as $key) {
-            if (!$ignore[$key] && $a[$key] != $b[$key]) {
+            if (empty($ignore[$key]) && $a[$key] != $b[$key]) {
                 $diff[] = $key;
             }
         }
@@ -1026,7 +1027,7 @@ class tasklist extends rcube_plugin
                     if (empty($list['_reload'])) {
                         $this->load_ui();
                         $list['html'] = $this->ui->tasklist_list_item($insert_id, $list, $jsenv);
-                        $list += $jsenv[$insert_id] ?? [];
+                        $list += $jsenv[$insert_id] ?? []; // @phpstan-ignore-line
                     }
                     $this->rc->output->command('plugin.insert_tasklist', $list);
                     $success = true;
@@ -1063,7 +1064,7 @@ class tasklist extends rcube_plugin
 
                     // let the UI generate HTML and CSS representation for this calendar
                     $html = $this->ui->tasklist_list_item($id, $prop, $jsenv);
-                    $prop += $jsenv[$id] ?? [];
+                    $prop += $jsenv[$id] ?? []; // @phpstan-ignore-line
                     $prop['editname'] = $editname;
                     $prop['html'] = $html;
 
@@ -2274,7 +2275,7 @@ class tasklist extends rcube_plugin
                     } else {
                         $error_msg = $this->gettext('newerversionexists');
                     }
-                } elseif (!$existing && ($status != 'declined' || $this->rc->config->get('kolab_invitation_tasklists'))) {
+                } elseif ($status != 'declined' || $this->rc->config->get('kolab_invitation_tasklists')) {
                     $success = $this->driver->create_task($task);
                 } elseif ($status == 'declined') {
                     $error_msg = null;

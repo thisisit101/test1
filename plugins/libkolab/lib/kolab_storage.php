@@ -1047,8 +1047,8 @@ class kolab_storage
     /**
      * Check the folder tree and add the missing parents as virtual folders
      *
-     * @param array  $folders Folders list
-     * @param object $tree    Reference to the root node of the folder tree
+     * @param array                         $folders Folders list
+     * @param ?kolab_storage_folder_virtual $tree    Reference to the root node of the folder tree
      *
      * @return array Flat folders list
      */

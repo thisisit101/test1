@@ -2,7 +2,6 @@
 
 class kolab_notes_ui
 {
-    private $action;
     private $folder;
     private $rc;
     private $plugin;
@@ -91,6 +90,7 @@ class kolab_notes_ui
         $lists = $this->plugin->get_lists($tree);
         $jsenv = [];
 
+        // @phpstan-ignore-next-line
         if (is_object($tree)) {
             $html = $this->folder_tree_html($tree, $lists, $jsenv, $attrib);
         } else {
@@ -139,7 +139,7 @@ class kolab_notes_ui
             if (!empty($folder->children)) {
                 $content .= html::tag(
                     'ul',
-                    ['style' => ($is_collapsed ? "display:none;" : null)],
+                    ['style' => ($is_collapsed ? "display:none;" : null)], // @phpstan-ignore-line
                     $this->folder_tree_html($folder, $data, $jsenv, $attrib)
                 );
             }
@@ -187,6 +187,7 @@ class kolab_notes_ui
 
         $label_id = 'nl:' . $id;
         $attr = !empty($prop['virtual']) ? ['tabindex' => '0'] : ['href' => $this->rc->url(['_list' => $id])];
+
         return html::div(
             implode(' ', $classes),
             html::a($attr + ['class' => 'listname', 'title' => $title, 'id' => $label_id], $prop['listname'] ?: $prop['name']) .
@@ -213,8 +214,6 @@ class kolab_notes_ui
                 )
             )
         );
-
-        return '';
     }
 
     public function listing($attrib)
@@ -301,7 +300,6 @@ class kolab_notes_ui
      */
     public function list_editform($action, $list, $folder)
     {
-        $this->action = $action;
         $this->list   = $list;
         $this->folder = is_object($folder) ? $folder->name : ''; // UTF7;
 

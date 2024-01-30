@@ -176,6 +176,7 @@ class tasklist_ui
         }
 
         // walk folder tree
+        // @phpstan-ignore-next-line FIXME: does it make sense?
         if (is_object($tree)) {
             $html = $this->list_tree_html($tree, $lists, $jsenv, $attrib);
         } else {
@@ -224,7 +225,7 @@ class tasklist_ui
             if (!empty($folder->children)) {
                 $content .= html::tag(
                     'ul',
-                    ['style' => ($is_collapsed ? "display:none;" : null)],
+                    ['style' => ($is_collapsed ? "display:none;" : null)], // @phpstan-ignore-line
                     $this->list_tree_html($folder, $data, $jsenv, $attrib)
                 );
             }
@@ -267,7 +268,7 @@ class tasklist_ui
         if (!empty($prop['title'])) {
             $title = $prop['title'];
         } elseif (empty($prop['listname']) || $prop['name'] != $prop['listname'] || strlen($prop['name']) > 25) {
-            html_entity_decode($prop['name'], ENT_COMPAT, RCUBE_CHARSET);
+            $title = html_entity_decode($prop['name'], ENT_COMPAT, RCUBE_CHARSET);
         }
 
         if (!empty($prop['virtual'])) {

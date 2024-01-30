@@ -549,8 +549,10 @@ class caldav_calendar extends kolab_storage_dav_folder
     protected function get_links($uid)
     {
         return []; // TODO
+        /*
         $storage = kolab_storage_config::get_instance();
         return $storage->get_object_links($uid);
+        */
     }
 
     /**
@@ -559,8 +561,10 @@ class caldav_calendar extends kolab_storage_dav_folder
     protected function save_links($uid, $links)
     {
         return false; // TODO
+        /*
         $storage = kolab_storage_config::get_instance();
         return $storage->save_object_links($uid, (array) $links);
+        */
     }
 
     /**

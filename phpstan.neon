@@ -15,8 +15,6 @@ parameters:
         - '#Access to an undefined property (calendar|tasklist)::\$itip#'
         - '#Access to an undefined property (calendar|tasklist)::\$ical#'
         - '#unknown class (kolabformat|Address|Alarm|Contact|ContactReference|Configuration|Email|RecurrenceRule|Key|Related|Url|Snippet|Telephone)#'
-        - '#Call to an undefined static method PEAR::raiseError#'
-        #- '#Class .* constructor invoked with 0 parameters#'
         - '#class (Address|Affiliation|Alarm|Attachment|Attendee|Duration|ContactReference|Configuration|Dictionary|Email|EmailReference|DayPos|FileDriver|Key|NameComponents|SnippetCollection|RecurrenceRule|Related|Relation|EventCal|Snippet|Telephone|Url|vector.*|cDatetime|XMLObject|CustomProperty) not found#i'
         - '#Call to method .* on an unknown class (Affiliation|Attachment|Attendee|cDateTime|Dictionary|EventCal|FileDriver|NameComponents|Relation|snippet|vector.*)#'
         - '#Call to static method .* on an unknown class jqueryui#'
@@ -29,7 +27,7 @@ parameters:
     paths:
         - plugins
 
-    level: 3
+    level: 4
 
     scanDirectories:
         - program/include

@@ -65,7 +65,7 @@ class kolab_chat_mattermost
                     $team = $_channel['team_name'];
                 }
 
-                if ($channel && $team) {
+                if ($team) {
                     $url .= '/' . urlencode($team) . '/channels/' . urlencode($channel);
                 }
             }

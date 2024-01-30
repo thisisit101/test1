@@ -1036,7 +1036,7 @@ $("#rcmfd_new_category").keypress(function(event) {
 
                     // let the UI generate HTML and CSS representation for this calendar
                     $html = $this->ui->calendar_list_item($id, $prop, $jsenv);
-                    $cal  = $jsenv[$id] ?? [];
+                    $cal  = $jsenv[$id] ?? []; // @phpstan-ignore-line
                     $cal['editname'] = $editname;
                     $cal['html']     = $html;
 
@@ -3339,6 +3339,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         $deleted   = false;
         $dontsave  = false;
         $existing = null;
+        $event_attendee = null;
 
         if ($status == 'delegated') {
             $to = rcube_utils::get_input_value('_to', rcube_utils::INPUT_POST, true);
@@ -3440,7 +3441,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                 $existing = $this->find_event($event, $mode);
 
                 // we'll create a new copy if user decided to change the calendar
-                if ($existing && $cal_id && $calendar && $calendar['id'] != $existing['calendar']) {
+                if ($existing && $cal_id && $calendar['id'] != $existing['calendar']) {
                     $existing = null;
                 }
 
@@ -3449,7 +3450,6 @@ $("#rcmfd_new_category").keypress(function(event) {
                     unset($event['free_busy']);
                 }
 
-                $event_attendee   = null;
                 $update_attendees = [];
 
                 if ($existing) {
@@ -3569,7 +3569,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                     } else {
                         $error_msg = $this->gettext('newerversionexists');
                     }
-                } elseif (!$existing && ($status != 'declined' || $this->rc->config->get('kolab_invitation_calendars'))) {
+                } elseif (empty($existing) && ($status != 'declined' || $this->rc->config->get('kolab_invitation_calendars'))) {
                     if ($status == 'declined'
                         || ($event['status'] ?? '') == 'CANCELLED'
                         || ($event_attendee && ($event_attendee['role'] ?? '') == 'NON-PARTICIPANT')

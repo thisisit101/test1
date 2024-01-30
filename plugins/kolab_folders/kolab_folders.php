@@ -106,7 +106,7 @@ class kolab_folders extends rcube_plugin
         }
 
         // Create default folders
-        if ($args['root'] == '' && $args['name'] = '*') {
+        if ($args['root'] == '' && $args['name'] == '*') {
             $this->create_default_folders($folders, $args['filter'], $folderdata, $args['mode'] == 'LSUB');
         }
 

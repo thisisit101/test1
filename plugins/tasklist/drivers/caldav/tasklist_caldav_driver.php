@@ -37,7 +37,6 @@ class tasklist_caldav_driver extends tasklist_driver
     private $lists;
     private $folders = [];
     private $tasks   = [];
-    private $tags    = [];
     private $bonnie_api = false;
 
 
@@ -922,29 +921,28 @@ class tasklist_caldav_driver extends tasklist_driver
      *
      * @return array (uid,folder,msguid) tuple
      */
+    /*
     private function _resolve_task_identity($prop)
     {
-        /*
-                $mailbox = $msguid = null;
+        $mailbox = $msguid = null;
 
-                $this->_parse_id($prop);
-                $uid     = $prop['uid'];
-                $list_id = $prop['list'];
+        $this->_parse_id($prop);
+        $uid     = $prop['uid'];
+        $list_id = $prop['list'];
 
-                if ($folder = $this->get_folder($list_id)) {
-                    $mailbox = $folder->get_mailbox_id();
+        if ($folder = $this->get_folder($list_id)) {
+            $mailbox = $folder->get_mailbox_id();
 
-                    // get task object from storage in order to get the real object uid an msguid
-                    if ($rec = $folder->get_object($uid)) {
-                        $msguid = $rec['_msguid'];
-                        $uid = $rec['uid'];
-                    }
-                }
+            // get task object from storage in order to get the real object uid an msguid
+            if ($rec = $folder->get_object($uid)) {
+                $msguid = $rec['_msguid'];
+                $uid = $rec['uid'];
+            }
+        }
 
-                return array($uid, $mailbox, $msguid);
-        */
-        return [];
+        return array($uid, $mailbox, $msguid);
     }
+    */
 
     /**
      * Get a list of pending alarms to be displayed to the user

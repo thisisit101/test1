@@ -1152,7 +1152,7 @@ class kolab_notes extends rcube_plugin
 
                     // let the UI generate HTML and CSS representation for this calendar
                     $html = $this->ui->folder_list_item($id, $prop, $jsenv, true);
-                    $prop += $jsenv[$id] ?? [];
+                    $prop += $jsenv[$id] ?? []; // @phpstan-ignore-line
                     $prop['editname'] = $editname;
                     $prop['html'] = $html;
 

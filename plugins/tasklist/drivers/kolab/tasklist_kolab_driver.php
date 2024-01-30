@@ -930,7 +930,7 @@ class tasklist_kolab_driver extends tasklist_driver
             $special_changes = [];
 
             // map kolab event properties to keys the client expects
-            array_walk($result['changes'], function (&$change, $i) use ($keymap, $prop_keymaps, $special_changes) {
+            array_walk($result['changes'], function (&$change, $i) use ($keymap, $prop_keymaps, &$special_changes) {
                 if (array_key_exists($change['property'], $keymap)) {
                     $change['property'] = $keymap[$change['property']];
                 }

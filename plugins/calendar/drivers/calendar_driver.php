@@ -430,9 +430,9 @@ abstract class calendar_driver
     /**
      * Build a struct representing the given message reference
      *
-     * @param object|string $uri_or_headers rcube_message_header instance holding the message headers
-     *                         or an URI from a stored link referencing a mail message.
-     * @param string $folder  IMAP folder the message resides in
+     * @param rcube_message_header|string $uri_or_headers An object holding the message headers
+     *                                                    or an URI from a stored link referencing a mail message.
+     * @param string                      $folder         IMAP folder the message resides in
      *
      * @return array|false An struct referencing the given IMAP message
      */

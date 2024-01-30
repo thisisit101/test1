@@ -25,17 +25,15 @@
 class kolab_files_autocomplete
 {
     private $ldap;
-    private $plugin;
     private $rc;
 
 
     /**
      * Class constructor
      */
-    public function __construct($plugin)
+    public function __construct()
     {
-        $this->plugin = $plugin;
-        $this->rc     = rcmail::get_instance();
+        $this->rc = rcmail::get_instance();
 
         $search = rcube_utils::get_input_value('_search', rcube_utils::INPUT_GPC, true);
         $reqid  = rcube_utils::get_input_value('_reqid', rcube_utils::INPUT_GPC);

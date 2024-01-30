@@ -85,7 +85,8 @@ class kolab_date_recurrence
         $time = false;
 
         if ($this->engine && $this->next) {
-            if (($cnext = new cDateTime($this->engine->getNextOccurence($this->cnext))) && $cnext->isValid()) {
+            $cnext = new cDateTime($this->engine->getNextOccurence($this->cnext));
+            if ($cnext->isValid()) {
                 $next = kolab_format::php_datetime($cnext, $this->start->getTimezone());
                 $time = $timestamp ? $next->format('U') : $next;
 

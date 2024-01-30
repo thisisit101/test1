@@ -137,8 +137,8 @@ class kolab_driver extends calendar_driver
     /**
      * Get a list of available calendars from this source
      *
-     * @param int    $filter Bitmask defining filter criterias
-     * @param object $tree   Reference to hierarchical folder tree object
+     * @param int                           $filter Bitmask defining filter criterias
+     * @param ?kolab_storage_folder_virtual $tree   Reference to hierarchical folder tree object
      *
      * @return array List of calendars
      */
@@ -489,16 +489,15 @@ class kolab_driver extends calendar_driver
                     }
                 }
             }
+
             return $ret;
-        } else {
-            // save state in local prefs
-            $prefs['kolab_calendars'] = $this->rc->config->get('kolab_calendars', []);
-            $prefs['kolab_calendars'][$prop['id']]['active'] = !empty($prop['active']);
-            $this->rc->user->save_prefs($prefs);
-            return true;
         }
 
-        return false;
+        // save state in local prefs
+        $prefs['kolab_calendars'] = $this->rc->config->get('kolab_calendars', []);
+        $prefs['kolab_calendars'][$prop['id']]['active'] = !empty($prop['active']);
+        $this->rc->user->save_prefs($prefs);
+        return true;
     }
 
     /**
@@ -2035,7 +2034,8 @@ class kolab_driver extends calendar_driver
 
             unset($request, $response);
         } catch (Exception $e) {
-            PEAR::raiseError("Error fetching free/busy information: " . $e->getMessage());
+            rcube::raise_error($e);
+            return false;
         }
 
         // get free-busy url from contacts
@@ -2328,7 +2328,7 @@ class kolab_driver extends calendar_driver
             $special_changes = [];
 
             // map kolab event properties to keys the client expects
-            array_walk($result['changes'], function (&$change, $i) use ($keymap, $prop_keymaps, $special_changes) {
+            array_walk($result['changes'], function (&$change, $i) use ($keymap, $prop_keymaps, &$special_changes) {
                 if (array_key_exists($change['property'], $keymap)) {
                     $change['property'] = $keymap[$change['property']];
                 }

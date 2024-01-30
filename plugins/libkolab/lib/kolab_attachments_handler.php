@@ -164,8 +164,7 @@ class kolab_attachments_handler
                     }
 
                     if (!empty($_SESSION[$session_key . '_deleteicon'])
-                        && ($icon = $_SESSION[$session_key . '_deleteicon'])
-                        && is_file($icon)
+                        && is_file($icon = $_SESSION[$session_key . '_deleteicon'])
                     ) {
                         $button = html::img([
                             'src' => $icon,
