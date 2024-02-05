@@ -58,7 +58,7 @@ class kolab_dav_client
     protected function request($path, $method, $body = '', $headers = [])
     {
         $rcube = rcube::get_instance();
-        $debug = (array) $rcube->config->get('dav_debug');
+        $debug = (bool) $rcube->config->get('dav_debug');
 
         $request_config = [
             'store_body'       => true,
