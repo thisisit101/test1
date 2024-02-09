@@ -311,8 +311,8 @@ class libkolab extends rcube_plugin
     {
         // auto-detect text/html format
         if ($is_html === null) {
-            $from_html = (preg_match('/<(html|body)(\s+[a-z]|>)/', $from, $m) && strpos($from, '</' . $m[1] . '>') > 0);
-            $to_html   = (preg_match('/<(html|body)(\s+[a-z]|>)/', $to, $m) && strpos($to, '</' . $m[1] . '>') > 0);
+            $from_html = preg_match('/<(html|body)(\s+[a-z]|>)/', $from, $m) && strpos($from, '</' . $m[1] . '>') > 0;
+            $to_html   = preg_match('/<(html|body)(\s+[a-z]|>)/', $to, $m) && strpos($to, '</' . $m[1] . '>') > 0;
             $is_html   = $from_html || $to_html;
 
             // ensure both parts are of the same format
@@ -328,13 +328,10 @@ class libkolab extends rcube_plugin
 
         // compute diff from HTML
         if ($is_html) {
-            include_once __dir__ . '/vendor/Caxy/HtmlDiff/Match.php';
-            include_once __dir__ . '/vendor/Caxy/HtmlDiff/Operation.php';
-            include_once __dir__ . '/vendor/Caxy/HtmlDiff/HtmlDiff.php';
-
             // replace data: urls with a transparent image to avoid memory problems
-            $from = preg_replace('/src="data:image[^"]+/', 'src="data:image/gif;base64,R0lGODlhAQABAPAAAOjq6gAAACH/C1hNUCBEYXRhWE1QAT8AIfkEBQAAAAAsAAAAAAEAAQAAAgJEAQA7', $from);
-            $to   = preg_replace('/src="data:image[^"]+/', 'src="data:image/gif;base64,R0lGODlhAQABAPAAAOjq6gAAACH/C1hNUCBEYXRhWE1QAT8AIfkEBQAAAAAsAAAAAAEAAQAAAgJEAQA7', $to);
+            $src  = 'src="data:image/gif;base64,R0lGODlhAQABAPAAAOjq6gAAACH/C1hNUCBEYXRhWE1QAT8AIfkEBQAAAAAsAAAAAAEAAQAAAgJEAQA7';
+            $from = preg_replace('/src="data:image[^"]+/', $src, $from);
+            $to   = preg_replace('/src="data:image[^"]+/', $src, $to);
 
             $diff = new Caxy\HtmlDiff\HtmlDiff($from, $to);
             $diffhtml = $diff->build();
@@ -342,10 +339,8 @@ class libkolab extends rcube_plugin
             // remove empty inserts (from tables)
             return preg_replace('!<ins class="diff\w+">\s*</ins>!Uims', '', $diffhtml);
         } else {
-            include_once __dir__ . '/vendor/finediff.php';
-
-            $diff = new FineDiff($from, $to, FineDiff::$wordGranularity);
-            return $diff->renderDiffToHTML();
+            $diff = new cogpowered\FineDiff\Diff(new cogpowered\FineDiff\Granularity\Word());
+            return $diff->render($from, $to);
         }
     }
 
