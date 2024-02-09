@@ -2,9 +2,6 @@ parameters:
     bootstrapFiles:
         - phpstan.bootstrap.php
 
-    excludePaths:
-        - plugins/libkolab/vendor
-
     fileExtensions:
         - php
         - php.dist
@@ -15,7 +12,6 @@ parameters:
         - '#Access to an undefined property (calendar|tasklist)::\$driver#'
         - '#Access to an undefined property (calendar|tasklist)::\$itip#'
         - '#Access to an undefined property (calendar|tasklist)::\$ical#'
-        - '#Call to static method .* on an unknown class jqueryui#'
         - '#Access to an undefined property Kolab2FA\\.*::\$(username|secret)#'
         - '#Unsafe call to private method Firebase\\JWT\\JWT::.*#'
         - '#Access to an undefined property Sabre\\VObject.*::\$.*#'
