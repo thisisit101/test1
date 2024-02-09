@@ -42,6 +42,7 @@ $config['kolab_sso_options'] = array(
         // Client ID/Secret for the API
         'client_id' => '20w6DXX69isNBaufCwyK24wkBHqPT2ht',
         'client_secret' => 'd78McGW4UWfFyZprGd8BCKooll',
+        'client_secret_algorithm' => 'RS256',
         // Token URI, if different than <uri>/token
         'token_uri' => 'https://kolab.eu.auth0.com/oauth/token',
         // Authorize URI, if different than <uri>/authorize

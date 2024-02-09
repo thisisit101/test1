@@ -348,11 +348,6 @@ class kolab_sso extends rcube_plugin
                 ], true, true);
         }
 
-        // Add /lib to include_path
-        $include_path = $this->home . '/lib' . PATH_SEPARATOR;
-        $include_path .= ini_get('include_path');
-        set_include_path($include_path);
-
         require_once $this->home . "/drivers/$driver.php";
 
         $this->debug  = $this->rc->config->get('kolab_sso_debug');

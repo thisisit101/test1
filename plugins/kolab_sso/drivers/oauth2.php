@@ -288,10 +288,13 @@ class kolab_sso_oauth2
                     }
                 }
 
+                // TODO: Try all supported algorithms for a key instead of requiring a config value?
+                $key = new Firebase\JWT\Key($key, ($this->config['client_secret_algorithm'] ?? null) ?: 'RS256');
+
                 $jwt = new Firebase\JWT\JWT();
                 $jwt::$leeway = 60;
 
-                $payload = $jwt->decode($token, $key, array_keys(Firebase\JWT\JWT::$supported_algs));
+                $payload = $jwt->decode($token, $key);
 
                 $result['email'] = $this->validate_token_payload($payload);
             } catch (Exception $e) {

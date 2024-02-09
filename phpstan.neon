@@ -13,7 +13,6 @@ parameters:
         - '#Access to an undefined property (calendar|tasklist)::\$itip#'
         - '#Access to an undefined property (calendar|tasklist)::\$ical#'
         - '#Access to an undefined property Kolab2FA\\.*::\$(username|secret)#'
-        - '#Unsafe call to private method Firebase\\JWT\\JWT::.*#'
         - '#Access to an undefined property Sabre\\VObject.*::\$.*#'
         - '#Access to an undefined property DateTime::\$_dateonly#'
         # All expressions below are about libkolabxml (which I don't have installed)
