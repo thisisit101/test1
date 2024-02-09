@@ -11,16 +11,19 @@ parameters:
         - inc
 
     ignoreErrors:
+        # TODO: These need to be fixed somehow
         - '#Access to an undefined property (calendar|tasklist)::\$driver#'
         - '#Access to an undefined property (calendar|tasklist)::\$itip#'
         - '#Access to an undefined property (calendar|tasklist)::\$ical#'
-        - '#unknown class (kolabformat|Address|Alarm|Contact|ContactReference|Configuration|Email|RecurrenceRule|Key|Related|Url|Snippet|Telephone)#'
-        - '#class (Address|Affiliation|Alarm|Attachment|Attendee|Duration|ContactReference|Configuration|Dictionary|Email|EmailReference|DayPos|FileDriver|Key|NameComponents|SnippetCollection|RecurrenceRule|Related|Relation|EventCal|Snippet|Telephone|Url|vector.*|cDatetime|XMLObject|CustomProperty) not found#i'
-        - '#Call to method .* on an unknown class (Affiliation|Attachment|Attendee|cDateTime|Dictionary|EventCal|FileDriver|NameComponents|Relation|snippet|vector.*)#'
         - '#Call to static method .* on an unknown class jqueryui#'
         - '#Access to an undefined property Kolab2FA\\.*::\$(username|secret)#'
         - '#Unsafe call to private method Firebase\\JWT\\JWT::.*#'
         - '#Access to an undefined property Sabre\\VObject.*::\$.*#'
+        - '#Access to an undefined property DateTime::\$_dateonly#'
+        # All expressions below are about libkolabxml (which I don't have installed)
+        - '#unknown class (kolabformat|Address|Alarm|Contact|ContactReference|Configuration|Email|RecurrenceRule|Key|Related|Url|Snippet|Telephone)#'
+        - '#class (Address|Affiliation|Alarm|Attachment|Attendee|Duration|ContactReference|Configuration|Dictionary|Email|EmailReference|DayPos|FileDriver|Key|NameComponents|SnippetCollection|RecurrenceRule|Related|Relation|EventCal|Snippet|Telephone|Url|vector.*|cDatetime|XMLObject|CustomProperty) not found#i'
+        - '#Call to method .* on an unknown class (Affiliation|Attachment|Attendee|cDateTime|Dictionary|EventCal|FileDriver|NameComponents|Relation|snippet|vector.*)#'
         - '#invalid .*type vector#'
         - '#(cDateTime|EventCal)#'
 
