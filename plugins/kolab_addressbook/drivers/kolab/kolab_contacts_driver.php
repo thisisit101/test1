@@ -116,9 +116,13 @@ class kolab_contacts_driver
         $hidden_fields[] = ['name' => '_source', 'value' => $source];
 
         $rcube   = rcube::get_instance();
-        $folder  = rcube_charset::convert($source, RCUBE_CHARSET, 'UTF7-IMAP');
         $storage = $rcube->get_storage();
         $delim   = $storage->get_hierarchy_delimiter();
+        $folder  = '';
+
+        if ($source && ($book = $this->get_address_book($source))) {
+            $folder = $book->get_realname(); // UTF7-IMAP
+        }
 
         if ($action == 'edit') {
             $path_imap = explode($delim, $folder);
