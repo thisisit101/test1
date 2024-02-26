@@ -30,11 +30,13 @@ class kolab_utils
         $rcmail = rcube::get_instance();
 
         // add folder ACL tab
-        if (!$no_acl && is_string($folder) && strlen($folder)) {
-            $form['sharing'] = [
-                'name'    => rcube::Q($rcmail->gettext('libkolab.tabsharing')),
-                'content' => self::folder_acl_form($folder),
-            ];
+        if (!$no_acl && $folder) {
+            if (($folder instanceof kolab_storage_dav_folder) || (is_string($folder) && strlen($folder))) {
+                $form['sharing'] = [
+                    'name'    => rcube::Q($rcmail->gettext('libkolab.tabsharing')),
+                    'content' => self::folder_acl_form($folder),
+                ];
+            }
         }
 
         $form_html = '';
