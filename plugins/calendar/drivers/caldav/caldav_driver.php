@@ -676,6 +676,11 @@ class caldav_driver extends kolab_driver
             return kolab_utils::folder_form($form, '', 'calendar');
         }
 
+        if ($calendar['id']) {
+            $cal = $this->get_calendar($calendar['id']);
+            $folder = $cal->storage;
+        }
+
         $form['props'] = [
             'name'   => $this->rc->gettext('properties'),
             'fields' => [
@@ -685,6 +690,6 @@ class caldav_driver extends kolab_driver
             ],
         ];
 
-        return kolab_utils::folder_form($form, '', 'calendar', [], true);
+        return kolab_utils::folder_form($form, $folder ?? null, 'calendar', []);
     }
 }

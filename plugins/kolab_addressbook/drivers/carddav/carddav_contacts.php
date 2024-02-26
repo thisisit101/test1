@@ -76,9 +76,9 @@ class carddav_contacts extends rcube_addressbook
     public $date_cols = ['birthday', 'anniversary'];
 
     public $fulltext_cols  = ['name', 'firstname', 'surname', 'middlename', 'email'];
+    public $storage;
 
     private $gid;
-    private $storage;
     private $dataset;
     private $sortindex;
     private $contacts;

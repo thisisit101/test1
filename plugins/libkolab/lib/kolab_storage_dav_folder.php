@@ -51,7 +51,45 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         $this->subtype = $this->default ? '' : $suffix;
 
         // Init cache
-        $this->cache = kolab_storage_dav_cache::factory($this);
+        if ($type) {
+            $this->cache = kolab_storage_dav_cache::factory($this);
+        }
+    }
+
+    /**
+     * Get the folder ACL
+     *
+     * @return array Folder ACL list
+     */
+    public function get_acl()
+    {
+        if (!isset($this->attributes['acl'])) {
+            $this->get_folder_info();
+        }
+
+        $acl = [];
+        foreach ($this->attributes['acl'] ?? [] as $principal => $privileges) {
+            // Convert a principal href into a user identifier
+            if (strpos($principal, '/') !== false) {
+                $tokens = explode('/', trim($principal, '/'));
+                $principal = end($tokens);
+            }
+
+            $acl[$principal] = $privileges;
+        }
+
+        // Workaround for Cyrus issue https://github.com/cyrusimap/cyrus-imapd/issues/4813
+        // It converts single "authenticated" ACE into two "all" and "unauthenticated"
+        // We'll convert it back into one, as we want to keep UI simplicity
+        if (!empty($acl['all']['grant']) && !empty($acl['unauthenticated']['deny'])
+            && $acl['all']['grant'] == $acl['unauthenticated']['deny']
+        ) {
+            $acl['authenticated'] = $acl['all'];
+            unset($acl['all']);
+            unset($acl['unauthenticated']);
+        }
+
+        return $acl;
     }
 
     /**
@@ -123,9 +161,18 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         return $this->attributes['name'];
     }
 
+    /**
+     * Get (more) folder properties
+     *
+     * @return array Folder properties
+     */
     public function get_folder_info()
     {
-        return []; // todo ?
+        if ($info = $this->dav->folderInfo($this->href)) {
+            $this->attributes = array_merge($info, $this->attributes);
+        }
+
+        return $this->attributes;
     }
 
     /**
@@ -187,14 +234,18 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     }
 
     /**
-     * Get ACL information for this folder
+     * Get current user permissions to this folder
      *
-     * @return string Permissions as string
+     * @return string DAV privileges (comma-separated)
      */
     public function get_myrights()
     {
-        // TODO
-        return '';
+        if (!isset($this->attributes['myrights'])) {
+            $this->get_folder_info();
+        }
+
+        // Note: We return a string for compat. with the parent class
+        return implode(',', $this->attributes['myrights'] ?? []);
     }
 
     /**
@@ -768,6 +819,41 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         ];
 
         return $types[$this->type];
+    }
+
+    /**
+     * Set ACL for the folder.
+     *
+     * @param array $acl ACL list
+     *
+     * @return bool True if successful, false on error
+     */
+    public function set_acl($acl)
+    {
+        if (!$this->valid) {
+            return false;
+        }
+
+        // In Kolab the users (principals) are under /principals/user/<user>
+        // TODO: This might need to be configurable or discovered somehow
+        $path = '/principals/user/';
+        if ($host_path = parse_url($this->dav->url, PHP_URL_PATH)) {
+            $path = '/' . trim($host_path, '/') . $path;
+        }
+
+        $specials = ['all', 'authenticated', 'self'];
+        $request = [];
+
+        foreach ($acl as $principal => $privileges) {
+            // Convert a user identifier into a principal href
+            if (!in_array($principal, $specials)) {
+                $principal = $path . $principal;
+            }
+
+            $request[$principal] = $privileges;
+        }
+
+        return $this->dav->setACL($this->href, $request);
     }
 
     /**

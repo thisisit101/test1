@@ -119,6 +119,7 @@ class carddav_contacts_driver
 
         if ($source && ($book = $this->get_address_book($source))) {
             $name = $book->get_name();
+            $folder = $book->storage;
         }
 
         $foldername = new html_inputfield(['name' => '_name', 'id' => '_name', 'size' => 30]);
@@ -140,7 +141,7 @@ class carddav_contacts_driver
 
         $hidden_fields = [['name' => '_source', 'value' => $source]];
 
-        return kolab_utils::folder_form($form, '', 'contacts', $hidden_fields, false);
+        return kolab_utils::folder_form($form, $folder ?? null, 'contacts', $hidden_fields);
     }
 
     /**

@@ -1589,7 +1589,8 @@ class tasklist_caldav_driver extends tasklist_driver
         $this->_read_lists();
 
         if (!empty($list['id']) && ($list = $this->lists[$list['id']])) {
-            $folder_name = $this->get_folder($list['id'])->name;
+            $folder = $this->get_folder($list['id']);
+            $folder_name = $folder->name;
         } else {
             $folder_name = '';
         }
@@ -1612,6 +1613,6 @@ class tasklist_caldav_driver extends tasklist_driver
             $form['properties']['fields'][$f] = $fieldprop[$f];
         }
 
-        return kolab_utils::folder_form($form, $folder_name, 'tasklist', $hidden_fields, true);
+        return kolab_utils::folder_form($form, $folder ?? null, 'tasklist', $hidden_fields);
     }
 }

@@ -71,9 +71,17 @@ class kolab_utils
 
     /**
      * Handler for ACL form template object
+     *
+     * @param string|kolab_storage_dav_folder $folder DAV folder object or IMAP folder name
+     *
+     * @return string HTML content
      */
-    public static function folder_acl_form($folder)
+    private static function folder_acl_form($folder)
     {
+        if ($folder instanceof kolab_storage_dav_folder) {
+            return self::folder_dav_acl_form($folder);
+        }
+
         $rcmail  = rcube::get_instance();
         $storage = $rcmail->get_storage();
         $options = $storage->folder_info($folder);
@@ -92,5 +100,21 @@ class kolab_utils
         }
 
         return html::div('hint', $rcmail->gettext('libkolab.aclnorights'));
+    }
+
+    /**
+     * Handler for DAV ACL form template object
+     *
+     * @param kolab_storage_dav_folder $folder DAV folder object
+     *
+     * @return string HTML content
+     */
+    private static function folder_dav_acl_form($folder)
+    {
+        if ($form = kolab_dav_acl::form($folder)) {
+            return $form;
+        }
+
+        return html::div('hint', rcmail::get_instance()->gettext('libkolab.aclnorights'));
     }
 }

@@ -50,6 +50,10 @@ class libkolab extends rcube_plugin
         // For Chwala
         $this->add_hook('folder_mod', ['kolab_storage', 'folder_mod']);
 
+        // For DAV ACL
+        $this->register_action('plugin.davacl', 'kolab_dav_acl::actions');
+        // $this->register_action('plugin.davacl-autocomplete', 'kolab_dav_acl::autocomplete');
+
         $rcmail = rcube::get_instance();
         try {
             kolab_format::$timezone = new DateTimeZone($rcmail->config->get('timezone', 'GMT'));

@@ -23,6 +23,11 @@
 
 class kolab_dav_client
 {
+    public const ACL_PRINCIPAL_SELF = 'self';
+    public const ACL_PRINCIPAL_ALL = 'all';
+    public const ACL_PRINCIPAL_AUTH = 'authenticated';
+    public const ACL_PRINCIPAL_UNAUTH = 'unauthenticated';
+
     public $url;
 
     protected $user;
@@ -238,7 +243,6 @@ class kolab_dav_client
                 . '<d:prop>'
                     . '<d:resourcetype />'
                     . '<d:displayname />'
-                    // . '<d:sync-token />'
                     . '<cs:getctag />'
                     . $props
                 . '</d:prop>'
@@ -346,9 +350,27 @@ class kolab_dav_client
      */
     public function folderInfo($location)
     {
+        $ns = implode(' ', [
+            'xmlns:d="DAV:"',
+            'xmlns:cs="http://calendarserver.org/ns/"',
+            'xmlns:c="urn:ietf:params:xml:ns:caldav"',
+            'xmlns:a="http://apple.com/ns/ical/"',
+            'xmlns:k="Kolab:"'
+        ]);
+
+        // Note: <allprop> does not include some of the properties we're interested in
         $body = '<?xml version="1.0" encoding="utf-8"?>'
-            . '<d:propfind xmlns:d="DAV:">'
-                . '<d:allprop/>'
+            . '<d:propfind ' . $ns . '>'
+                . '<d:prop>'
+                    . '<a:calendar-color/>'
+                    . '<c:supported-calendar-component-set/>'
+                    . '<cs:getctag/>'
+                    . '<d:acl/>'
+                    . '<d:current-user-privilege-set/>'
+                    . '<d:resourcetype/>'
+                    . '<d:displayname/>'
+                    . '<k:alarms/>'
+                . '</d:prop>'
             . '</d:propfind>';
 
         // Note: Cyrus CardDAV service requires Depth:1 (CalDAV works without it)
@@ -604,6 +626,70 @@ class kolab_dav_client
     }
 
     /**
+     * Set ACL on a DAV folder
+     *
+     * @param string $location Object location (relative to the user home)
+     * @param array  $acl      ACL definition
+     *
+     * @return bool True on success, False on error
+     */
+    public function setACL($location, $acl)
+    {
+        $ns_privileges = [
+            // CalDAV
+            'read-free-busy' => 'c:read-free-busy',
+            // Cyrus
+            'admin' => 'cy:admin',
+            'add-resource' => 'cy:add-resource',
+            'remove-resource' => 'cy:remove-resource',
+            'make-collection' => 'cy:make-collection',
+            'remove-collection' => 'cy:remove-collection',
+        ];
+
+        foreach ($acl as $idx => $privileges) {
+            if (preg_match('/^[a-z]+$/', $idx)) {
+                $principal = '<d:' . $idx . '/>';
+            } else {
+                $principal = '<d:href>' . htmlspecialchars($idx, ENT_XML1, 'UTF-8') . '</d:href>';
+            }
+
+            $grant = [];
+            $deny = [];
+
+            foreach ($privileges['grant'] ?? [] as $i => $p) {
+                $p = '<' . ($ns_privileges[$p] ?? "d:{$p}") . '/>';
+                $grant[$i] = '<d:privilege>' . $p . '</d:privilege>';
+            }
+            foreach ($privileges['deny'] ?? [] as $i => $p) {
+                $p = '<' . ($ns_privileges[$p] ?? "d:{$p}") . '/>';
+                $deny[$i] = '<d:privilege>' . $p . '</d:privilege>';
+            }
+
+            $acl[$idx] = '<d:ace>'
+                . '<d:principal>' . $principal . '</d:principal>'
+                . (count($grant) > 0 ? '<d:grant>' . implode('', $grant) . '</d:grant>' : '')
+                . (count($deny) > 0 ? '<d:deny>' . implode('', $deny) . '</d:deny>' : '')
+                . '</d:ace>';
+        }
+
+        $acl = implode('', $acl);
+        $ns = 'xmlns:d="DAV:"';
+
+        if (strpos($acl, '<c:')) {
+            $ns .= ' xmlns:c="urn:ietf:params:xml:ns:caldav"';
+        }
+        if (strpos($acl, '<cy:')) {
+            $ns .= ' xmlns:cy="http://cyrusimap.org/ns/"';
+        }
+
+        $body = '<?xml version="1.0" encoding="utf-8"?><d:acl ' . $ns . '>' . $acl . '</d:acl>';
+
+        $response = $this->request($location, 'ACL', $body);
+
+        return $response !== false;
+    }
+
+    /**
      * Parse XML content
      */
     protected function parseXML($xml)
@@ -701,6 +787,70 @@ class kolab_dav_client
             'types' => $components,
             'resource_type' => $types,
         ];
+
+        // Note: We're supporting only a subset of RFC 3744, it is:
+        //     - grant, deny
+        //     - principal (all, self, authenticated, href)
+        if ($acl_element = $element->getElementsByTagName('acl')->item(0)) {
+            $acl = [];
+            $special = [
+                self::ACL_PRINCIPAL_SELF,
+                self::ACL_PRINCIPAL_ALL,
+                self::ACL_PRINCIPAL_AUTH,
+                self::ACL_PRINCIPAL_UNAUTH,
+            ];
+
+            foreach ($acl_element->getElementsByTagName('ace') as $ace) {
+                $principal = $ace->getElementsByTagName('principal')->item(0);
+                $grant = [];
+                $deny = [];
+
+                if ($principal->firstChild && $principal->firstChild->localName == 'href') {
+                    $principal = $principal->firstChild->nodeValue;
+                } elseif ($principal->firstChild && in_array($principal->firstChild->localName, $special)) {
+                    $principal = $principal->firstChild->localName;
+                } else {
+                    continue;
+                }
+
+                if ($grant_element = $ace->getElementsByTagName('grant')->item(0)) {
+                    foreach ($grant_element->childNodes as $privilege) {
+                        if (strpos($privilege->nodeName, ':privilege') !== false && $privilege->firstChild) {
+                            $grant[] = preg_replace('/^[^:]+:/', '', $privilege->firstChild->nodeName);
+                        }
+                    }
+                }
+
+                if ($deny_element = $ace->getElementsByTagName('deny')->item(0)) {
+                    foreach ($deny_element->childNodes as $privilege) {
+                        if (strpos($privilege->nodeName, ':privilege') !== false && $privilege->firstChild) {
+                            $deny[] = preg_replace('/^[^:]+:/', '', $privilege->firstChild->nodeName);
+                        }
+                    }
+                }
+
+                if (count($grant) > 0 || count($deny) > 0) {
+                    $acl[$principal] = [
+                        'grant' => $grant,
+                        'deny' => $deny,
+                    ];
+                }
+            }
+
+            $result['acl'] = $acl;
+        }
+
+        if ($set_element = $element->getElementsByTagName('current-user-privilege-set')->item(0)) {
+            $rights = [];
+
+            foreach ($set_element->childNodes as $privilege) {
+                if (strpos($privilege->nodeName, ':privilege') !== false && $privilege->firstChild) {
+                    $rights[] = preg_replace('/^[^:]+:/', '', $privilege->firstChild->nodeName);
+                }
+            }
+
+            $result['myrights'] = $rights;
+        }
 
         foreach (['alarms'] as $tag) {
             if ($el = $element->getElementsByTagName($tag)->item(0)) {
