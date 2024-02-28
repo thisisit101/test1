@@ -1279,7 +1279,7 @@ class tasklist extends rcube_plugin
         }
 
         if (!isset($rec['tags']) || !is_array($rec['tags'])) {
-            $rec['tags'] = (array) ($rec['tags'] ?? '');
+            $rec['tags'] = [];
         }
 
         sort($rec['tags'], SORT_LOCALE_STRING);
