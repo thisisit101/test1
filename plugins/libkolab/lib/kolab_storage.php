@@ -116,6 +116,8 @@ class kolab_storage
      * Initializes LDAP object to resolve Kolab users
      *
      * @param string $name Name of the configuration option with LDAP config
+     *
+     * @return ?kolab_ldap Kolab LDAP addressbook
      */
     public static function ldap($name = 'kolab_users_directory')
     {

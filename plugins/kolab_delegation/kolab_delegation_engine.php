@@ -223,6 +223,8 @@ class kolab_delegation_engine
 
     /**
      * LDAP object getter
+     *
+     * @return ?kolab_ldap Kolab LDAP addressbook
      */
     private function ldap()
     {

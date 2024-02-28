@@ -807,6 +807,8 @@ class kolab_auth extends rcube_plugin
 
     /**
      * Initializes LDAP object and connects to LDAP server
+     *
+     * @return ?kolab_ldap Kolab LDAP addressbook
      */
     public static function ldap()
     {
