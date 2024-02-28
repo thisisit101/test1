@@ -26,12 +26,12 @@
  */
 class kolab_ldap extends rcube_ldap_generic
 {
+    public $ready = false;
+
     private $conf = [];
     private $debug = false;
     private $fieldmap = [];
     private $parse_replaces = [];
-    private $ready = false;
-
 
     public function __construct($p)
     {
