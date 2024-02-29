@@ -1009,10 +1009,6 @@ class tasklist extends rcube_plugin
 
         unset($list['_token']);
 
-        if (isset($list['showalarms'])) {
-            $list['showalarms'] = intval($list['showalarms']);
-        }
-
         switch ($action) {
             case 'form-new':
             case 'form-edit':
@@ -1021,7 +1017,7 @@ class tasklist extends rcube_plugin
                 exit;
 
             case 'new':
-                $list += ['showalarms' => true, 'active' => true, 'editable' => true];
+                $list += ['showalarms' => !empty($list['showalarms']), 'active' => true, 'editable' => true];
                 if ($insert_id = $this->driver->create_list($list)) {
                     $list['id'] = $insert_id;
                     if (empty($list['_reload'])) {
@@ -1036,6 +1032,7 @@ class tasklist extends rcube_plugin
 
             case 'edit':
                 $list['oldid'] = $list['id'];
+                $list['showalarms'] = !empty($list['showalarms']);
                 if ($success = $this->driver->edit_list($list)) {
                     $this->rc->output->command('plugin.update_tasklist', $list);
                 }

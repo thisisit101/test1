@@ -3179,8 +3179,10 @@ function rcube_tasklist_ui(settings)
         }
 
         if (me.tasklists[id] && li) {
+            prop = $.extend({}, me.tasklists[id], prop);
             delete me.tasklists[id];
             me.tasklists[prop.id] = prop;
+
             $(li).find('input').first().val(prop.id);
             $(li).find('.listname').first().html(Q(prop.name));
             tasklists_widget.update(id, {id: prop.id, html: $(li).children().first()});

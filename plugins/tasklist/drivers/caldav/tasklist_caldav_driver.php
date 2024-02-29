@@ -79,7 +79,6 @@ class tasklist_caldav_driver extends tasklist_driver
 
             $this->lists[$tasklist['id']] = $tasklist;
             $this->folders[$tasklist['id']] = $folder;
-            //            $this->folders[$folder->name] = $folder;
         }
 
         return $this->lists;
@@ -88,13 +87,13 @@ class tasklist_caldav_driver extends tasklist_driver
     /**
      * Derive list properties from the given kolab_storage_folder object
      */
-    protected function folder_props($folder, $prefs)
+    protected function folder_props($folder, $prefs = [])
     {
         if ($folder->get_namespace() == 'personal') {
             $norename = false;
             $editable = true;
             $rights = 'lrswikxtea';
-            $alarms = true;
+            $alarms = !isset($folder->attributes['alarms']) || $folder->attributes['alarms'];
         } else {
             $alarms = false;
             $rights = 'lr';
@@ -302,6 +301,7 @@ class tasklist_caldav_driver extends tasklist_driver
     public function create_list(&$prop)
     {
         $prop['type'] = 'task';
+        $prop['alarms'] = !empty($prop['showalarms']);
 
         $id = $this->storage->folder_update($prop);
 
@@ -309,22 +309,12 @@ class tasklist_caldav_driver extends tasklist_driver
             return false;
         }
 
-        $prefs['kolab_tasklists'] = $this->rc->config->get('kolab_tasklists', []);
-
-        if (isset($prop['showalarms'])) {
-            $prefs['kolab_tasklists'][$id]['showalarms'] = $prop['showalarms'] ? true : false;
-        }
-
-        if (isset($prefs['kolab_tasklists'][$id])) {
-            $this->rc->user->save_prefs($prefs);
-        }
-
         // force page reload to properly render folder hierarchy
         if (!empty($prop['parent'])) {
             $prop['_reload'] = true;
         } else {
-            $folder = $this->get_folder($id);
-            $prop += $this->folder_props($folder, []);
+            $prop += $this->_read_lists(true)[$id] ?? [];
+            unset($prop['type'], $prop['alarms']);
         }
 
         return $id;
@@ -346,23 +336,12 @@ class tasklist_caldav_driver extends tasklist_driver
         if (!empty($prop['id'])) {
             $id = $prop['id'];
             $prop['type'] = 'task';
+            $prop['alarms'] = !empty($prop['showalarms']);
 
             if ($this->storage->folder_update($prop) !== false) {
-                $prefs['kolab_tasklists'] = $this->rc->config->get('kolab_tasklists', []);
+                $prop += $this->_read_lists(true)[$id] ?? [];
+                unset($prop['type'], $prop['alarms']);
 
-                if (isset($prop['showalarms'])) {
-                    $prefs['kolab_tasklists'][$id]['showalarms'] = $prop['showalarms'] ? true : false;
-                }
-
-                if (isset($prefs['kolab_tasklists'][$id])) {
-                    $this->rc->user->save_prefs($prefs);
-                }
-                /*
-                                // force page reload if folder name/hierarchy changed
-                                if ($newfolder != $prop['oldname']) {
-                                    $prop['_reload'] = true;
-                                }
-                */
                 return true;
             }
         }
