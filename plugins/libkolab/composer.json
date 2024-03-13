@@ -28,7 +28,7 @@
         "roundcube/plugin-installer": ">=0.1.3",
         "kolab/libcalendaring": ">=3.4.0",
         "pear/http_request2": "~2.5.0",
-        "caxy/php-htmldiff": "~0.1.15",
+        "caxy/php-htmldiff": "~0.1",
         "lolli42/finediff": "~1.0.3"
     }
 }
