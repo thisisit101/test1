@@ -122,17 +122,12 @@ class carddav_contacts extends rcube_addressbook
 
         // Set readonly and rights flags according to folder permissions
         if ($this->ready) {
-            if ($this->storage->get_owner() == $_SESSION['username']) {
+            if ($this->storage->get_namespace() == 'personal') {
                 $this->readonly = false;
                 $this->rights = 'lrswikxtea';
             } else {
-                $rights = $this->storage->get_myrights();
-                if ($rights && !PEAR::isError($rights)) {
-                    $this->rights = $rights;
-                    if (strpos($rights, 'i') !== false && strpos($rights, 't') !== false) {
-                        $this->readonly = false;
-                    }
-                }
+                $this->rights = $this->storage->get_myrights();
+                $this->readonly = strpos($this->rights, 'i') === false;
             }
         }
     }

@@ -3572,7 +3572,7 @@ function rcube_calendar_ui(settings)
       if (node && node.id && me.calendars[node.id]) {
         me.select_calendar(node.id, true);
         rcmail.enable_command('calendar-edit', 'calendar-showurl', 'calendar-showfburl', true);
-        rcmail.enable_command('calendar-delete', me.calendars[node.id].editable);
+        rcmail.enable_command('calendar-delete', me.has_permission(me.calendars[node.id], 'xa'));
         rcmail.enable_command('calendar-remove', me.calendars[node.id] && me.calendars[node.id].removable);
       }
     });

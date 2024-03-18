@@ -247,8 +247,10 @@ class kolab_storage_dav
 
         // sanity checks
         if (!isset($prop['name']) || !is_string($prop['name']) || !strlen($prop['name'])) {
-            self::$last_error = 'cannotbeempty';
-            return false;
+            if (empty($prop['id'])) {
+                self::$last_error = 'cannotbeempty';
+                return false;
+            }
         } elseif (strlen($prop['name']) > 256) {
             self::$last_error = 'nametoolong';
             return false;

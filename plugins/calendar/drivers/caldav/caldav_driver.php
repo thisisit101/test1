@@ -184,9 +184,9 @@ class caldav_driver extends kolab_driver
             $calendars[$cal->id] = [
                 'id'        => $cal->id,
                 'name'      => $cal->get_name(),
-                'listname'  => $cal->get_foldername(),
+                'listname'  => $cal->get_name(),
                 'editname'  => $cal->get_foldername(),
-                'title'     => '', // $cal->get_title(),
+                'title'     => null,
                 'color'     => $cal->get_color(),
                 'editable'  => $cal->editable,
                 'group'     => $is_user ? 'other user' : $cal->get_namespace(), // @phpstan-ignore-line

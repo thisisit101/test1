@@ -75,18 +75,12 @@ class caldav_calendar extends kolab_storage_dav_folder
             $this->alarms     = !isset($this->attributes['alarms']) || $this->attributes['alarms'];
 
             if ($this->storage->get_namespace() == 'personal') {
-                $this->editable = true;
                 $this->rights = 'lrswikxteav';
             } else {
-                $rights = $this->storage->get_myrights();
-                if ($rights) {
-                    $this->rights = $rights;
-                    if (strpos($rights, 't') !== false || strpos($rights, 'd') !== false) {
-                        $this->editable = strpos($rights, 'i');
-                        ;
-                    }
-                }
+                $this->rights = $this->storage->get_myrights();
             }
+
+            $this->editable = strpos($this->rights, 'i') !== false;
         }
     }
 

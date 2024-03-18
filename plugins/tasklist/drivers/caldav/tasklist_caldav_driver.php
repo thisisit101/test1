@@ -97,16 +97,10 @@ class tasklist_caldav_driver extends tasklist_driver
             $alarms = true;
         } else {
             $alarms = false;
-            $rights = 'lr';
             $editable = false;
-            if ($myrights = $folder->get_myrights()) {
-                $rights = $myrights;
-                if (strpos($rights, 't') !== false || strpos($rights, 'd') !== false) {
-                    $editable = strpos($rights, 'i') !== false;
-                }
-            }
-            $info = $folder->get_folder_info();
-            $norename = !$editable || $info['norename'] || $info['protected'];
+            $rights = $folder->get_myrights();
+            $editable = strpos($rights, 'i') !== false;
+            $norename = strpos($rights, 'x') === false;
         }
 
         $list_id = $folder->id;
@@ -114,7 +108,7 @@ class tasklist_caldav_driver extends tasklist_driver
         return [
             'id' => $list_id,
             'name' => $folder->get_name(),
-            'listname' => $folder->get_foldername(),
+            'listname' => $folder->get_name(),
             'editname' => $folder->get_foldername(),
             'color' => $folder->get_color('0000CC'),
             'showalarms' => $prefs[$list_id]['showalarms'] ?? $alarms,

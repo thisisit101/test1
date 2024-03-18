@@ -358,7 +358,7 @@ class calendar_ui
             $label_id = 'cl:' . $id;
             $content = html::a(
                 ['class' => 'calname', 'id' => $label_id, 'title' => $title, 'href' => '#'],
-                rcube::Q(!empty($prop['editname']) ? $prop['editname'] : $prop['listname'])
+                rcube::Q(!empty($prop['listname']) ? $prop['listname'] : $prop['name'])
             );
 
             if (empty($prop['virtual'])) {

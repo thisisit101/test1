@@ -177,7 +177,7 @@ function rcube_tasklist_ui(settings)
         });
         tasklists_widget.addEventListener('select', function(node) {
             var id = $(this).data('id');
-            rcmail.enable_command('list-edit', me.has_permission(me.tasklists[node.id], 'wa'));
+            rcmail.enable_command('list-edit', me.has_permission(me.tasklists[node.id], 'xwa'));
             rcmail.enable_command('list-delete', me.has_permission(me.tasklists[node.id], 'xa'));
             rcmail.enable_command('list-import', me.has_permission(me.tasklists[node.id], 'i'));
             rcmail.enable_command('list-remove', me.tasklists[node.id] && me.tasklists[node.id].removable);
@@ -3179,6 +3179,7 @@ function rcube_tasklist_ui(settings)
         }
 
         if (me.tasklists[id] && li) {
+            prop = $.extend({}, me.tasklists[id], prop);
             delete me.tasklists[id];
             me.tasklists[prop.id] = prop;
             $(li).find('input').first().val(prop.id);

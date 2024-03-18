@@ -118,7 +118,7 @@ class carddav_contacts_driver
         $name = '';
 
         if ($source && ($book = $this->get_address_book($source))) {
-            $name = $book->get_name();
+            $name = $book->get_foldername();
             $folder = $book->storage;
         }
 
@@ -198,12 +198,11 @@ class carddav_contacts_driver
         return [
             'id'         => $id,
             'name'       => $abook->get_name(),
-            'listname'   => $abook->get_foldername(),
+            'listname'   => $abook->get_name(),
             'readonly'   => $abook->readonly,
             'rights'     => $abook->rights,
             'groups'     => $abook->groups,
             'undelete'   => $abook->undelete && $this->rc->config->get('undo_timeout'),
-            'realname'   => rcube_charset::convert($abook->get_realname(), 'UTF7-IMAP'), // IMAP folder name
             'group'      => $abook->get_namespace(),
             'subscribed' => $abook->is_subscribed(),
             'carddavurl' => $abook->get_carddav_url(),

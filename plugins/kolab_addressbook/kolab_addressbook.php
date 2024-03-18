@@ -862,7 +862,6 @@ class kolab_addressbook extends rcube_plugin
         return $args;
     }
 
-
     /**
      * Handler for plugin actions
      */
@@ -1013,7 +1012,6 @@ class kolab_addressbook extends rcube_plugin
 
         $this->rc->output->send();
     }
-
 
     /**
      * Handler for address book delete action (AJAX)

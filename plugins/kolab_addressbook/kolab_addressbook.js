@@ -121,11 +121,12 @@ rcube_webmail.prototype.set_book_actions = function()
 {
     var source = !this.env.group ? this.env.source : null,
         sources = this.env.address_sources || {},
-        props = source && sources[source] && sources[source].kolab ? sources[source] : { removable: false, rights: '' };
+        props = source && sources[source] && sources[source].kolab ? sources[source] : { removable: false, rights: '' },
+        can_delete = props.rights.indexOf('x') >= 0 || props.rights.indexOf('a') >= 0;
 
     this.enable_command('book-create', true);
-    this.enable_command('book-edit',   props.rights.indexOf('a') >= 0);
-    this.enable_command('book-delete', props.rights.indexOf('x') >= 0 || props.rights.indexOf('a') >= 0);
+    this.enable_command('book-edit', can_delete);
+    this.enable_command('book-delete', can_delete);
     this.enable_command('book-remove', props.removable);
     this.enable_command('book-showurl', !!props.carddavurl || source == this.env.kolab_addressbook_carddav_ldap);
 };

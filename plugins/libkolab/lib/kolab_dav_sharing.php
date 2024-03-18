@@ -1,7 +1,7 @@
 <?php
 
 /*
- * DAV Access Control Lists Management
+ * DAV sharing based on draft-pot-webdav-resource-sharing standard
  *
  * Copyright (C) Apheleia IT <contact@aphelaia-it.ch>
  *
@@ -20,27 +20,22 @@
  */
 
 /**
- * A class providing DAV ACL management functionality
+ * A class providing DAV sharing management functionality
  */
-class kolab_dav_acl
+class kolab_dav_sharing
 {
-    public const PRIVILEGE_ALL = 'all';
     public const PRIVILEGE_READ = 'read';
-    public const PRIVILEGE_FREE_BUSY = 'read-free-busy';
     public const PRIVILEGE_WRITE = 'write';
 
     /** @var ?kolab_storage_dav_folder $folder Current folder */
     private static $folder;
 
     /** @var array Special principals */
-    private static $specials = [
-        kolab_dav_client::ACL_PRINCIPAL_AUTH,
-        kolab_dav_client::ACL_PRINCIPAL_ALL,
-    ];
+    private static $specials = [];
 
 
     /**
-     * Handler for actions from the ACL dialog (AJAX)
+     * Handler for actions from the Sharing dialog (AJAX)
      */
     public static function actions()
     {
@@ -72,8 +67,8 @@ class kolab_dav_acl
             return null;
         }
 
-        // Return if not folder admin
-        if (strpos($myrights, 'a') === false) {
+        // Return if not folder admin nor can share
+        if (strpos($myrights, 'a') === false && strpos($myrights, '1') === false) {
             return null;
         }
 
@@ -102,7 +97,7 @@ class kolab_dav_acl
     }
 
     /**
-     * Creates ACL rights table
+     * Creates sharees table
      *
      * @param array $attrib Template object attributes
      *
@@ -123,7 +118,7 @@ class kolab_dav_acl
     }
 
     /**
-     * Creates ACL rights form (rights list part)
+     * Creates sharing form (rights list part)
      *
      * @param array $attrib Template object attributes
      *
@@ -139,12 +134,7 @@ class kolab_dav_acl
         $rights = [
             self::PRIVILEGE_READ,
             self::PRIVILEGE_WRITE,
-            self::PRIVILEGE_ALL,
         ];
-
-        if (self::$folder->type == 'event' || self::$folder->type == 'task') {
-            array_unshift($rights, self::PRIVILEGE_FREE_BUSY);
-        }
 
         foreach ($rights as $right) {
             $id = "acl{$right}";
@@ -159,7 +149,7 @@ class kolab_dav_acl
     }
 
     /**
-     * Creates ACL rights form (user part)
+     * Creates sharing form (user part)
      *
      * @param array $attrib Template object attributes
      *
@@ -187,19 +177,24 @@ class kolab_dav_acl
             $fields[$type] = html::label(['for' => 'id' . $type], $rcmail->gettext("libkolab.{$type}"));
         }
 
-        // Create list with radio buttons
         $ul = '';
-        foreach ($fields as $key => $val) {
-            $radio = new html_radiobutton(['name' => 'usertype']);
-            $radio = $radio->show($key == 'user' ? 'user' : '', ['value' => $key, 'id' => 'id' . $key]);
-            $ul .= html::tag('li', null, $radio . $val);
+
+        if (count($fields) == 1) {
+            $ul = html::tag('li', null, $fields['user']);
+        } else {
+            // Create list with radio buttons
+            foreach ($fields as $key => $val) {
+                $radio = new html_radiobutton(['name' => 'usertype']);
+                $radio = $radio->show($key == 'user' ? 'user' : '', ['value' => $key, 'id' => 'id' . $key]);
+                $ul .= html::tag('li', null, $radio . $val);
+            }
         }
 
         return html::tag('ul', ['id' => 'usertype', 'class' => $class], $ul, html::$common_attrib);
     }
 
     /**
-     * Creates ACL rights table
+     * Creates sharees table
      *
      * @param array $attrib Template object attributes
      *
@@ -210,11 +205,7 @@ class kolab_dav_acl
         $rcmail = rcmail::get_instance();
 
         // Get ACL for the folder
-        $acl = self::$folder->get_acl();
-
-        // Remove 'self' entry
-        // TODO: Do it only on folders user == owner
-        unset($acl[kolab_dav_client::ACL_PRINCIPAL_SELF]);
+        $acl = self::$folder->get_sharees();
 
         // Sort the list by username
         uksort($acl, 'strnatcasecmp');
@@ -235,12 +226,7 @@ class kolab_dav_acl
         $cols = [
             self::PRIVILEGE_READ,
             self::PRIVILEGE_WRITE,
-            self::PRIVILEGE_ALL,
         ];
-
-        if (self::$folder->type == 'event' || self::$folder->type == 'task') {
-            array_unshift($cols, self::PRIVILEGE_FREE_BUSY);
-        }
 
         // Create the table
         $attrib['noheader'] = true;
@@ -254,12 +240,12 @@ class kolab_dav_acl
             $table->add_header(['class' => "acl{$right}", 'title' => $label], $label);
         }
 
-        foreach ($acl as $user => $rights) {
-            // We do not support 'deny' privileges
-            if (!empty($rights['deny']) || empty($rights['grant'])) {
+        foreach ($acl as $user => $sharee) {
+            if (!in_array($sharee['access'], [kolab_dav_client::SHARING_READ, kolab_dav_client::SHARING_READ_WRITE])) {
                 continue;
             }
 
+            $access = $sharee['access'];
             $userid = rcube_utils::html_identifier($user);
             $title = null;
 
@@ -274,14 +260,24 @@ class kolab_dav_acl
                 html::a(['id' => 'rcmlinkrow' . $userid], rcube::Q($username))
             );
 
-            $rights = self::from_dav($rights['grant']);
-
+            $rights = [];
             foreach ($cols as $right) {
-                $class = in_array($right, $rights) ? 'enabled' : 'disabled';
+                $enabled = (
+                        $right == self::PRIVILEGE_READ
+                        && ($access == kolab_dav_client::SHARING_READ || $access == kolab_dav_client::SHARING_READ_WRITE)
+                    ) || (
+                        $right == self::PRIVILEGE_WRITE
+                        && $access == kolab_dav_client::SHARING_READ_WRITE
+                    );
+                $class = $enabled ? 'enabled' : 'disabled';
                 $table->add('acl' . $right . ' ' . $class, '<span></span>');
+
+                if ($enabled) {
+                    $rights[] = $right;
+                }
             }
 
-            $js_table[$userid] = $rights;
+            $js_table[$userid] = $access;
         }
 
         $rcmail->output->set_env('acl', $js_table);
@@ -291,7 +287,7 @@ class kolab_dav_acl
     }
 
     /**
-     * Handler for ACL update/create action
+     * Handler for sharee update/create action
      */
     private static function action_save()
     {
@@ -312,7 +308,7 @@ class kolab_dav_acl
             return;
         }
 
-        $folder_acl = $folder->get_acl();
+        $sharees = $folder->get_sharees();
         $acl = explode(',', $acl);
 
         foreach ($users as $user) {
@@ -338,19 +334,34 @@ class kolab_dav_acl
                 continue;
             }
 
-            if ($user != $self && $username != $self) {
-                $folder_acl[$user] = ['grant' => self::to_dav($acl), 'deny' => []];
-                $updates[] = [
-                    'id' => rcube_utils::html_identifier($user),
-                    'username' => $user,
-                    'display' => $username,
-                    'acl' => $acl,
-                    'old' => $oldid,
-                ];
+            if ($user == $self && $username == $self) {
+                continue;
             }
+
+            if (in_array(self::PRIVILEGE_WRITE, $acl)) {
+                $access = kolab_dav_client::SHARING_READ_WRITE;
+            } elseif (in_array(self::PRIVILEGE_READ, $acl)) {
+                $access = kolab_dav_client::SHARING_READ;
+            } else {
+                $access = kolab_dav_client::SHARING_NO_ACCESS;
+            }
+
+            if (isset($sharees[$user])) {
+                $sharees[$user]['access'] = $access;
+            } else {
+                $sharees[$user] = ['access' => $access];
+            }
+
+            $updates[] = [
+                'id' => rcube_utils::html_identifier($user),
+                'username' => $user,
+                'display' => $username,
+                'acl' => $acl,
+                'old' => $oldid,
+            ];
         }
 
-        if (count($updates) > 0 && $folder->set_acl($folder_acl)) {
+        if (count($updates) > 0 && $folder->set_sharees($sharees)) {
             foreach ($updates as $command) {
                 $rcmail->output->command('acl_update', $command);
             }
@@ -361,7 +372,7 @@ class kolab_dav_acl
     }
 
     /**
-     * Handler for ACL delete action
+     * Handler for sharee delete action
      */
     private static function action_delete()
     {
@@ -377,14 +388,14 @@ class kolab_dav_acl
             return;
         }
 
-        $folder_acl = $folder->get_acl();
+        $sharees = $folder->get_sharees();
 
         foreach ($users as $user) {
             $user = trim($user);
-            unset($folder_acl[$user]);
+            $sharees[$user]['access'] = kolab_dav_client::SHARING_NO_ACCESS;
         }
 
-        if ($folder->set_acl($folder_acl)) {
+        if ($folder->set_sharees($sharees)) {
             foreach ($users as $user) {
                 $rcmail->output->command('acl_remove_row', rcube_utils::html_identifier($user));
             }
@@ -393,87 +404,6 @@ class kolab_dav_acl
         } else {
             $rcmail->output->show_message('libkolab.deleteerror', 'error');
         }
-    }
-
-    /**
-     * Convert DAV privileges into simplified "groups"
-     *
-     * @param array $list ACL privileges
-     *
-     * @return array
-     */
-    private static function from_dav($list)
-    {
-        /*
-        DAV ACL is a complicated system, we don't really want to implement it in full,
-        we rather keep it simple and similar to what we have for mail folders.
-        Therefore we implement it like this:
-
-        - free-busy:
-            - CALDAV:read-free-busy (not for addressbooks)
-        - read:
-            - DAV:read
-        - write:
-           - DAV:write-content
-           - CYRUS:remove-resource
-        - all (all the above plus administration):
-           - DAV:all
-
-        Reference: https://datatracker.ietf.org/doc/html/rfc3744
-        Reference: https://www.cyrusimap.org/imap/download/installation/http/caldav.html#calendar-acl
-        */
-
-        // TODO: Don't use CYRUS:remove-resource on non-Cyrus servers 
-
-        $result = [];
-
-        if ($all = in_array('all', $list)) {
-            $result[] = self::PRIVILEGE_ALL;
-        }
-
-        if ($all || in_array('read-free-busy', $list) || in_array('read', $list)) {
-            $result[] = self::PRIVILEGE_FREE_BUSY;
-        }
-
-        if ($all || in_array('read', $list)) {
-            $result[] = self::PRIVILEGE_READ;
-        }
-
-        if ($all || (in_array('write-content', $list) && in_array('remove-resource', $list)) || in_array('write', $list)) {
-            $result[] = self::PRIVILEGE_WRITE;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Convert simplified privileges into ACL privileges
-     *
-     * @param array $list ACL privileges
-     *
-     * @return array
-     * @see self::from_dav()
-     */
-    private static function to_dav($list)
-    {
-        $result = [];
-
-        if (in_array(self::PRIVILEGE_ALL, $list)) {
-            return ['all'];
-        }
-
-        if (in_array(self::PRIVILEGE_WRITE, $list)) {
-            $result[] = 'read';
-            $result[] = 'write-content';
-            // TODO: Don't use CYRUS:remove-resource on non-Cyrus servers 
-            $result[] = 'remove-resource';
-        } elseif (in_array(self::PRIVILEGE_READ, $list)) {
-            $result[] = 'read';
-        } elseif (in_array(self::PRIVILEGE_FREE_BUSY, $list)) {
-            $result[] = 'read-free-busy';
-        }
-
-        return $result;
     }
 
     /**

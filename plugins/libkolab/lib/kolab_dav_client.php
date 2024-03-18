@@ -28,6 +28,15 @@ class kolab_dav_client
     public const ACL_PRINCIPAL_AUTH = 'authenticated';
     public const ACL_PRINCIPAL_UNAUTH = 'unauthenticated';
 
+    public const INVITE_ACCEPTED = 'accepted';
+    public const INVITE_DECLINED = 'declined';
+
+    public const SHARING_READ = 'read';
+    public const SHARING_READ_WRITE = 'read-write';
+    public const SHARING_NO_ACCESS = 'no-access';
+    public const SHARING_OWNER = 'shared-owner';
+    public const SHARING_NOT_SHARED = 'not-shared';
+
     public $url;
 
     protected $user;
@@ -118,19 +127,17 @@ class kolab_dav_client
     }
 
     /**
-     * Discover DAV home (root) collection of specified type.
+     * Discover (common) DAV home collections.
      *
-     * @param string $component Component to filter by (VEVENT, VTODO, VCARD)
-     *
-     * @return string|false Home collection location or False on error
+     * @return array|false Homes locations or False on error
      */
-    public function discover($component = 'VEVENT')
+    public function discover()
     {
         if ($cache = $this->get_cache()) {
-            $cache_key = "discover.{$component}." . md5($this->url);
+            $cache_key = "discover." . md5($this->url);
 
-            if ($response = $cache->get($cache_key)) {
-                return $response;
+            if ($homes = $cache->get($cache_key)) {
+                return $homes;
             }
         }
 
@@ -164,22 +171,12 @@ class kolab_dav_client
             $principal_href = substr($principal_href, strlen($path));
         }
 
-        $homes = [
-            'VEVENT' => 'calendar-home-set',
-            'VTODO' => 'calendar-home-set',
-            'VCARD' => 'addressbook-home-set',
-        ];
-
-        $ns = [
-            'VEVENT' => 'caldav',
-            'VTODO' => 'caldav',
-            'VCARD' => 'carddav',
-        ];
-
         $body = '<?xml version="1.0" encoding="utf-8"?>'
-            . '<d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:' . $ns[$component] . '">'
+            . '<d:propfind xmlns:d="DAV:" xmlns:cal="urn:ietf:params:xml:ns:caldav" xmlns:card="urn:ietf:params:xml:ns:carddav">'
                 . '<d:prop>'
-                    . '<c:' . $homes[$component] . ' />'
+                    . '<cal:calendar-home-set/>'
+                    . '<card:addressbook-home-set/>'
+                    . '<d:notification-URL/>'
                 . '</d:prop>'
             . '</d:propfind>';
 
@@ -190,27 +187,54 @@ class kolab_dav_client
         }
 
         $elements = $response->getElementsByTagName('response');
+        $homes = [];
 
-        foreach ($elements as $element) {
-            foreach ($element->getElementsByTagName($homes[$component]) as $prop) {
-                $root_href = $prop->nodeValue;
-                break;
+        if ($element = $response->getElementsByTagName('response')->item(0)) {
+            if ($prop = $element->getElementsByTagName('prop')->item(0)) {
+                foreach ($prop->childNodes as $home) {
+                    if ($home->firstChild && $home->firstChild->localName == 'href') {
+                        $href = $home->firstChild->nodeValue;
+
+                        if ($path && strpos($href, $path) === 0) {
+                            $href = substr($href, strlen($path));
+                        }
+
+                        $homes[$home->localName] = $href;
+                    }
+                }
             }
         }
 
-        if (empty($root_href)) {
-            return false;
-        }
-
-        if ($path && strpos($root_href, $path) === 0) {
-            $root_href = substr($root_href, strlen($path));
-        }
-
         if ($cache) {
-            $cache->set($cache_key, $root_href);
+            $cache->set($cache_key, $homes);
         }
 
-        return $root_href;
+        return $homes;
+    }
+
+    /**
+     * Get user home folder of specified type
+     *
+     * @param string $type Home type or component name
+     *
+     * @return string|null Folder location href
+     */
+    public function getHome($type)
+    {
+        $options = [
+            'VEVENT' => 'calendar-home-set',
+            'VTODO' => 'calendar-home-set',
+            'VCARD' => 'addressbook-home-set',
+            'NOTIFICATION' => 'notification-URL',
+        ];
+
+        $homes = $this->discover();
+
+        if (is_array($homes) && isset($options[$type])) {
+            return $homes[$options[$type]] ?? null;
+        }
+
+        return null;
     }
 
     /**
@@ -222,9 +246,9 @@ class kolab_dav_client
      */
     public function listFolders($component = 'VEVENT')
     {
-        $root_href = $this->discover($component);
+        $root_href = $this->getHome($component);
 
-        if ($root_href === false) {
+        if ($root_href === null) {
             return false;
         }
 
@@ -243,6 +267,8 @@ class kolab_dav_client
                 . '<d:prop>'
                     . '<d:resourcetype />'
                     . '<d:displayname />'
+                    . '<d:share-access/>'   // draft-pot-webdav-resource-sharing-04
+                    . '<d:owner/>'          // RFC 3744 (ACL)
                     . '<cs:getctag />'
                     . $props
                 . '</d:prop>'
@@ -319,7 +345,7 @@ class kolab_dav_client
      */
     public function delete($location)
     {
-        $response = $this->request($location, 'DELETE', '', ['Depth' => 1, 'Prefer' => 'return-minimal']);
+        $response = $this->request($location, 'DELETE');
 
         return $response !== false;
     }
@@ -369,6 +395,9 @@ class kolab_dav_client
                     . '<d:current-user-privilege-set/>'
                     . '<d:resourcetype/>'
                     . '<d:displayname/>'
+                    . '<d:share-access/>'   // draft-pot-webdav-resource-sharing-04
+                    . '<d:owner/>'          // RFC 3744 (ACL)
+                    . '<d:invite/>'
                     . '<k:alarms/>'
                 . '</d:prop>'
             . '</d:propfind>';
@@ -512,6 +541,112 @@ class kolab_dav_client
     }
 
     /**
+     * Fetch DAV notifications
+     *
+     * @param ?array $types Notification types to return
+     *
+     * @return false|array Notification objects on success, False on error
+     */
+    public function listNotifications($types = [])
+    {
+        $root_href = $this->getHome('NOTIFICATION');
+
+        if ($root_href === null) {
+            return false;
+        }
+
+        $body = '<?xml version="1.0" encoding="utf-8"?>'
+            . ' <d:propfind xmlns:d="DAV:">'
+                . '<d:prop>'
+                    . '<d:notificationtype/>'
+                . '</d:prop>'
+            . '</d:propfind>';
+
+        $response = $this->request($root_href, 'PROPFIND', $body, ['Depth' => 1, 'Prefer' => 'return-minimal']);
+
+        if (empty($response)) {
+            return false;
+        }
+
+        $objects = [];
+
+        foreach ($response->getElementsByTagName('response') as $element) {
+            $type = $element->getElementsByTagName('notificationtype')->item(0);
+            if ($type && $type->firstChild) {
+                $type = $type->firstChild->localName;
+
+                if (empty($types) || in_array($type, $types)) {
+                    $href = $element->getElementsByTagName('href')->item(0);
+                    if ($notification = $this->getNotification($href->nodeValue)) {
+                        $objects[] = $notification;
+                    }
+                }
+            }
+        }
+
+        return $objects;
+    }
+
+    /**
+     * Get a single DAV notification
+     *
+     * @param string $location Notification href
+     *
+     * @return false|array Notification data on success, False on error
+     */
+    public function getNotification($location)
+    {
+        $response = $this->request($location, 'GET', '', ['Content-Type' => 'application/davnotification+xml']);
+
+        if (empty($response)) {
+            return false;
+        }
+
+        // Note: Cyrus implements draft-pot-webdav-resource-sharing v02, not v04, even v02 support
+        // is broken in some places
+
+        $result = [
+            'href' => $location,
+        ];
+
+        if ($access = $response->getElementsByTagName('access')->item(0)) {
+            $access = $access->firstChild;
+            $result['access'] = $access->localName; // 'read' or 'read-write'
+        }
+
+        foreach (['invite-noresponse', 'invite-accepted', 'invite-declined', 'invite-invalid', 'invite-deleted'] as $name) {
+            if ($node = $response->getElementsByTagName($name)->item(0)) {
+                $result['status'] = str_replace('invite-', '', $node->localName);
+            }
+        }
+
+        if ($organizer = $response->getElementsByTagName('organizer')->item(0)) {
+            if ($href = $organizer->getElementsByTagName('href')->item(0)) {
+                $result['organizer'] = $href->nodeValue;
+            }
+            // There should be also 'displayname', but Cyrus uses 'common-name',
+            // we'll ignore it for now anyway.
+        } elseif ($organizer = $response->getElementsByTagName('principal')->item(0)) {
+            if ($href = $organizer->getElementsByTagName('href')->item(0)) {
+                $result['organizer'] = $href->nodeValue;
+            }
+            // There should be also 'displayname', but Cyrus uses 'common-name',
+            // we'll ignore it for now anyway.
+        }
+
+        // Cyrus uses 'summary', but it's 'comment' in more recent standard
+        foreach (['dtstamp', 'summary', 'comment'] as $name) {
+            if ($node = $response->getElementsByTagName($name)->item(0)) {
+                $result[$name] = $node->nodeValue;
+            }
+        }
+
+        // In more recent standard there might be also 'displayname' and 'resourcetype' props
+
+        return $result;
+    }
+
+    /**
      * Fetch DAV objects metadata (ETag, href) a folder
      *
      * @param string $location  Folder location
@@ -626,6 +761,35 @@ class kolab_dav_client
     }
 
     /**
+     * Accept/Deny a share invitation (draft-pot-webdav-resource-sharing)
+     *
+     * @param string $location Notification location
+     * @param string $action   Reply action ('accepted' or 'declined')
+     * @param array  $props    Additional reply properties (slug, comment)
+     *
+     * @return bool True on success, False on error
+     */
+    public function inviteReply($location, $action = self::INVITE_ACCEPTED, $props = [])
+    {
+        $reply = '<d:invite-' . $action . '/>';
+
+        // Note: <create-in> and <slug> are ignored by Cyrus
+
+        if (!empty($props['comment'])) {
+            $reply .= '<d:comment>' . htmlspecialchars($props['comment'], ENT_XML1, 'UTF-8') . '</d:comment>';
+        }
+
+        $headers = ['Content-Type' => 'application/davsharing+xml; charset=utf-8'];
+
+        $body = '<?xml version="1.0" encoding="utf-8"?>'
+            . '<d:invite-reply xmlns:d="DAV:">' . $reply . '</d:invite-reply>';
+
+        $response = $this->request($location, 'POST', $body, $headers);
+
+        return $response !== false;
+    }
+
+    /**
      * Set ACL on a DAV folder
      *
      * @param string $location Object location (relative to the user home)
@@ -685,6 +849,47 @@ class kolab_dav_client
         $body = '<?xml version="1.0" encoding="utf-8"?><d:acl ' . $ns . '>' . $acl . '</d:acl>';
 
         $response = $this->request($location, 'ACL', $body);
+
+        return $response !== false;
+    }
+
+    /**
+     * Share a reasource (draft-pot-webdav-resource-sharing)
+     *
+     * @param string $location Resource location
+     * @param array  $sharees  Sharees list
+     *
+     * @return bool True on success, False on error
+     */
+    public function shareResource($location, $sharees = [])
+    {
+        $props = '';
+
+        foreach ($sharees as $href => $sharee) {
+            $props .= '<d:sharee>'
+                . '<d:href>' . htmlspecialchars($href, ENT_XML1, 'UTF-8') . '</d:href>'
+                . '<d:share-access><d:' . ($sharee['access'] ?? self::SHARING_NO_ACCESS) . '/></d:share-access>'
+                . '<d:' . ($sharee['status'] ?? 'noresponse') . '/>';
+
+            if (isset($sharee['comment']) && strlen($sharee['comment'])) {
+                $props .= '<d:comment>' . htmlspecialchars($sharee['comment'], ENT_XML1, 'UTF-8') . '</d:comment>';
+            }
+
+            if (isset($sharee['displayname']) && strlen($sharee['displayname'])) {
+                $props .= '<d:prop><d:displayname>'
+                    . htmlspecialchars($sharee['comment'], ENT_XML1, 'UTF-8')
+                    . '</d:displayname></d:prop>';
+            }
+
+            $props .= '</d:sharee>';
+        }
+
+        $headers = ['Content-Type' => 'application/davsharing+xml; charset=utf-8'];
+
+        $body = '<?xml version="1.0" encoding="utf-8"?>'
+            . '<d:share-resource xmlns:d="DAV:">' . $props . '</d:share-resource>';
+
+        $response = $this->request($location, 'POST', $body, $headers);
 
         return $response !== false;
     }
@@ -774,8 +979,7 @@ class kolab_dav_client
         $types = [];
         if ($type_element = $element->getElementsByTagName('resourcetype')->item(0)) {
             foreach ($type_element->childNodes as $node) {
-                $_type = explode(':', $node->nodeName);
-                $types[] = count($_type) > 1 ? $_type[1] : $_type[0];
+                $types[] = $node->localName;
             }
         }
 
@@ -850,6 +1054,57 @@ class kolab_dav_client
             }
 
             $result['myrights'] = $rights;
+        }
+
+        if ($owner = $element->getElementsByTagName('owner')->item(0)) {
+            if ($owner->firstChild) {
+                $result['owner'] = $owner->firstChild->nodeValue;
+            }
+        }
+
+        // 'share-access' from draft-pot-webdav-resource-sharing
+        if ($share = $element->getElementsByTagName('share-access')->item(0)) {
+            if ($share->firstChild) {
+                $result['share-access'] = $share->firstChild->localName;
+            }
+        }
+
+        // 'invite' from draft-pot-webdav-resource-sharing
+        if ($invite_element = $element->getElementsByTagName('invite')->item(0)) {
+            $invites = [];
+            foreach ($invite_element->childNodes as $sharee) {
+                $href = $sharee->getElementsByTagName('href')->item(0)->nodeValue;
+                $status = 'noresponse';
+
+                if ($comment = $sharee->getElementsByTagName('comment')->item(0)) {
+                    $comment = $comment->nodeValue;
+                }
+
+                if ($displayname = $sharee->getElementsByTagName('displayname')->item(0)) {
+                    $displayname = $displayname->nodeValue;
+                }
+
+                if ($access = $sharee->getElementsByTagName('share-access')->item(0)) {
+                    $access = $access->firstChild->localName;
+                } else {
+                    $access = self::SHARING_NOT_SHARED;
+                }
+
+                foreach (['invite-noresponse', 'invite-accepted', 'invite-declined', 'invite-invalid', 'invite-deleted'] as $name) {
+                    if ($node = $sharee->getElementsByTagName($name)->item(0)) {
+                        $status = str_replace('invite-', '', $node->localName);
+                    }
+                }
+
+                $invites[$href] = [
+                    'access' => $access,
+                    'status' => $status,
+                    'comment' => $comment,
+                    'displayname' => $displayname,
+                ];
+            }
+
+            $result['invite'] = $invites;
         }
 
         foreach (['alarms'] as $tag) {
