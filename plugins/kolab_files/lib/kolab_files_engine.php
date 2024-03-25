@@ -1107,6 +1107,10 @@ class kolab_files_engine
                     $status   = $response->getStatus();
                     $body     = @json_decode($response->getBody(), true);
 
+                    if (!$body) {
+                        throw new Exception("Failed to get capabilities. No body returned");
+                    }
+
                     if ($status == 200 && $body['status'] == 'OK') {
                         $_SESSION['kolab_files_caps'] = $body['result'];
                     } else {
