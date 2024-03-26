@@ -597,7 +597,7 @@ class libcalendaring_vcalendar implements Iterator
                         ]);
 
                         $attachment['data'] = $value;
-                        $attachment['size'] ??= strlen($value);
+                        $attachment['size'] = $attachment['size'] ?? strlen($value);
                         $attachment['id']   = md5(($attachment['mimetype'] ?? 'application/octet-stream') . ($attachment['name'] ?? 'noname'));
 
                         $event['attachments'][] = $attachment;
