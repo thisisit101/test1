@@ -25,7 +25,7 @@
  * for the JavaScript code in this file.
  */
 
-var libkolab_audittrail = {}, libkolab = {};
+var libkolab_audittrail = {}, libkolab = {}, libkolab_invitations = {};
 
 libkolab_audittrail.quote_html = function(str)
 {
@@ -306,6 +306,8 @@ function kolab_folderlist(node, p)
     // render the results for folderlist search
     function render_search_results(results)
     {
+        libkolab_invitations = {};
+
         if (results.length) {
           // create treelist widget to present the search results
           if (!search_results_widget) {
@@ -340,17 +342,28 @@ function kolab_folderlist(node, p)
                       e.stopPropagation();
                       e.bubbles = false;
 
+                      // Share invitation
+                      if (search_results[id] && 'share_invitation' in search_results[id] && search_results[id].share_invitation) {
+                          libkolab_invitations[id] = { li: li, list: me };
+                          rcmail.http_post(
+                              'plugin.share-invitation',
+                              { id: id, invitation: search_results[id].share_invitation, status: 'accepted' },
+                              rcmail.set_busy(true, 'libkolab.invitation-accepting')
+                          );
+                          return false;
+                      }
+
                       // activate + subscribe
                       if ($(e.target).hasClass('subscribed')) {
                           search_results[id].subscribed = true;
                           $(e.target).attr('aria-checked', 'true');
                           li.children().first()
                               .toggleClass('subscribed')
-                              .find('input[type=checkbox]').get(0).checked = true;
+                              .find('input[type=checkbox]').prop('checked', true);
 
                           if (has_children && search_results[id].group == 'other user') {
                               li.find('ul li > div').addClass('subscribed')
-                                  .find('a.subscribed').attr('aria-checked', 'true');;
+                                  .find('a.subscribed').attr('aria-checked', 'true');
                           }
                       }
                       else if (!this.checked) {
@@ -416,6 +429,15 @@ function kolab_folderlist(node, p)
                   item.find('a.subscribed, span.subscribed').hide();
               }
 
+              // disable click on shared invitations (it will be fixed back in add_result2list)
+              if ('share_invitation' in prop && prop.share_invitation) {
+                  var elem = item.find('a.listname').first();
+                  if (elem.length) {
+                      elem.data('onclick', elem.attr('onclick'))
+                        .attr('onclick', 'return false');
+                  }
+              }
+
               prop.li = item.parent().get(0);
               me.triggerEvent('add-item', prop);
           }
@@ -427,12 +449,15 @@ function kolab_folderlist(node, p)
     // helper method to (recursively) add a search result item to the main list widget
     function add_result2list(id, li, active)
     {
-        var node = search_results_widget.get_node(id),
+        var cl, data,
+            childs = [],
+            node = search_results_widget.get_node(id),
             prop = search_results[id],
+            classes = prop.group || '',
             parent_id = prop.parent || null,
             has_children = node.children && node.children.length,
             dom_node = has_children ? li.children().first().clone(true, true) : li.children().first(),
-            childs = [];
+            name_node = dom_node.find('a.listname');
 
         // find parent node and insert at the right place
         if (parent_id && me.get_node(parent_id)) {
@@ -445,6 +470,41 @@ function kolab_folderlist(node, p)
         else if (parent_id) {
             // use full name for list display
             dom_node.children('span,a').first().html(Q(prop.name));
+        }
+
+        if (name_node && (data = name_node.data('onclick'))) {
+            name_node.attr('onclick', data).removeData('onclick');
+        }
+
+        // Handle id change (switch IDs for various elements/properties of the list row)
+        if (prop.id && prop.id != id) {
+            if (cl = dom_node.attr('class')) {
+                dom_node.attr('class', cl.replace(id, prop.id));
+            } else {
+                // for addressbook copy 'class' attribute
+                if (cl = dom_node.parent().attr('class')) {
+                    classes += ' ' + cl;
+                }
+                // and remove the checkbox
+                dom_node.children(':not(a)').hide();
+            }
+            dom_node.children('a').each(function() {
+                if (this.id && this.id.includes(id)) {
+                    this.id = this.id.replace(id, prop.id);
+                }
+            });
+            dom_node.find('input[type=checkbox]').each(function() {
+                if (this.value == id) {
+                    this.value = prop.id;
+                }
+            });
+            if (data) {
+                name_node.attr({
+                    onclick: data.replace(id, prop.id),
+                    href: name_node.attr('href').replace(id, prop.id),
+                    rel: name_node.attr('rel').replace(id, prop.id),
+                });
+            }
         }
 
         // replace virtual node with a real one
@@ -465,8 +525,8 @@ function kolab_folderlist(node, p)
 
             // move this result item to the main list widget
             me.insert({
-                id: id,
-                classes: [ prop.group || '' ],
+                id: prop.id || id,
+                classes: [ classes ],
                 virtual: prop.virtual,
                 html: dom_node,
                 level: node.level,
@@ -477,7 +537,7 @@ function kolab_folderlist(node, p)
 
         delete prop.html;
         prop.active = active;
-        me.triggerEvent('insert-item', { id: id, data: prop, item: li });
+        me.triggerEvent('insert-item', { id: prop.id || id, data: prop, item: li });
 
         // register childs, too
         if (childs.length) {
@@ -506,6 +566,26 @@ function kolab_folderlist(node, p)
             top_li.children('div:first')
                 .addClass('subscribed')[subscribed < all_childs.length ? 'addClass' : 'removeClass']('partial');
         }
+    }
+
+    this.accept_invitation = function (id, prop) {
+        var li = libkolab_invitations[id].li;
+
+        search_results[id] = prop;
+
+        if (prop.active) {
+            li.find('input[type=checkbox]').prop('disabled', false).prop('checked', true);
+        }
+
+        if (prop.listname) {
+            li.find('a.calname').text(prop.listname);
+        }
+
+        li.find('a.quickview').show();
+
+        add_result2list(id, li, prop.active)
+
+        delete libkolab_invitations[id];
     }
 
     // do some magic when search is performed on the widget
@@ -996,4 +1076,10 @@ window.rcmail && rcmail.addEventListener('init', function(e) {
         rcmail.enable_command('acl-create', 'acl-save', 'acl-cancel', true);
         rcmail.enable_command('acl-delete', 'acl-edit', false);
     }
+
+    rcmail.addEventListener('plugin.share-invitation', function(data) {
+        if (data.id in libkolab_invitations) {
+            libkolab_invitations[data.id].list.accept_invitation(data.id, data.source);
+        }
+    });
 });

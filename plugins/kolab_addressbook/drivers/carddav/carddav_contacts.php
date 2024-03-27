@@ -33,6 +33,7 @@ class carddav_contacts extends rcube_addressbook
     public $readonly = true;
     public $undelete = false;
     public $groups   = true;
+    public $share_invitation = null;
 
     public $coltypes = [
         'name'         => ['limit' => 1],
@@ -129,6 +130,8 @@ class carddav_contacts extends rcube_addressbook
                 $this->rights = $this->storage->get_myrights();
                 $this->readonly = strpos($this->rights, 'i') === false;
             }
+
+            $this->share_invitation = $this->storage->attributes['invitation'] ?? null;
         }
     }
 

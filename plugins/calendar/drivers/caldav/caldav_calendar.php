@@ -30,6 +30,7 @@ class caldav_calendar extends kolab_storage_dav_folder
     public $alarms        = false;
     public $history       = false;
     public $subscriptions = false;
+    public $share_invitation = null;
     public $categories    = [];
     public $storage;
 
@@ -81,6 +82,10 @@ class caldav_calendar extends kolab_storage_dav_folder
             }
 
             $this->editable = strpos($this->rights, 'i') !== false;
+
+            if (!empty($this->attributes['invitation'])) {
+                $this->share_invitation = $this->attributes['invitation'];
+            }
         }
     }
 

@@ -187,6 +187,8 @@ class calendar extends rcube_plugin
             $this->register_action('resources-autocomplete', [$this, 'resources_autocomplete']);
             $this->register_action('talk-room-create', [$this, 'talk_room_create']);
 
+            $this->rc->plugins->register_action('plugin.share-invitation', $this->ID, [$this, 'share_invitation']);
+
             $this->add_hook('refresh', [$this, 'refresh']);
 
             // remove undo information...
@@ -1030,7 +1032,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                 $source     = rcube_utils::get_input_value('source', rcube_utils::INPUT_GPC);
 
                 foreach ((array) $this->driver->search_calendars($query, $source) as $id => $prop) {
-                    $editname = $prop['editname'];
+                    $editname = $prop['editname'] ?? '';
                     unset($prop['editname']);  // force full name to be displayed
                     $prop['active'] = false;
 
@@ -1621,6 +1623,19 @@ $("#rcmfd_new_category").keypress(function(event) {
         }
 
         return $events;
+    }
+
+    /**
+     * Handle invitations to a shared folder
+     */
+    public function share_invitation()
+    {
+        $id = rcube_utils::get_input_value('id', rcube_utils::INPUT_POST);
+        $invitation = rcube_utils::get_input_value('invitation', rcube_utils::INPUT_POST);
+
+        if ($calendar = $this->driver->accept_share_invitation($invitation)) {
+            $this->rc->output->command('plugin.share-invitation', ['id' => $id, 'source' => $calendar]);
+        }
     }
 
     /**

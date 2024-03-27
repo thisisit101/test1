@@ -31,6 +31,9 @@ class kolab_dav_client
     public const INVITE_ACCEPTED = 'accepted';
     public const INVITE_DECLINED = 'declined';
 
+    public const NOTIFICATION_SHARE_INVITE = 'share-invite-notification';
+    public const NOTIFICATION_SHARE_REPLY = 'share-reply-notification';
+
     public const SHARING_READ = 'read';
     public const SHARING_READ_WRITE = 'read-write';
     public const SHARING_NO_ACCESS = 'no-access';
@@ -381,7 +384,7 @@ class kolab_dav_client
             'xmlns:cs="http://calendarserver.org/ns/"',
             'xmlns:c="urn:ietf:params:xml:ns:caldav"',
             'xmlns:a="http://apple.com/ns/ical/"',
-            'xmlns:k="Kolab:"'
+            'xmlns:k="Kolab:"',
         ]);
 
         // Note: <allprop> does not include some of the properties we're interested in
@@ -572,6 +575,7 @@ class kolab_dav_client
 
         foreach ($response->getElementsByTagName('response') as $element) {
             $type = $element->getElementsByTagName('notificationtype')->item(0);
+
             if ($type && $type->firstChild) {
                 $type = $type->firstChild->localName;
 
@@ -602,16 +606,12 @@ class kolab_dav_client
             return false;
         }
 
-        // Note: Cyrus implements draft-pot-webdav-resource-sharing v02, not v04, even v02 support
-        // is broken in some places
-
-        $result = [
-            'href' => $location,
-        ];
+        // Note: Cyrus implements draft-pot-webdav-resource-sharing v02, not the most recent one(s),
+        // and even v02 support is broken in some places
 
         if ($access = $response->getElementsByTagName('access')->item(0)) {
             $access = $access->firstChild;
-            $result['access'] = $access->localName; // 'read' or 'read-write'
+            $access = $access->localName; // 'read' or 'read-write'
         }
 
         foreach (['invite-noresponse', 'invite-accepted', 'invite-declined', 'invite-invalid', 'invite-deleted'] as $name) {
@@ -622,17 +622,31 @@ class kolab_dav_client
 
         if ($organizer = $response->getElementsByTagName('organizer')->item(0)) {
             if ($href = $organizer->getElementsByTagName('href')->item(0)) {
-                $result['organizer'] = $href->nodeValue;
+                $organizer = $href->nodeValue;
             }
             // There should be also 'displayname', but Cyrus uses 'common-name',
             // we'll ignore it for now anyway.
         } elseif ($organizer = $response->getElementsByTagName('principal')->item(0)) {
             if ($href = $organizer->getElementsByTagName('href')->item(0)) {
-                $result['organizer'] = $href->nodeValue;
+                $organizer = $href->nodeValue;
             }
             // There should be also 'displayname', but Cyrus uses 'common-name',
             // we'll ignore it for now anyway.
         }
+
+        $components = [];
+        if ($set_element = $response->getElementsByTagName('supported-calendar-component-set')->item(0)) {
+            foreach ($set_element->getElementsByTagName('comp') as $comp_element) {
+                $components[] = $comp_element->attributes->getNamedItem('name')->nodeValue;
+            }
+        }
+
+        $result = [
+            'href' => $location,
+            'access' => $access,
+            'types' => $components,
+            'organizer' => $organizer,
+        ];
 
         // Cyrus uses 'summary', but it's 'comment' in more recent standard
         foreach (['dtstamp', 'summary', 'comment'] as $name) {
@@ -641,7 +655,18 @@ class kolab_dav_client
             }
         }
 
-        // In more recent standard there might be also 'displayname' and 'resourcetype' props
+        // Note: In more recent standard there are 'displayname' and 'resourcetype' props
+
+        // Note: 'hosturl' exists in v2, but starting from v3 'sharer-resource-uri' is used
+        if ($hosturl = $response->getElementsByTagName('hosturl')->item(0)) {
+            if ($href = $hosturl->getElementsByTagName('href')->item(0)) {
+                $result['resource-uri'] = $href->nodeValue;
+            }
+        } elseif ($hosturl = $response->getElementsByTagName('sharer-resource-uri')->item(0)) {
+            if ($href = $hosturl->getElementsByTagName('href')->item(0)) {
+                $result['resource-uri'] = $href->nodeValue;
+            }
+        }
 
         return $result;
     }
@@ -1073,6 +1098,7 @@ class kolab_dav_client
         if ($invite_element = $element->getElementsByTagName('invite')->item(0)) {
             $invites = [];
             foreach ($invite_element->childNodes as $sharee) {
+                /** @var DOMElement $sharee */
                 $href = $sharee->getElementsByTagName('href')->item(0)->nodeValue;
                 $status = 'noresponse';
 

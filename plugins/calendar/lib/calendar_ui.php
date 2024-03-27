@@ -310,18 +310,14 @@ class calendar_ui
         // enrich calendar properties with settings from the driver
         if (empty($prop['virtual'])) {
             unset($prop['user_id']);
+            $feed = ['_cal' => $this->cal->ical_feed_hash($id) . '.ics', 'action' => 'feed'];
 
             $prop['alarms']      = $this->cal->driver->alarms;
             $prop['attendees']   = $this->cal->driver->attendees;
             $prop['freebusy']    = $this->cal->driver->freebusy;
             $prop['attachments'] = $this->cal->driver->attachments;
             $prop['undelete']    = $this->cal->driver->undelete;
-            $prop['feedurl']     = $this->cal->get_url(
-                [
-                    '_cal'   => $this->cal->ical_feed_hash($id) . '.ics',
-                    'action' => 'feed',
-                ]
-            );
+            $prop['feedurl']     = $this->cal->get_url($feed);
 
             $jsenv[$id] = $prop;
         }
@@ -338,7 +334,7 @@ class calendar_ui
 
         if (!empty($prop['virtual'])) {
             $classes[] = 'virtual';
-        } elseif (empty($prop['editable'])) {
+        } elseif (!empty($prop['rights']) && strpos($prop['rights'], 'i') === false && strpos($prop['rights'], 'w') === false) {
             $classes[] = 'readonly';
         }
         if (!empty($prop['subscribed'])) {
@@ -383,8 +379,9 @@ class calendar_ui
                         'title' => $this->cal->gettext('quickview'),
                         'role'  => 'checkbox',
                         'aria-checked' => 'false',
+                        'style' => !empty($prop['share_invitation']) ? 'display:none' : null,
                     ],
-                    ''
+                    ' '
                 );
 
                 if (!isset($prop['subscriptions']) || $prop['subscriptions'] !== false) {
@@ -406,7 +403,7 @@ class calendar_ui
                         'type'    => 'checkbox',
                         'name'    => '_cal[]',
                         'value'   => $id,
-                        'checked' => !empty($prop['active']),
+                        'checked' => !empty($prop['active']) && empty($prop['share_invitation']),
                         'aria-labelledby' => $label_id,
                     ])
                     . html::span('actions', $actions)
@@ -457,10 +454,7 @@ class calendar_ui
         $select = new html_select($attrib);
 
         foreach ((array) $this->cal->driver->list_calendars() as $id => $prop) {
-            if (
-                !empty($prop['editable'])
-                || (!empty($prop['rights']) && strpos($prop['rights'], 'i') !== false)
-            ) {
+            if (!empty($prop['rights']) && strpos($prop['rights'], 'i') !== false) {
                 $select->add($prop['name'], $id);
             }
         }

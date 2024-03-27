@@ -101,6 +101,11 @@ class tasklist_caldav_driver extends tasklist_driver
             $rights = $folder->get_myrights();
             $editable = strpos($rights, 'i') !== false;
             $norename = strpos($rights, 'x') === false;
+
+            if (!empty($folder->attributes['invitation'])) {
+                $invitation = $folder->attributes['invitation'];
+                $active = true;
+            }
         }
 
         $list_id = $folder->id;
@@ -115,7 +120,7 @@ class tasklist_caldav_driver extends tasklist_driver
             'editable' => $editable,
             'rights'    => $rights,
             'norename' => $norename,
-            'active' => !isset($prefs[$list_id]['active']) || !empty($prefs[$list_id]['active']),
+            'active' => $active ?? (!isset($prefs[$list_id]['active']) || !empty($prefs[$list_id]['active'])),
             'owner' => $folder->get_owner(),
             'parentfolder' => $folder->get_parent(),
             'default' => $folder->default,
@@ -128,6 +133,7 @@ class tasklist_caldav_driver extends tasklist_driver
             'class' => trim($folder->get_namespace() . ($folder->default ? ' default' : '')),
             'caldavuid' => '', // $folder->get_uid(),
             'history' => !empty($this->bonnie_api),
+            'share_invitation' => $invitation ?? null,
         ];
     }
 
@@ -431,49 +437,32 @@ class tasklist_caldav_driver extends tasklist_driver
      */
     public function search_lists($query, $source)
     {
-        /*
-                $this->search_more_results = false;
-                $this->lists = $this->folders = array();
+        $this->search_more_results = false;
+        $this->lists = $this->folders = [];
 
-                // find unsubscribed IMAP folders that have "event" type
-                if ($source == 'folders') {
-                    foreach ((array)kolab_storage::search_folders('task', $query, array('other')) as $folder) {
-                        $this->folders[$folder->id] = $folder;
-                        $this->lists[$folder->id] = $this->folder_props($folder, array());
-                    }
+        // find unsubscribed IMAP folders that have "event" type
+        if ($source == 'folders') {
+            foreach ((array) $this->storage->search_folders('task', $query, ['other']) as $folder) {
+                $this->folders[$folder->id] = $folder;
+                $this->lists[$folder->id] = $this->folder_props($folder, []);
+            }
+        }
+        // find other user's calendars (invitations)
+        elseif ($source == 'users') {
+            // we have slightly more space, so display twice the number
+            $limit = $this->rc->config->get('autocomplete_max', 15) * 2;
+
+            foreach ($this->storage->get_share_invitations('task', $query) as $invitation) {
+                $this->folders[$invitation->id] = $invitation;
+                $this->lists[$invitation->id] = $this->folder_props($invitation, []);
+
+                if (count($this->lists) > $limit) {
+                    $this->search_more_results = true;
                 }
-                // search other user's namespace via LDAP
-                else if ($source == 'users') {
-                    $limit = $this->rc->config->get('autocomplete_max', 15) * 2;  // we have slightly more space, so display twice the number
-                    foreach (kolab_storage::search_users($query, 0, array(), $limit * 10) as $user) {
-                        $folders = array();
-                        // search for tasks folders shared by this user
-                        foreach (kolab_storage::list_user_folders($user, 'task', false) as $foldername) {
-                            $folders[] = new kolab_storage_folder($foldername, 'task');
-                        }
+            }
+        }
 
-                        if (count($folders)) {
-                            $userfolder = new kolab_storage_folder_user($user['kolabtargetfolder'], '', $user);
-                            $this->folders[$userfolder->id] = $userfolder;
-                            $this->lists[$userfolder->id] = $this->folder_props($userfolder, array());
-
-                            foreach ($folders as $folder) {
-                                $this->folders[$folder->id] = $folder;
-                                $this->lists[$folder->id] = $this->folder_props($folder, array());
-                                $count++;
-                            }
-                        }
-
-                        if ($count >= $limit) {
-                            $this->search_more_results = true;
-                            break;
-                        }
-                    }
-                }
-
-                return $this->get_lists();
-        */
-        return [];
+        return $this->get_lists();
     }
 
     /**
@@ -1449,6 +1438,31 @@ class tasklist_caldav_driver extends tasklist_driver
         return false;
     }
 
+    /**
+     * Accept an invitation to a shared folder
+     *
+     * @param string $href Invitation location href
+     *
+     * @return array|false
+     */
+    public function accept_share_invitation($href)
+    {
+        $folder = $this->storage->accept_share_invitation('task', $href);
+
+        if ($folder === false) {
+            return false;
+        }
+
+        // Activate the folder
+        $prefs['kolab_tasklists'] = $this->rc->config->get('kolab_tasklists', []);
+        $prefs['kolab_tasklists'][$folder->id]['active'] = true;
+
+        $tasklist = $this->folder_props($folder, $prefs['kolab_tasklists']);
+
+        $this->rc->user->save_prefs($prefs);
+
+        return $tasklist;
+    }
 
     /**
      * Get attachment properties

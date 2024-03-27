@@ -287,6 +287,18 @@ abstract class tasklist_driver
     }
 
     /**
+     * Accept an invitation to a shared folder
+     *
+     * @param string $href Invitation location href
+     *
+     * @return array|false
+     */
+    public function accept_share_invitation($href)
+    {
+        return false;
+    }
+
+    /**
      * Get attachment properties
      *
      * @param string $id   Attachment identifier

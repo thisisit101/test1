@@ -80,8 +80,15 @@ class kolab_dav_acl
         self::$folder = $folder;
 
         // Add localization labels and include scripts
-        $rcmail->output->add_label('libkolab.nouser', 'libkolab.newuser', 'libkolab.editperms',
-            'libkolab.deleteconfirm', 'libkolab.delete', 'libkolab.norights', 'libkolab.saving');
+        $rcmail->output->add_label(
+            'libkolab.nouser',
+            'libkolab.newuser',
+            'libkolab.editperms',
+            'libkolab.deleteconfirm',
+            'libkolab.delete',
+            'libkolab.norights',
+            'libkolab.saving'
+        );
 
         $rcmail->output->include_script('list.js');
         $rcmail->plugins->include_script('libkolab/libkolab.js');
@@ -149,7 +156,9 @@ class kolab_dav_acl
         foreach ($rights as $right) {
             $id = "acl{$right}";
             $label = $rcmail->gettext($rcmail->text_exists("libkolab.acllong{$right}") ? "libkolab.acllong{$right}" : "libkolab.acl{$right}");
-            $ul .= html::tag('li', null,
+            $ul .= html::tag(
+                'li',
+                null,
                 $input->show('', ['name' => "acl[{$right}]", 'value' => $right, 'id' => $id])
                 . html::label(['for' => $id], $label)
             );
@@ -178,7 +187,8 @@ class kolab_dav_acl
         $label = html::label(['for' => $attrib['id'], 'class' => 'input-group-text'], $rcmail->gettext('libkolab.username'));
 
         $fields = [
-            'user' => html::div('input-group',
+            'user' => html::div(
+                'input-group',
                 html::span('input-group-prepend', $label) . ' ' . $textfield->show()
             ),
         ];
@@ -270,7 +280,8 @@ class kolab_dav_acl
             }
 
             $table->add_row(['id' => 'rcmrow' . $userid, 'data-userid' => $user]);
-            $table->add(['class' => 'user text-nowrap', 'title' => $title],
+            $table->add(
+                ['class' => 'user text-nowrap', 'title' => $title],
                 html::a(['id' => 'rcmlinkrow' . $userid], rcube::Q($username))
             );
 
@@ -423,7 +434,7 @@ class kolab_dav_acl
         Reference: https://www.cyrusimap.org/imap/download/installation/http/caldav.html#calendar-acl
         */
 
-        // TODO: Don't use CYRUS:remove-resource on non-Cyrus servers 
+        // TODO: Don't use CYRUS:remove-resource on non-Cyrus servers
 
         $result = [];
 
@@ -465,7 +476,7 @@ class kolab_dav_acl
         if (in_array(self::PRIVILEGE_WRITE, $list)) {
             $result[] = 'read';
             $result[] = 'write-content';
-            // TODO: Don't use CYRUS:remove-resource on non-Cyrus servers 
+            // TODO: Don't use CYRUS:remove-resource on non-Cyrus servers
             $result[] = 'remove-resource';
         } elseif (in_array(self::PRIVILEGE_READ, $list)) {
             $result[] = 'read';
@@ -523,7 +534,7 @@ class kolab_dav_acl
      */
     private static function get_folder_id($folder)
     {
-        // the folder identifier needs to easily allow for 
+        // the folder identifier needs to easily allow for
         // connecting to the DAV server and getting/setting ACL
         // TODO: It might be a security issue, consider generating ID and using session
         // so the server URL is not revealed in the UI.

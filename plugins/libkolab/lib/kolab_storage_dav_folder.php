@@ -280,13 +280,16 @@ class kolab_storage_dav_folder extends kolab_storage_folder
                 case 'read-current-user-privilege-set':
                     $acl .= 'lr';
                     break;
+                case 'read-write':
+                    $acl .= 'lrwni';
+                    break;
                 case 'write':
-                //case 'write-properties':
-                //case 'write-content':
+                    //case 'write-properties':
+                    //case 'write-content':
                     $acl .= 'wni';
                     break;
                 case 'bind':
-                    $acl .='pk';
+                    $acl .= 'pk';
                     break;
                 case 'unbind':
                     $acl .= 'xte';

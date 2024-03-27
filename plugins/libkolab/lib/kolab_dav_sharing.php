@@ -75,8 +75,15 @@ class kolab_dav_sharing
         self::$folder = $folder;
 
         // Add localization labels and include scripts
-        $rcmail->output->add_label('libkolab.nouser', 'libkolab.newuser', 'libkolab.editperms',
-            'libkolab.deleteconfirm', 'libkolab.delete', 'libkolab.norights', 'libkolab.saving');
+        $rcmail->output->add_label(
+            'libkolab.nouser',
+            'libkolab.newuser',
+            'libkolab.editperms',
+            'libkolab.deleteconfirm',
+            'libkolab.delete',
+            'libkolab.norights',
+            'libkolab.saving'
+        );
 
         $rcmail->output->include_script('list.js');
         $rcmail->plugins->include_script('libkolab/libkolab.js');
@@ -139,7 +146,9 @@ class kolab_dav_sharing
         foreach ($rights as $right) {
             $id = "acl{$right}";
             $label = $rcmail->gettext($rcmail->text_exists("libkolab.acllong{$right}") ? "libkolab.acllong{$right}" : "libkolab.acl{$right}");
-            $ul .= html::tag('li', null,
+            $ul .= html::tag(
+                'li',
+                null,
                 $input->show('', ['name' => "acl[{$right}]", 'value' => $right, 'id' => $id])
                 . html::label(['for' => $id], $label)
             );
@@ -168,7 +177,8 @@ class kolab_dav_sharing
         $label = html::label(['for' => $attrib['id'], 'class' => 'input-group-text'], $rcmail->gettext('libkolab.username'));
 
         $fields = [
-            'user' => html::div('input-group',
+            'user' => html::div(
+                'input-group',
                 html::span('input-group-prepend', $label) . ' ' . $textfield->show()
             ),
         ];
@@ -256,19 +266,20 @@ class kolab_dav_sharing
             }
 
             $table->add_row(['id' => 'rcmrow' . $userid, 'data-userid' => $user]);
-            $table->add(['class' => 'user text-nowrap', 'title' => $title],
+            $table->add(
+                ['class' => 'user text-nowrap', 'title' => $title],
                 html::a(['id' => 'rcmlinkrow' . $userid], rcube::Q($username))
             );
 
             $rights = [];
             foreach ($cols as $right) {
                 $enabled = (
-                        $right == self::PRIVILEGE_READ
+                    $right == self::PRIVILEGE_READ
                         && ($access == kolab_dav_client::SHARING_READ || $access == kolab_dav_client::SHARING_READ_WRITE)
-                    ) || (
-                        $right == self::PRIVILEGE_WRITE
-                        && $access == kolab_dav_client::SHARING_READ_WRITE
-                    );
+                ) || (
+                    $right == self::PRIVILEGE_WRITE
+                    && $access == kolab_dav_client::SHARING_READ_WRITE
+                );
                 $class = $enabled ? 'enabled' : 'disabled';
                 $table->add('acl' . $right . ' ' . $class, '<span></span>');
 
@@ -453,7 +464,7 @@ class kolab_dav_sharing
      */
     private static function get_folder_id($folder)
     {
-        // the folder identifier needs to easily allow for 
+        // the folder identifier needs to easily allow for
         // connecting to the DAV server and getting/setting ACL
         // TODO: It might be a security issue, consider generating ID and using session
         // so the server URL is not revealed in the UI.

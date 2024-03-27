@@ -25,6 +25,8 @@
  */
 class kolab_contacts_driver
 {
+    public $search_more_results = false;
+
     protected $plugin;
     protected $rc;
 
@@ -58,6 +60,87 @@ class kolab_contacts_driver
         }
 
         return $sources;
+    }
+
+    /**
+     * Search for shared or otherwise not listed addressbooks the user has access to
+     *
+     * @param string $query  Search string
+     * @param string $source Section/source to search
+     *
+     * @return array List of addressbooks
+     */
+    public function search_folders($query, $source)
+    {
+        $this->search_more_results = false;
+        $results = [];
+        $sources = [];
+        $folders = [];
+
+        // find unsubscribed IMAP folders that have "event" type
+        if ($source == 'folders') {
+            foreach ((array) kolab_storage::search_folders('contact', $query, ['other']) as $folder) {
+                $folders[$folder->id] = $folder;
+                $sources[$folder->id] = new kolab_contacts($folder->name);
+            }
+        }
+        // search other user's namespace via LDAP
+        elseif ($source == 'users') {
+            // We have slightly more space, so display twice the number
+            $limit = $this->rc->config->get('autocomplete_max', 15) * 2;
+
+            foreach (kolab_storage::search_users($query, 0, [], $limit * 10) as $user) {
+                $folders = [];
+                // search for contact folders shared by this user
+                foreach (kolab_storage::list_user_folders($user, 'contact', false) as $foldername) {
+                    $folders[] = new kolab_storage_folder($foldername, 'contact');
+                }
+
+                $count = 0;
+                if (count($folders)) {
+                    $userfolder = new kolab_storage_folder_user($user['kolabtargetfolder'], '', $user);
+                    $folders[$userfolder->id] = $userfolder;
+                    $sources[$userfolder->id] = $userfolder;
+
+                    foreach ($folders as $folder) {
+                        $folders[$folder->id] = $folder;
+                        $sources[$folder->id] = new kolab_contacts($folder->name);
+                        $count++;
+                    }
+                }
+
+                if ($count >= $limit) {
+                    $this->search_more_results = true;
+                    break;
+                }
+            }
+        }
+
+        $delim = $this->rc->get_storage()->get_hierarchy_delimiter();
+
+        // build results list
+        foreach ($sources as $id => $source) {
+            $folder = $folders[$id];
+            $imap_path = explode($delim, $folder->name);
+
+            // find parent
+            do {
+                array_pop($imap_path);
+                $parent_id = kolab_storage::folder_id(implode($delim, $imap_path));
+            } while (count($imap_path) > 1 && empty($folders[$parent_id]));
+
+            // restore "real" parent ID
+            if ($parent_id && empty($folders[$parent_id])) {
+                $parent_id = kolab_storage::folder_id($folder->get_parent());
+            }
+
+            $prop = $this->abook_prop($id, $source);
+            $prop['parent'] = $parent_id;
+
+            $results[] = $prop;
+        }
+
+        return $results;
     }
 
     /**
@@ -226,6 +309,31 @@ class kolab_contacts_driver
 
             $this->rc->output->show_message($error, 'error');
         }
+    }
+
+    /**
+     * Subscribe to a folder
+     *
+     * @param string $id      Folder identifier
+     * @param array  $options Action options
+     *
+     * @return bool
+     */
+    public function folder_subscribe($id, $options = [])
+    {
+        $success = false;
+
+        if ($id && ($folder = kolab_storage::get_folder(kolab_storage::id_decode($id)))) {
+            if (isset($options['permanent'])) {
+                $success |= $folder->subscribe(intval($options['permanent']));
+            }
+
+            if (isset($options['active'])) {
+                $success |= $folder->activate(intval($options['active']));
+            }
+        }
+
+        return $success;
     }
 
     /**

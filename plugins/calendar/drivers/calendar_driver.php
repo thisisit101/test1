@@ -863,6 +863,18 @@ abstract class calendar_driver
     }
 
     /**
+     * Accept an invitation to a shared folder
+     *
+     * @param string $href Invitation location href
+     *
+     * @return array|false
+     */
+    public function accept_share_invitation($href)
+    {
+        return false;
+    }
+
+    /**
      * Handler for user_delete plugin hook
      *
      * @param array $args Hash array with hook arguments

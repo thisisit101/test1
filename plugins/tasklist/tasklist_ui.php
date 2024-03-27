@@ -273,7 +273,7 @@ class tasklist_ui
 
         if (!empty($prop['virtual'])) {
             $classes[] = 'virtual';
-        } elseif (empty($prop['editable'])) {
+        } elseif (strpos($prop['rights'], 'i') === false && strpos($prop['rights'], 'w') === false) {
             $classes[] = 'readonly';
         }
         if (!empty($prop['subscribed'])) {
@@ -285,30 +285,50 @@ class tasklist_ui
 
         if (!$activeonly || !empty($prop['active'])) {
             $label_id = 'tl:' . $id;
+            $listname = !empty($prop['listname']) ? $prop['listname'] : $prop['name'];
+            $actions = '';
+
             $chbox = html::tag('input', [
                     'type'    => 'checkbox',
                     'name'    => '_list[]',
                     'value'   => $id,
-                    'checked' => !empty($prop['active']),
+                    'checked' => !empty($prop['active']) && empty($prop['share_invitation']),
                     'title'   => $this->plugin->gettext('activate'),
                     'aria-labelledby' => $label_id,
             ]);
 
-            $actions = '';
             if (!empty($prop['removable'])) {
                 $actions .= html::a(['href' => '#', 'class' => 'remove', 'title' => $this->plugin->gettext('removelist')], ' ');
             }
-            $actions .= html::a(['href' => '#', 'class' => 'quickview', 'title' => $this->plugin->gettext('focusview'), 'role' => 'checkbox', 'aria-checked' => 'false'], ' ');
+
+            $actions .= html::a(
+                [
+                    'href' => '#',
+                    'class' => 'quickview',
+                    'title' => $this->plugin->gettext('focusview'),
+                    'role' => 'checkbox',
+                    'aria-checked' => 'false',
+                    'style' => !empty($prop['share_invitation']) ? 'display:none' : null,
+                ],
+                ' '
+            );
+
             if (isset($prop['subscribed'])) {
-                $actions .= html::a(['href' => '#', 'class' => 'subscribed', 'title' => $this->plugin->gettext('tasklistsubscribe'), 'role' => 'checkbox', 'aria-checked' => $prop['subscribed'] ? 'true' : 'false'], ' ');
+                $actions .= html::a(
+                    [
+                        'href' => '#',
+                        'class' => 'subscribed',
+                        'title' => $this->plugin->gettext('tasklistsubscribe'),
+                        'role' => 'checkbox',
+                        'aria-checked' => $prop['subscribed'] ? 'true' : 'false',
+                    ],
+                    ' '
+                );
             }
 
             return html::div(
                 implode(' ', $classes),
-                html::a(
-                    ['class' => 'listname', 'title' => $title, 'href' => '#', 'id' => $label_id],
-                    !empty($prop['listname']) ? $prop['listname'] : $prop['name']
-                )
+                html::a(['class' => 'listname', 'title' => $title, 'href' => '#', 'id' => $label_id], $listname)
                     . (!empty($prop['virtual']) ? '' : $chbox . html::span('actions', $actions))
             );
         }
@@ -352,7 +372,7 @@ class tasklist_ui
         }
 
         foreach ((array) $this->plugin->driver->get_lists() as $id => $prop) {
-            if (!empty($prop['editable']) || strpos($prop['rights'], 'i') !== false) {
+            if (!empty($prop['rights']) && strpos($prop['rights'], 'i') !== false) {
                 $select->add($prop['name'], $id);
                 if (!$default || !empty($prop['default'])) {
                     $default = $id;
