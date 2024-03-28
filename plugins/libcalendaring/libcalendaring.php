@@ -1248,33 +1248,32 @@ class libcalendaring extends rcube_plugin
      */
     public function mail_get_itip_object($mbox, $uid, $mime_id, $type = null)
     {
+        if (empty($uid) || empty($mime_id)) {
+            return null;
+        }
+
         $charset = RCUBE_CHARSET;
 
         // establish imap connection
         $imap = $this->rc->get_storage();
         $imap->set_folder($mbox);
 
-        if ($uid && $mime_id) {
-            [$mime_id, $index] = explode(':', $mime_id);
+        [$mime_id, $index] = explode(':', $mime_id);
 
-            $part    = $imap->get_message_part($uid, $mime_id);
-            $headers = $imap->get_message_headers($uid);
-            $parser  = $this->get_ical();
+        $part    = $imap->get_message_part($uid, $mime_id);
+        $headers = $imap->get_message_headers($uid);
+        $parser  = $this->get_ical();
 
+        if ($part) {
             if (!empty($part->ctype_parameters['charset'])) {
                 $charset = $part->ctype_parameters['charset'];
             }
 
-            if ($part) {
-                $objects = $parser->import($part, $charset);
-            }
+            $objects = $parser->import($part, $charset);
         }
 
         // successfully parsed events/tasks?
-        if (!empty($headers) && !empty($objects) && !empty($parser) && !empty($index)
-            && ($object = $objects[$index])
-            && (!$type || $object['_type'] == $type)
-        ) {
+        if (!empty($objects) && ($object = $objects[$index]) && (!$type || $object['_type'] == $type)) {
             if ($parser->method) {
                 $object['_method'] = $parser->method;
             }
