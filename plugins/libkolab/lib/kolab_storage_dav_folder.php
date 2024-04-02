@@ -51,7 +51,45 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         $this->subtype = $this->default ? '' : $suffix;
 
         // Init cache
-        $this->cache = kolab_storage_dav_cache::factory($this);
+        if ($type) {
+            $this->cache = kolab_storage_dav_cache::factory($this);
+        }
+    }
+
+    /**
+     * Get the folder ACL
+     *
+     * @return array Folder ACL list
+     */
+    public function get_acl()
+    {
+        if (!isset($this->attributes['acl'])) {
+            $this->get_folder_info();
+        }
+
+        $acl = [];
+        foreach ($this->attributes['acl'] ?? [] as $principal => $privileges) {
+            // Convert a principal href into a user identifier
+            if (strpos($principal, '/') !== false) {
+                $tokens = explode('/', trim($principal, '/'));
+                $principal = end($tokens);
+            }
+
+            $acl[$principal] = $privileges;
+        }
+
+        // Workaround for Cyrus issue https://github.com/cyrusimap/cyrus-imapd/issues/4813
+        // It converts single "authenticated" ACE into two "all" and "unauthenticated"
+        // We'll convert it back into one, as we want to keep UI simplicity
+        if (!empty($acl['all']['grant']) && !empty($acl['unauthenticated']['deny'])
+            && $acl['all']['grant'] == $acl['unauthenticated']['deny']
+        ) {
+            $acl['authenticated'] = $acl['all'];
+            unset($acl['all']);
+            unset($acl['unauthenticated']);
+        }
+
+        return $acl;
     }
 
     /**
@@ -63,16 +101,20 @@ class kolab_storage_dav_folder extends kolab_storage_folder
      */
     public function get_owner($fully_qualified = false)
     {
-        // return cached value
         if (isset($this->owner)) {
             return $this->owner;
         }
 
-        $rcube = rcube::get_instance();
-        $this->owner = $rcube->get_user_name();
-        $this->valid = true;
+        // TODO: Support global shared folders?
 
-        // TODO: Support shared folders
+        if (isset($this->attributes['owner'])) {
+            // Assume username/email is the last part of a principal href
+            $path = explode('/', trim($this->attributes['owner'], '/'));
+            $this->owner = end($path);
+        } else {
+            $rcube = rcube::get_instance();
+            $this->owner = $rcube->get_user_name();
+        }
 
         return $this->owner;
     }
@@ -99,7 +141,15 @@ class kolab_storage_dav_folder extends kolab_storage_folder
      */
     public function get_namespace()
     {
-        // TODO: Support shared folders
+        // TODO: Support for global shared folders?
+
+        $owner = $this->get_owner();
+        $user = rcube::get_instance()->get_user_name();
+
+        if ($owner != $user) {
+            return 'other';
+        }
+
         return 'personal';
     }
 
@@ -110,7 +160,13 @@ class kolab_storage_dav_folder extends kolab_storage_folder
      */
     public function get_name()
     {
-        return kolab_storage_dav::object_name($this->attributes['name']);
+        $name = $this->attributes['name'];
+
+        if ($this->get_namespace() == 'other') {
+            $name = $this->get_owner() . ': ' . $name;
+        }
+
+        return $name;
     }
 
     /**
@@ -123,9 +179,18 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         return $this->attributes['name'];
     }
 
+    /**
+     * Get (more) folder properties
+     *
+     * @return array Folder properties
+     */
     public function get_folder_info()
     {
-        return []; // todo ?
+        if ($info = $this->dav->folderInfo($this->href)) {
+            $this->attributes = array_merge($info, $this->attributes);
+        }
+
+        return $this->attributes;
     }
 
     /**
@@ -187,14 +252,98 @@ class kolab_storage_dav_folder extends kolab_storage_folder
     }
 
     /**
-     * Get ACL information for this folder
+     * Get current user permissions to this folder
      *
-     * @return string Permissions as string
+     * @return string DAV privileges (comma-separated)
      */
     public function get_myrights()
     {
-        // TODO
-        return '';
+        if (!isset($this->attributes['myrights'])) {
+            $this->get_folder_info();
+        }
+
+        $rights = $this->attributes['myrights'] ?? [];
+        $types = $this->attributes['resource_type'] ?? [];
+        $acl = 'lr';
+
+        // Convert DAV privileges to IMAP-like ACL format
+        foreach ($rights as $right) {
+            switch ($right) {
+                case 'all':
+                    $acl .= 'lrswikxteav';
+                    break;
+                case 'admin':
+                    $acl .= 'a';
+                    break;
+                case 'read':
+                case 'read-free-busy':
+                case 'read-current-user-privilege-set':
+                    $acl .= 'lr';
+                    break;
+                case 'read-write':
+                    $acl .= 'lrwni';
+                    break;
+                case 'write':
+                    //case 'write-properties':
+                    //case 'write-content':
+                    $acl .= 'wni';
+                    break;
+                case 'bind':
+                    $acl .= 'pk';
+                    break;
+                case 'unbind':
+                    $acl .= 'xte';
+                    break;
+                case 'share':
+                    $acl .= '1';
+                    break;
+            }
+        }
+
+        // Shared collection can be deleted even if myrights says otherwise
+        if (in_array('shared', $types)) {
+            $acl .= 'x';
+        }
+
+        if (!empty($this->attributes['share-access'])) {
+            if ($this->attributes['share-access'] === kolab_dav_client::SHARING_OWNER) {
+                $acl .= 'a';
+            } elseif ($this->attributes['share-access'] === kolab_dav_client::SHARING_READ
+                || $this->attributes['share-access'] === kolab_dav_client::SHARING_READ_WRITE
+            ) {
+                $acl .= 'x';
+            }
+        }
+
+        // Note: We return a string for compat. with the parent class
+        return implode('', array_unique(str_split($acl)));
+    }
+
+    /**
+     * Get the invitations' sharees
+     *
+     * @return array Sharees list
+     */
+    public function get_sharees()
+    {
+        if (!isset($this->attributes['invite'])) {
+            $this->get_folder_info();
+        }
+
+        $sharees = [];
+        foreach ($this->attributes['invite'] ?? [] as $principal => $sharee) {
+            // Convert a principal href into a user identifier
+            if (stripos($principal, 'mailto:') === 0) {
+                $principal = substr($principal, 7);
+            } elseif (strpos($principal, '/') !== false) {
+                $tokens = explode('/', trim($principal, '/'));
+                $principal = end($tokens);
+            }
+
+            $sharees[$principal] = $sharee;
+        }
+
+        return $sharees;
     }
 
     /**
@@ -768,6 +917,77 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         ];
 
         return $types[$this->type];
+    }
+
+    /**
+     * Set ACL for the folder.
+     *
+     * @param array $acl ACL list
+     *
+     * @return bool True if successful, false on error
+     */
+    public function set_acl($acl)
+    {
+        if (!$this->valid) {
+            return false;
+        }
+
+        // In Kolab the users (principals) are under /principals/user/<user>
+        // TODO: This might need to be configurable or discovered somehow
+        $path = '/principals/user/';
+        if ($host_path = parse_url($this->dav->url, PHP_URL_PATH)) {
+            $path = '/' . trim($host_path, '/') . $path;
+        }
+
+        $specials = ['all', 'authenticated', 'self'];
+        $request = [];
+
+        foreach ($acl as $principal => $privileges) {
+            // Convert a user identifier into a principal href
+            if (!in_array($principal, $specials)) {
+                $principal = $path . $principal;
+            }
+
+            $request[$principal] = $privileges;
+        }
+
+        return $this->dav->setACL($this->href, $request);
+    }
+
+    /**
+     * Set folder sharing invites.
+     *
+     * @param array $sharees Sharees list
+     *
+     * @return bool True if successful, false on error
+     */
+    public function set_sharees($sharees)
+    {
+        if (!$this->valid) {
+            return false;
+        }
+
+        // In Kolab the users (principals) are under /principals/user/<user>
+        // TODO: This might need to be configurable or discovered somehow
+        $path = '/principals/user/';
+        if ($host_path = parse_url($this->dav->url, PHP_URL_PATH)) {
+            $path = '/' . trim($host_path, '/') . $path;
+        }
+
+        $request = [];
+
+        foreach ($sharees as $principal => $sharee) {
+            // Convert a user identifier into a principal href or mailto: href
+            if (strpos($principal, '@')) {
+                $principal = 'mailto:' . $principal;
+            } else {
+                $principal = $path . $principal;
+            }
+
+            $request[$principal] = $sharee;
+        }
+
+        return $this->dav->shareResource($this->href, $request);
     }
 
     /**

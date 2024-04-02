@@ -247,8 +247,10 @@ class kolab_storage_dav
 
         // sanity checks
         if (!isset($prop['name']) || !is_string($prop['name']) || !strlen($prop['name'])) {
-            self::$last_error = 'cannotbeempty';
-            return false;
+            if (empty($prop['id'])) {
+                self::$last_error = 'cannotbeempty';
+                return false;
+            }
         } elseif (strlen($prop['name']) > 256) {
             self::$last_error = 'nametoolong';
             return false;
@@ -269,9 +271,9 @@ class kolab_storage_dav
         $rcube = rcube::get_instance();
         $uid   = rtrim(chunk_split(md5($prop['name'] . $rcube->get_user_name() . uniqid('-', true)), 12, '-'), '-');
         $type  = $this->get_dav_type($prop['type']);
-        $home  = $this->dav->discover($type);
+        $home  = $this->dav->getHome($type);
 
-        if ($home === false) {
+        if ($home === null) {
             return false;
         }
 
@@ -559,5 +561,115 @@ class kolab_storage_dav
         ];
 
         return $types[$type];
+    }
+
+    /**
+     * Accept a share invitation.
+     *
+     * @param string $type     Folder type (contact, event, task)
+     * @param string $location Invitation object location
+     *
+     * @return kolab_storage_dav_folder|false A new folder object, False on error
+     */
+    public function accept_share_invitation($type, $location)
+    {
+        // Note: The 'create-in' property is not supported by Cyrus, and even then we
+        // can't specify the new folder location. The new folder will be created
+        // at implementation-specific location. To find that location we'll compare list of folders
+        // before and after accepting the invitation.
+
+        $old_folders = $this->dav->listFolders($this->get_dav_type($type));
+
+        $result = $this->dav->inviteReply($location);
+
+        if (!$result) {
+            return false;
+        }
+
+        $new_folders = $this->dav->listFolders($this->get_dav_type($type));
+
+        if (is_array($old_folders) && is_array($new_folders)) {
+            foreach ($new_folders as $newfolder) {
+                foreach ($old_folders as $oldfolder) {
+                    if ($oldfolder['href'] === $newfolder['href']) {
+                        continue 2;
+                    }
+                }
+
+                return new kolab_storage_dav_folder($this->dav, $newfolder, $type);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get a list of share invitations
+     *
+     * @param string $type   Folder type (contact, event, task)
+     * @param string $filter Search string
+     *
+     * @return array List of kolab_storage_dav_folder objects
+     */
+    public function get_share_invitations($type, $filter)
+    {
+        $result = [];
+
+        if (strlen($filter) === 0) {
+            return $result;
+        }
+
+        $notifications = $this->dav->listNotifications([kolab_dav_client::NOTIFICATION_SHARE_INVITE]);
+
+        if (is_array($notifications)) {
+            foreach ($notifications as $idx => $note) {
+                // Sanity checks
+                if (empty($note['resource-uri'])) {
+                    continue;
+                }
+
+                // Skip accepted invitations
+                if (!empty($note['status']) && $note['status'] == 'accepted') {
+                    continue;
+                }
+
+                // Filter by folder type
+                if (($type == 'contact' && !empty($note['types']))
+                    || ($type == 'event' && !in_array('VEVENT', $note['types']))
+                    || ($type == 'task' && !in_array('VTODO', $note['types']))
+                ) {
+                    continue;
+                }
+
+                $owner = explode('/', trim($note['organizer'] ?? '', '/'));
+                $owner = end($owner);
+                $path = explode('/', trim($note['resource-uri'], '/'));
+                $name = end($path);
+                $displayname = $note['displayname'] ?? '';
+
+                // Filter by the input text
+                if (stripos($owner . ' ' . $name . ' ' . $displayname, $filter) === false) {
+                    continue;
+                }
+
+                $attrs = [
+                    'owner' => $owner,
+                    'name' => $displayname ?: $name,
+                    'href' => $note['resource-uri'],
+                    'invitation' => $note['href'],
+                    'alarms' => false,
+                    'myrights' => [$note['access'] ?? 'read'],
+                    'resource_type' => ['shared', 'collection'],
+                ];
+
+                $result[] = new kolab_storage_dav_folder($this->dav, $attrs, $type);
+            }
+
+            usort($result, function ($a, $b) {
+                return strcoll($a->href, $b->href);
+            });
+        }
+
+        return $result;
     }
 }

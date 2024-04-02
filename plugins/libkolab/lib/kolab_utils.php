@@ -27,14 +27,17 @@ class kolab_utils
 {
     public static function folder_form($form, $folder, $domain, $hidden_fields = [], $no_acl = false)
     {
-        $rcmail = rcube::get_instance();
+        $rcmail = rcmail::get_instance();
 
         // add folder ACL tab
-        if (!$no_acl && is_string($folder) && strlen($folder)) {
-            $form['sharing'] = [
-                'name'    => rcube::Q($rcmail->gettext('libkolab.tabsharing')),
-                'content' => self::folder_acl_form($folder),
-            ];
+        if (!$no_acl && $folder) {
+            if (($folder instanceof kolab_storage_dav_folder) || (is_string($folder) && strlen($folder))) {
+                $sharing_content = self::folder_acl_form($folder);
+                $form['sharing'] = [
+                    'name'    => rcube::Q($rcmail->gettext('libkolab.tabsharing')),
+                    'content' => $sharing_content,
+                ];
+            }
         }
 
         $form_html = '';
@@ -71,10 +74,18 @@ class kolab_utils
 
     /**
      * Handler for ACL form template object
+     *
+     * @param string|kolab_storage_dav_folder $folder DAV folder object or IMAP folder name
+     *
+     * @return ?string HTML content
      */
-    public static function folder_acl_form($folder)
+    private static function folder_acl_form($folder)
     {
-        $rcmail  = rcube::get_instance();
+        if ($folder instanceof kolab_storage_dav_folder) {
+            return self::folder_dav_acl_form($folder);
+        }
+
+        $rcmail  = rcmail::get_instance();
         $storage = $rcmail->get_storage();
         $options = $storage->folder_info($folder);
 
@@ -92,5 +103,30 @@ class kolab_utils
         }
 
         return html::div('hint', $rcmail->gettext('libkolab.aclnorights'));
+    }
+
+    /**
+     * Handler for DAV ACL form template object
+     *
+     * @param kolab_storage_dav_folder $folder DAV folder object
+     *
+     * @return ?string HTML content
+     */
+    private static function folder_dav_acl_form($folder)
+    {
+        $rcmail = rcmail::get_instance();
+        $sharing = $rcmail->config->get('kolab_dav_sharing');
+
+        if (!$sharing) {
+            return null;
+        }
+
+        $class = 'kolab_dav_' . $sharing;
+
+        if ($form = $class::form($folder)) {
+            return $form;
+        }
+
+        return html::div('hint', rcmail::get_instance()->gettext('libkolab.aclnorights'));
     }
 }

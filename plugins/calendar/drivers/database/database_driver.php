@@ -92,7 +92,7 @@ class database_driver extends calendar_driver
                 $arr['name']       = html::quote($arr['name']);
                 $arr['listname']   = html::quote($arr['name']);
                 $arr['rights']     = 'lrswikxteav';
-                $arr['editable']  = true;
+                $arr['editable']   = true;
 
                 $this->calendars[$arr['calendar_id']] = $arr;
                 $calendar_ids[] = $db->quote($arr['calendar_id']);

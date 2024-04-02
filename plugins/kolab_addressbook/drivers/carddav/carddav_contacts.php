@@ -33,6 +33,7 @@ class carddav_contacts extends rcube_addressbook
     public $readonly = true;
     public $undelete = false;
     public $groups   = true;
+    public $share_invitation = null;
 
     public $coltypes = [
         'name'         => ['limit' => 1],
@@ -76,9 +77,9 @@ class carddav_contacts extends rcube_addressbook
     public $date_cols = ['birthday', 'anniversary'];
 
     public $fulltext_cols  = ['name', 'firstname', 'surname', 'middlename', 'email'];
+    public $storage;
 
     private $gid;
-    private $storage;
     private $dataset;
     private $sortindex;
     private $contacts;
@@ -122,18 +123,15 @@ class carddav_contacts extends rcube_addressbook
 
         // Set readonly and rights flags according to folder permissions
         if ($this->ready) {
-            if ($this->storage->get_owner() == $_SESSION['username']) {
+            if ($this->storage->get_namespace() == 'personal') {
                 $this->readonly = false;
                 $this->rights = 'lrswikxtea';
             } else {
-                $rights = $this->storage->get_myrights();
-                if ($rights && !PEAR::isError($rights)) {
-                    $this->rights = $rights;
-                    if (strpos($rights, 'i') !== false && strpos($rights, 't') !== false) {
-                        $this->readonly = false;
-                    }
-                }
+                $this->rights = $this->storage->get_myrights();
+                $this->readonly = strpos($this->rights, 'i') === false;
             }
+
+            $this->share_invitation = $this->storage->attributes['invitation'] ?? null;
         }
     }
 

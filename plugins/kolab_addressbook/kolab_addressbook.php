@@ -34,7 +34,6 @@ class kolab_addressbook extends rcube_plugin
     public $driver;
     public $bonnie_api = false;
 
-    private $folders;
     private $sources;
     private $rc;
     private $ui;
@@ -89,6 +88,8 @@ class kolab_addressbook extends rcube_plugin
             $this->register_action('plugin.contact-changelog', [$this, 'contact_changelog']);
             $this->register_action('plugin.contact-diff', [$this, 'contact_diff']);
             $this->register_action('plugin.contact-restore', [$this, 'contact_restore']);
+
+            $this->register_action('plugin.share-invitation', [$this, 'share_invitation']);
 
             // get configuration for the Bonnie API
             $this->bonnie_api = libkolab::get_bonnie_api();
@@ -305,6 +306,7 @@ class kolab_addressbook extends rcube_plugin
                     'href' => $this->rc->url(['_source' => $id]),
                     'rel' => $source['id'],
                     'id' => $label_id,
+                    'class' => 'listname',
                     'onclick' => "return " . rcmail_output::JS_OBJECT_NAME . ".command('list','" . rcube::JQ($id) . "',this)",
                 ], $name)
         );
@@ -322,7 +324,7 @@ class kolab_addressbook extends rcube_plugin
         if ($search_mode) {
             $jsdata[$id]['group'] = implode(' ', $classes);
 
-            if (!$source['virtual']) {
+            if (empty($source['virtual'])) {
                 $inner .= html::tag('input', [
                     'type' => 'checkbox',
                     'name' => '_source[]',
@@ -862,7 +864,6 @@ class kolab_addressbook extends rcube_plugin
         return $args;
     }
 
-
     /**
      * Handler for plugin actions
      */
@@ -889,88 +890,28 @@ class kolab_addressbook extends rcube_plugin
     }
 
     /**
-     *
+     * Search for addressbook folders not subscribed yet
      */
     public function book_search()
     {
+        $query  = rcube_utils::get_input_value('q', rcube_utils::INPUT_GPC);
+        $source = rcube_utils::get_input_value('source', rcube_utils::INPUT_GPC);
+
+        $jsdata = [];
         $results = [];
-        $query   = rcube_utils::get_input_value('q', rcube_utils::INPUT_GPC);
-        $source  = rcube_utils::get_input_value('source', rcube_utils::INPUT_GPC);
-
-        kolab_storage::$encode_ids = true;
-        $search_more_results = false;
-        $this->sources = [];
-        $this->folders = [];
-
-        // find unsubscribed IMAP folders that have "event" type
-        if ($source == 'folders') {
-            foreach ((array)kolab_storage::search_folders('contact', $query, ['other']) as $folder) {
-                $this->folders[$folder->id] = $folder;
-                $this->sources[$folder->id] = new kolab_contacts($folder->name);
-            }
-        }
-        // search other user's namespace via LDAP
-        elseif ($source == 'users') {
-            $limit = $this->rc->config->get('autocomplete_max', 15) * 2;  // we have slightly more space, so display twice the number
-            foreach (kolab_storage::search_users($query, 0, [], $limit * 10) as $user) {
-                $folders = [];
-                // search for contact folders shared by this user
-                foreach (kolab_storage::list_user_folders($user, 'contact', false) as $foldername) {
-                    $folders[] = new kolab_storage_folder($foldername, 'contact');
-                }
-
-                $count = 0;
-                if (count($folders)) {
-                    $userfolder = new kolab_storage_folder_user($user['kolabtargetfolder'], '', $user);
-                    $this->folders[$userfolder->id] = $userfolder;
-                    $this->sources[$userfolder->id] = $userfolder;
-
-                    foreach ($folders as $folder) {
-                        $this->folders[$folder->id] = $folder;
-                        $this->sources[$folder->id] = new kolab_contacts($folder->name);
-                        ;
-                        $count++;
-                    }
-                }
-
-                if ($count >= $limit) {
-                    $search_more_results = true;
-                    break;
-                }
-            }
-        }
-
-        $delim = $this->rc->get_storage()->get_hierarchy_delimiter();
 
         // build results list
-        foreach ($this->sources as $id => $source) {
-            $folder = $this->folders[$id];
-            $imap_path = explode($delim, $folder->name);
-
-            // find parent
-            do {
-                array_pop($imap_path);
-                $parent_id = kolab_storage::folder_id(implode($delim, $imap_path));
-            } while (count($imap_path) > 1 && empty($this->folders[$parent_id]));
-
-            // restore "real" parent ID
-            if ($parent_id && empty($this->folders[$parent_id])) {
-                $parent_id = kolab_storage::folder_id($folder->get_parent());
-            }
-
-            $prop = $this->driver->abook_prop($id, $source);
-            $prop['parent'] = $parent_id;
-
-            $html = $this->addressbook_list_item($id, $prop, $jsdata, true);
+        foreach ($this->driver->search_folders($query, $source) as $prop) {
+            $html = $this->addressbook_list_item($prop['id'], $prop, $jsdata, true);
             unset($prop['group']);
-            $prop += (array)$jsdata[$id];
+            $prop += (array)$jsdata[$prop['id']];
             $prop['html'] = $html;
 
             $results[] = $prop;
         }
 
         // report more results available
-        if ($search_more_results) {
+        if ($this->driver->search_more_results) {
             $this->rc->output->show_message('autocompletemore', 'notice');
         }
 
@@ -978,25 +919,22 @@ class kolab_addressbook extends rcube_plugin
     }
 
     /**
-     *
+     * Handler for address book subscription action
      */
     public function book_subscribe()
     {
-        $success = false;
         $id = rcube_utils::get_input_value('_source', rcube_utils::INPUT_GPC);
+        $options = [
+            'permanent' => $_POST['_permanent'] ?? null,
+            'active' => $_POST['_active'] ?? null,
+            'groups' => !empty($_POST['_groups']),
+        ];
 
-        if ($id && ($folder = kolab_storage::get_folder(kolab_storage::id_decode($id)))) {
-            if (isset($_POST['_permanent'])) {
-                $success |= $folder->subscribe(intval($_POST['_permanent']));
-            }
-            if (isset($_POST['_active'])) {
-                $success |= $folder->activate(intval($_POST['_active']));
-            }
-
+        if ($success = $this->driver->folder_subscribe($id, $options)) {
             // list groups for this address book
-            if (!empty($_POST['_groups'])) {
-                $abook = new kolab_contacts($folder->name);
-                foreach ((array)$abook->list_groups() as $prop) {
+            if ($options['groups']) {
+                $abook = $this->driver->get_address_book($id);
+                foreach ((array) $abook->list_groups() as $prop) {
                     $prop['source'] = $id;
                     $prop['id'] = $prop['ID'];
                     unset($prop['ID']);
@@ -1013,7 +951,6 @@ class kolab_addressbook extends rcube_plugin
 
         $this->rc->output->send();
     }
-
 
     /**
      * Handler for address book delete action (AJAX)
@@ -1037,6 +974,19 @@ class kolab_addressbook extends rcube_plugin
         }
 
         $this->rc->output->send();
+    }
+
+    /**
+     * Handle invitations to a shared folder
+     */
+    public function share_invitation()
+    {
+        $id = rcube_utils::get_input_value('id', rcube_utils::INPUT_POST);
+        $invitation = rcube_utils::get_input_value('invitation', rcube_utils::INPUT_POST);
+
+        if ($addressbook = $this->driver->accept_share_invitation($invitation)) {
+            $this->rc->output->command('plugin.share-invitation', ['id' => $id, 'source' => $addressbook]);
+        }
     }
 
     /**

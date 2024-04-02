@@ -129,6 +129,8 @@ class tasklist extends rcube_plugin
             $this->register_action('itip-delegate', [$this, 'mail_itip_delegate']);
             $this->add_hook('refresh', [$this, 'refresh']);
 
+            $this->rc->plugins->register_action('plugin.share-invitation', $this->ID, [$this, 'share_invitation']);
+
             $this->collapsed_tasks = array_filter(explode(',', $this->rc->config->get('tasklist_collapsed_tasks', '')));
         } elseif ($args['task'] == 'mail') {
             if ($args['action'] == 'show' || $args['action'] == 'preview') {
@@ -1461,6 +1463,18 @@ class tasklist extends rcube_plugin
         return (empty($task['organizer']) || in_array(strtolower($task['organizer']['email']), $emails));
     }
 
+    /**
+     * Handle invitations to a shared folder
+     */
+    public function share_invitation()
+    {
+        $id = rcube_utils::get_input_value('id', rcube_utils::INPUT_POST);
+        $invitation = rcube_utils::get_input_value('invitation', rcube_utils::INPUT_POST);
+
+        if ($tasklist = $this->driver->accept_share_invitation($invitation)) {
+            $this->rc->output->command('plugin.share-invitation', ['id' => $id, 'source' => $tasklist]);
+        }
+    }
 
     /*******  UI functions  ********/
 

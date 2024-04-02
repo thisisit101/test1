@@ -25,6 +25,8 @@
 
 class carddav_contacts_driver
 {
+    public $search_more_results = false;
+
     protected $plugin;
     protected $rc;
     protected $sources;
@@ -53,6 +55,45 @@ class carddav_contacts_driver
         }
 
         return $this->sources;
+    }
+
+    /**
+     * Search for shared or otherwise not listed addressbooks the user has access to
+     *
+     * @param string $query  Search string
+     * @param string $source Section/source to search
+     *
+     * @return array List of addressbooks
+     */
+    public function search_folders($query, $source)
+    {
+        $this->search_more_results = false;
+        $storage = self::get_storage();
+        $result = [];
+
+        // find addressbook folders, except other user's folders
+        if ($source == 'folders') {
+            foreach ((array) $storage->search_folders('event', $query, ['other']) as $folder) {
+                $abook = new carddav_contacts($folder);
+                $result[] = $this->abook_prop($folder->id, $abook);
+            }
+        }
+        // find other user's addressbooks (invitations)
+        elseif ($source == 'users') {
+            // we have slightly more space, so display twice the number
+            $limit = $this->rc->config->get('autocomplete_max', 15) * 2;
+
+            foreach ($storage->get_share_invitations('contact', $query) as $invitation) {
+                $abook = new carddav_contacts($invitation);
+                $result[] = $this->abook_prop($invitation->id, $abook);
+
+                if (count($result) > $limit) {
+                    $this->search_more_results = true;
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -118,7 +159,8 @@ class carddav_contacts_driver
         $name = '';
 
         if ($source && ($book = $this->get_address_book($source))) {
-            $name = $book->get_name();
+            $name = $book->get_foldername();
+            $folder = $book->storage;
         }
 
         $foldername = new html_inputfield(['name' => '_name', 'id' => '_name', 'size' => 30]);
@@ -140,7 +182,7 @@ class carddav_contacts_driver
 
         $hidden_fields = [['name' => '_source', 'value' => $source]];
 
-        return kolab_utils::folder_form($form, '', 'contacts', $hidden_fields, false);
+        return kolab_utils::folder_form($form, $folder ?? null, 'contacts', $hidden_fields);
     }
 
     /**
@@ -175,6 +217,55 @@ class carddav_contacts_driver
     }
 
     /**
+     * Subscribe to a folder
+     *
+     * @param string $id      Folder identifier
+     * @param array  $options Action options
+     *
+     * @return bool
+     */
+    public function folder_subscribe($id, $options = [])
+    {
+        /*
+        $success = false;
+        if ($id && ($folder = kolab_storage::get_folder(kolab_storage::id_decode($id)))) {
+            if (isset($options['permanent'])) {
+                $success |= $folder->subscribe(intval($options['permanent']));
+            }
+
+            if (isset($options['active'])) {
+                $success |= $folder->activate(intval($options['active']));
+            }
+        }
+        return $success;
+        */
+
+        return true;
+    }
+
+    /**
+     * Accept an invitation to a shared folder
+     *
+     * @param string $href Invitation location href
+     *
+     * @return array|false
+     */
+    public function accept_share_invitation($href)
+    {
+        $storage = self::get_storage();
+
+        $folder = $storage->accept_share_invitation('contact', $href);
+
+        if ($folder === false) {
+            return false;
+        }
+
+        $abook = new carddav_contacts($folder);
+
+        return $this->abook_prop($folder->id, $abook);
+    }
+
+    /**
      * Helper method to build a hash array of address book properties
      */
     public function abook_prop($id, $abook)
@@ -197,12 +288,11 @@ class carddav_contacts_driver
         return [
             'id'         => $id,
             'name'       => $abook->get_name(),
-            'listname'   => $abook->get_foldername(),
+            'listname'   => $abook->get_name(),
             'readonly'   => $abook->readonly,
             'rights'     => $abook->rights,
             'groups'     => $abook->groups,
             'undelete'   => $abook->undelete && $this->rc->config->get('undo_timeout'),
-            'realname'   => rcube_charset::convert($abook->get_realname(), 'UTF7-IMAP'), // IMAP folder name
             'group'      => $abook->get_namespace(),
             'subscribed' => $abook->is_subscribed(),
             'carddavurl' => $abook->get_carddav_url(),
@@ -210,6 +300,7 @@ class carddav_contacts_driver
             'kolab'      => true,
             'carddav'    => true,
             'audittrail' => false, // !empty($this->plugin->bonnie_api),
+            'share_invitation' => $abook->share_invitation,
         ];
     }
 }

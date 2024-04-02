@@ -35,6 +35,8 @@ class libkolab extends rcube_plugin
      */
     public function init()
     {
+        $rcmail = rcube::get_instance();
+
         // load local config
         $this->load_config();
         $this->require_plugin('libcalendaring');
@@ -50,7 +52,13 @@ class libkolab extends rcube_plugin
         // For Chwala
         $this->add_hook('folder_mod', ['kolab_storage', 'folder_mod']);
 
-        $rcmail = rcube::get_instance();
+        // For DAV ACL
+        if ($sharing = $rcmail->config->get('kolab_dav_sharing')) {
+            $class = 'kolab_dav_' . $sharing;
+            $this->register_action('plugin.davacl', "$class::actions");
+            $this->register_action('plugin.davacl-autocomplete', "$class::autocomplete");
+        }
+
         try {
             kolab_format::$timezone = new DateTimeZone($rcmail->config->get('timezone', 'GMT'));
         } catch (Exception $e) {
