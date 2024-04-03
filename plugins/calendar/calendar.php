@@ -3660,7 +3660,7 @@ $("#rcmfd_new_category").keypress(function(event) {
         }
 
         // send iTip reply
-        if ($event['_method'] == 'REQUEST' && !empty($organizer) && !$noreply && !$error_msg && !empty($reply_sender)
+        if (!empty($event) && $event['_method'] == 'REQUEST' && !empty($organizer) && !$noreply && !$error_msg && !empty($reply_sender)
             && !in_array(strtolower($organizer['email']), $emails ?? [])
         ) {
             $event['comment'] = $comment;
