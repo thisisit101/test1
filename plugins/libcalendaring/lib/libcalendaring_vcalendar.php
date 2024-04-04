@@ -1334,10 +1334,11 @@ class libcalendaring_vcalendar implements Iterator
             foreach ((array) $event['attachments'] as $idx => $attach) {
                 // check available memory and skip attachment export if we can't buffer it
                 // @todo: use rcube_utils::mem_check()
-                if (is_callable($get_attachment) && $memory_limit > 0 && ($memory_used = function_exists('memory_get_usage') ? memory_get_usage() : 16 * 1024 * 1024)
-                    && !empty($attach['size']) && $memory_used + $attach['size'] * 3 > $memory_limit
-                ) {
-                    continue;
+                if (is_callable($get_attachment) && $memory_limit > 0) {
+                    $memory_used = function_exists('memory_get_usage') ? memory_get_usage() : 16 * 1024 * 1024;
+                    if (!empty($attach['size']) && $memory_used + $attach['size'] * 3 > $memory_limit) {
+                        continue;
+                    }
                 }
 
                 // embed attachments using the given callback function
