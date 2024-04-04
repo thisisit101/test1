@@ -38,6 +38,9 @@ return (new Config())
         'no_unset_on_property' => false,
         'random_api_migration' => false,
         'strict_param' => false,
+
+        // php 7.2 compat
+        'assign_null_coalescing_to_coalesce_equal' => false,
     ])
     ->setFinder($finder)
     ->setCacheFile(sys_get_temp_dir() . '/php-cs-fixer.' . md5(__DIR__) . '.cache');
