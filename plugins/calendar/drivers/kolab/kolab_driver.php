@@ -394,7 +394,7 @@ class kolab_driver extends calendar_driver
         $folder = $this->storage->folder_update($prop);
 
         if ($folder === false) {
-            $this->last_error = $this->cal->gettext($this->storage->last_error);
+            $this->last_error = $this->cal->gettext($this->storage::$last_error);
             return false;
         }
 
