@@ -138,7 +138,7 @@ class kolab_activesync extends rcube_plugin
                     // iterate over folders list and update metadata if necessary
                     // old subscriptions
                     foreach (array_keys($this->folder_meta()) as $folder) {
-                        $err |= !$this->folder_set($folder, $imei, intval($subscriptions[$folder]));
+                        $err |= !$this->folder_set($folder, $imei, intval($subscriptions[$folder] ?? 0));
                         unset($subscriptions[$folder]);
                     }
                     // new subscription
@@ -330,7 +330,7 @@ class kolab_activesync extends rcube_plugin
 
         // get folders activesync config
         $metadata = $this->folder_meta();
-        $metadata = $metadata[$name];
+        $metadata = $metadata[$name] ?? null;
 
         if ($flag) {
             if (empty($metadata)) {
@@ -368,7 +368,7 @@ class kolab_activesync extends rcube_plugin
         }
 
         // Return if nothing's been changed
-        if (!self::data_array_diff($this->folder_meta[$name], $metadata)) {
+        if (!self::data_array_diff($this->folder_meta[$name] ?? null, $metadata)) {
             return true;
         }
 

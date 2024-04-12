@@ -252,7 +252,7 @@ class kolab_activesync_ui
     {
         $alarms      = $type == 'event' || $type == 'task';
         $meta        = $this->plugin->folder_meta();
-        $folder_data = (array) ($meta[$folder_name] ? $meta[$folder_name]['FOLDER'] : null);
+        $folder_data = (array) (isset($meta[$folder_name]) ? $meta[$folder_name]['FOLDER'] : null);
 
         $table = new html_table(['cellspacing' => 0, 'id' => 'folder-sync-options', 'class' => 'records-table']);
 
