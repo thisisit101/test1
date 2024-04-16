@@ -227,7 +227,6 @@ class calendar_ui
         $calendars = $this->cal->driver->list_calendars(0, $tree);
 
         // walk folder tree
-        // @phpstan-ignore-next-line
         if (is_object($tree)) {
             $html = $this->list_tree_html($tree, $calendars, $jsenv, $attrib);
 

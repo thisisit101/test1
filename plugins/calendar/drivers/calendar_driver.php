@@ -128,10 +128,11 @@ abstract class calendar_driver
      *
      * @param int $filter Bitmask defining filter criterias.
      *                    See FILTER_* constants for possible values.
+     * @param ?kolab_storage_folder_virtual $tree Reference to hierarchical folder tree object
      *
      * @return array List of calendars
      */
-    abstract public function list_calendars($filter = 0);
+    abstract public function list_calendars($filter = 0, &$tree = null);
 
     /**
      * Create a new calendar assigned to the current user
@@ -157,6 +158,15 @@ abstract class calendar_driver
      * @return bool True on success, Fales on failure
      */
     abstract public function edit_calendar($prop);
+
+    /**
+     * Get a calendar name for the given calendar ID
+     *
+     * @param string $id Calendar identifier
+     *
+     * @return string|null Calendar name if found
+     */
+    abstract public function get_calendar_name($id);
 
     /**
      * Set active/subscribed state of a calendar

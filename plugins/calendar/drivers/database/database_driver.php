@@ -105,11 +105,12 @@ class database_driver extends calendar_driver
     /**
      * Get a list of available calendars from this source
      *
-     * @param int $filter Bitmask defining filter criterias
+     * @param int                           $filter Bitmask defining filter criterias
+     * @param ?kolab_storage_folder_virtual $tree   Reference to hierarchical folder tree object
      *
      * @return array List of calendars
      */
-    public function list_calendars($filter = 0)
+    public function list_calendars($filter = 0, &$tree = null)
     {
         // attempt to create a default calendar for this user
         if (empty($this->calendars)) {
@@ -154,6 +155,18 @@ class database_driver extends calendar_driver
         }
 
         return $calendars;
+    }
+
+    /**
+     * Get a calendar name for the given calendar ID
+     *
+     * @param string $id Calendar identifier
+     *
+     * @return string|null Calendar name if found
+     */
+    public function get_calendar_name($id)
+    {
+        return $this->calendars[$id]['name'] ?? null;
     }
 
     /**

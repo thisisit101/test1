@@ -22,6 +22,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * Tasklist plugin
+ *
+ * @property tasklist_driver          $driver
+ * @property libcalendaring_vcalendar $ical
+ * @property libcalendaring_itip      $itip
+ */
 #[AllowDynamicProperties]
 class tasklist extends rcube_plugin
 {
@@ -2282,7 +2289,7 @@ class tasklist extends rcube_plugin
                             $existing['free_busy'] = 'free';
                         }
 
-                        $success = $this->driver->edit_event($existing);
+                        $success = $this->driver->edit_task($existing);
                     } else {
                         $error_msg = $this->gettext('newerversionexists');
                     }

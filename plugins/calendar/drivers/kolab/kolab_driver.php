@@ -352,7 +352,7 @@ class kolab_driver extends calendar_driver
      *
      * @param string $id Calendar identifier (encoded imap folder name)
      *
-     * @return kolab_calendar|kolab_invitation_calendar|null Object nor null if calendar doesn't exist
+     * @return kolab_calendar|kolab_invitation_calendar|null Object or null if calendar doesn't exist
      */
     public function get_calendar($id)
     {
@@ -374,6 +374,20 @@ class kolab_driver extends calendar_driver
         }
 
         return !empty($this->calendars[$id]) ? $this->calendars[$id] : null;
+    }
+
+    /**
+     * Get a calendar name for the given calendar ID
+     *
+     * @param string $id Calendar identifier
+     *
+     * @return string|null Calendar name if found
+     */
+    public function get_calendar_name($id)
+    {
+        $cal = $this->get_calendar($id);
+
+        return $cal ? $cal->get_name() : null;
     }
 
     /**

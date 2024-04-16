@@ -23,6 +23,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * Calendar plugin
+ *
+ * @property calendar_driver          $driver
+ * @property libcalendaring_vcalendar $ical
+ * @property libcalendaring_itip      $itip
+ */
 #[AllowDynamicProperties]
 class calendar extends rcube_plugin
 {
@@ -68,11 +75,6 @@ class calendar extends rcube_plugin
     ];
 
     private $token;
-
-    // These are implemented with __get()
-    //  private $ical;
-    //  private $itip;
-    //  private $driver;
 
 
     /**
@@ -3130,7 +3132,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                         } elseif ($existing
                             && ($this->event['sequence'] >= $existing['sequence']
                                 || $this->event['changed'] >= $existing['changed'])
-                            && ($calendar = $this->driver->get_calendar($existing['calendar']))
+                            && ($calendar = $this->driver->get_calendar_name($existing['calendar']))
                         ) {
                             $this->event       = $invitation['event'];
                             $this->event['id'] = $existing['id'];
@@ -3150,7 +3152,7 @@ $("#rcmfd_new_category").keypress(function(event) {
                             }
 
                             if ($this->driver->edit_event($this->event)) {
-                                $msg = $this->gettext(['name' => 'updatedsuccessfully', 'vars' => ['calendar' => $calendar->get_name()]]);
+                                $msg = $this->gettext(['name' => 'updatedsuccessfully', 'vars' => ['calendar' => $calendar]]);
                                 $this->rc->output->command('display_message', $msg, 'confirmation');
                             } else {
                                 $this->rc->output->command('display_message', $this->gettext('errorimportingevent'), 'error');

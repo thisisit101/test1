@@ -1018,12 +1018,12 @@ class libcalendaring_vcalendar implements Iterator
 
         // encapsulate in VCALENDAR container
         $vcal = new VObject\Component\VCalendar();
-        $vcal->VERSION = '2.0'; // @phpstan-ignore-line
-        $vcal->PRODID = $this->prodid; // @phpstan-ignore-line
-        $vcal->CALSCALE = 'GREGORIAN'; // @phpstan-ignore-line
+        $vcal->VERSION = '2.0';
+        $vcal->PRODID = $this->prodid;
+        $vcal->CALSCALE = 'GREGORIAN';
 
         if (!empty($method)) {
-            $vcal->METHOD = $method; // @phpstan-ignore-line
+            $vcal->METHOD = $method;
         }
 
         // write vcalendar header

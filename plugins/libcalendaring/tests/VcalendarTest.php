@@ -548,8 +548,8 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
     {
         $vtz = libcalendaring_vcalendar::get_vtimezone('Europe/Berlin', strtotime('2014-08-22T15:00:00+02:00'));
         $this->assertInstanceOf('\Sabre\VObject\Component', $vtz, "VTIMEZONE is a Component object");
-        $this->assertEquals('Europe/Berlin', $vtz->TZID); // @phpstan-ignore-line
-        $this->assertEquals('4', $vtz->{'X-MICROSOFT-CDO-TZID'}); // @phpstan-ignore-line
+        $this->assertEquals('Europe/Berlin', $vtz->TZID);
+        $this->assertEquals('4', $vtz->{'X-MICROSOFT-CDO-TZID'});
 
         // check for transition to daylight saving time which is BEFORE the given date
         $dst = array_first($vtz->select('DAYLIGHT'));
