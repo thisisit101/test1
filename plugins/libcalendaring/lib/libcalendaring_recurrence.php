@@ -1,6 +1,7 @@
 <?php
 
 use Sabre\VObject\Recur\EventIterator;
+use Sabre\VObject\Recur\NoInstancesException;
 
 /**
  * Recurrence computation class for shared use.
@@ -82,16 +83,25 @@ class libcalendaring_recurrence
 
         $ve = $vcalendar->toSabreComponent($event);
 
-        $this->engine = new EventIterator($ve, null, $this->lib->timezone);
+        try {
+            $this->engine = new EventIterator($ve, null, $this->lib->timezone);
+        } catch (NoInstancesException $e) {
+            // We treat a non-recurring event silently
+            // TODO: What about other exceptions?
+        }
     }
 
     /**
      * Get date/time of the next occurence of this event, and push the iterator.
      *
-     * @return DateTime|false object or False if recurrence ended
+     * @return libcalendaring_datetime|false object or False if recurrence ended
      */
     public function next_start()
     {
+        if (empty($this->engine)) {
+            return false;
+        }
+
         try {
             $this->engine->next();
             $current = $this->engine->getDtStart();
@@ -109,6 +119,10 @@ class libcalendaring_recurrence
      */
     public function next_instance()
     {
+        if (empty($this->engine)) {
+            return false;
+        }
+
         // Here's the workaround for an issue for an event with its start date excluded
         // E.g. A daily event starting on 10th which is one of EXDATE dates
         // should return 11th as next_instance() when called for the first time.
@@ -147,10 +161,14 @@ class libcalendaring_recurrence
     /**
      * Get the date of the end of the last occurrence of this recurrence cycle
      *
-     * @return DateTime|false End datetime of the last occurrence or False if there's no end date
+     * @return libcalendaring_datetime|false End datetime of the last occurrence or False if there's no end date
      */
     public function end()
     {
+        if (empty($this->engine)) {
+            return $this->toDateTime($this->start);
+        }
+
         // recurrence end date is given
         if (isset($this->recurrence['UNTIL']) && $this->recurrence['UNTIL'] instanceof DateTimeInterface) {
             return $this->toDateTime($this->recurrence['UNTIL']);
@@ -180,10 +198,14 @@ class libcalendaring_recurrence
     /**
      * Find date/time of the first occurrence (excluding start date)
      *
-     * @return DateTime|null First occurrence
+     * @return libcalendaring_datetime|null First occurrence
      */
     public function first_occurrence()
     {
+        if (empty($this->engine)) {
+            return $this->toDateTime($this->start);
+        }
+
         $start    = clone $this->start;
         $interval = $this->recurrence['INTERVAL'] ?? 1;
         $freq     = $this->recurrence['FREQ'] ?? null;

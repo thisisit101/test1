@@ -310,6 +310,46 @@ class RecurrenceTest extends PHPUnit\Framework\TestCase
     }
 
     /**
+     * Test for an event with invalid recurrence
+     */
+    public function test_invalid_recurrence_event()
+    {
+        date_default_timezone_set('Europe/Berlin');
+
+        // This is an event with no RRULE, but one RDATE, however the RDATE is cancelled by EXDATE.
+        // This normally causes Sabre\VObject\Recur\NoInstancesException. We make sure it does not happen.
+        // The same will probably happen on any event without recurrence passed to libcalendring_vcalendar.
+
+        $vcal = <<<EOF
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            PRODID:-//Apple Inc.//iCal 5.0.3//EN
+            CALSCALE:GREGORIAN
+            BEGIN:VEVENT
+            UID:fb1cb690-b963-4ea5-b58f-ac9773e36d9a
+            DTSTART;TZID=Europe/Berlin:20210604T093000
+            DTEND;TZID=Europe/Berlin:20210606T093000
+            RDATE:20210604T073000Z
+            EXDATE;TZID=Europe/Berlin:20210604T093000
+            DTSTAMP:20210528T091628Z
+            LAST-MODIFIED:20210528T091628Z
+            CREATED:20210528T091213Z
+            END:VEVENT
+            END:VCALENDAR
+            EOF;
+
+        $ical = new libcalendaring_vcalendar();
+        $event = $ical->import($vcal)[0];
+
+        $recurrence = new libcalendaring_recurrence($this->plugin, $event);
+
+        $this->assertSame($event['start']->format('Y-m-d H:i:s'), $recurrence->end()->format('Y-m-d H:i:s'));
+        $this->assertSame($event['start']->format('Y-m-d H:i:s'), $recurrence->first_occurrence()->format('Y-m-d H:i:s'));
+        $this->assertFalse($recurrence->next_start());
+        $this->assertFalse($recurrence->next_instance());
+    }
+
+    /**
      * Test for libcalendaring_recurrence::next_instance()
      */
     public function test_next_instance()
