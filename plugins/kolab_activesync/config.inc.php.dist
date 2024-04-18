@@ -1,7 +1,8 @@
 <?php
 
 // The page with Activesync clients configuration manual
-$config['activesync_setup_url'] = 'https://kb.kolabenterprise.com/documentation/setting-up-an-activesync-client';
+$config['activesync_setup_url'] = 'https://kb.kolab.org/?s=activesync';
+
 // Force a subscription state per devicetype (lowercase) and folder
 // States can be: 0 => not subscribed, 1 => subscribed, 2 => subscribed with alarm
 $config['activesync_force_subscriptions'] = ['windowsoutlook15' => ['INBOX' => 1, 'Sent' => 1, 'Trash' => 1, 'Calendar' => 1, 'Contacts' => 1, 'Tasks' => 1]];
