@@ -110,7 +110,7 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         if (isset($this->attributes['owner'])) {
             // Assume username/email is the last part of a principal href
             $path = explode('/', trim($this->attributes['owner'], '/'));
-            $this->owner = end($path);
+            $this->owner = rawurldecode(end($path));
         } else {
             $rcube = rcube::get_instance();
             $this->owner = $rcube->get_user_name();
