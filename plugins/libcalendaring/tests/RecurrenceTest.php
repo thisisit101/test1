@@ -277,8 +277,10 @@ class RecurrenceTest extends PHPUnit\Framework\TestCase
 
         $recurrence = $this->plugin->get_recurrence();
 
+        StderrMock::start();
         $recurrence->init($recurrence_data, $start);
         $first = $recurrence->first_occurrence();
+        StderrMock::stop();
 
         $this->assertEquals($expected, $first ? $first->format('Y-m-d H:i:s') : '');
     }
@@ -299,8 +301,10 @@ class RecurrenceTest extends PHPUnit\Framework\TestCase
 
         $recurrence = $this->plugin->get_recurrence();
 
+        StderrMock::start();
         $recurrence->init($recurrence_data, $start);
         $first = $recurrence->first_occurrence();
+        StderrMock::stop();
 
         $this->assertEquals($expected, $first ? $first->format('Y-m-d H:i:s') : '');
 
