@@ -341,7 +341,7 @@ class kolab_invitation_calendar
     /**
      * Helper method to modify some event properties
      */
-    private function _mod_event($event, $calendar_id = null)
+    protected function _mod_event($event, $calendar_id = null)
     {
         // set classes according to PARTSTAT
         $event = kolab_driver::add_partstat_class($event, $this->partstats);

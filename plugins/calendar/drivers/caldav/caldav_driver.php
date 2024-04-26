@@ -44,9 +44,9 @@ class caldav_driver extends kolab_driver
         $cal->require_plugin('libkolab');
 
         // load helper classes *after* libkolab has been loaded (#3248)
-        require_once(__DIR__ . '/caldav_calendar.php');
-        // require_once(__DIR__ . '/kolab_user_calendar.php');
-        // require_once(__DIR__ . '/caldav_invitation_calendar.php');
+        require_once __DIR__ . '/caldav_calendar.php';
+        require_once __DIR__ . '/caldav_invitation_calendar.php';
+        // require_once __DIR__ . '/kolab_user_calendar.php';
 
         $this->cal = $cal;
         $this->rc  = $cal->rc;
