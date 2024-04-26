@@ -110,7 +110,7 @@ class libcalendaring_itip
         $mailto = rcube_utils::idn_to_ascii($recipient['email']);
 
         $headers = $message->headers();
-        $headers['To'] = format_email_recipient($mailto, $recipient['name']);
+        $headers['To'] = format_email_recipient($mailto, $recipient['name'] ?? null);
         $headers['Subject'] = $this->gettext([
             'name' => $subject,
             'vars' => [
@@ -391,8 +391,8 @@ class libcalendaring_itip
 
         // check if the given itip object matches the last state
         if ($existing) {
-            $latest = (isset($event['sequence']) && intval($existing['sequence']) == intval($event['sequence'])) ||
-                  (!isset($event['sequence']) && $existing['changed'] && $existing['changed'] >= $event['changed']);
+            $latest = intval($existing['sequence'] ?? 0) == intval($event['sequence'] ?? 0)
+                || (!isset($event['sequence']) && !empty($existing['changed']) && $existing['changed'] >= $event['changed']);
         }
 
         // determine action for REQUEST
@@ -421,7 +421,7 @@ class libcalendaring_itip
             } elseif (in_array($status_lc, $this->rsvp_status)) {
                 $status_text = $this->gettext(($latest ? 'youhave' : 'youhavepreviously') . $status_lc);
 
-                if ($existing && ($existing['sequence'] > $event['sequence']
+                if (!empty($existing['sequence']) && ($existing['sequence'] > $event['sequence']
                     || (!isset($event['sequence']) && $existing['changed'] && $existing['changed'] > $event['changed']))
                 ) {
                     $action = '';  // nothing to do here, outdated invitation
