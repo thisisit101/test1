@@ -240,6 +240,10 @@ class kolab_tags_engine
             } else {
                 $msgs = $storage->fetch_headers($mbox, $uids, false);
             }
+            // fetch_headers doesn't detect IMAP errors, so we make sure we get something back.
+            if (!empty($uids) && empty($msgs)) {
+                throw new Exception("Failed to find relation members, check the IMAP log.");
+            }
 
             $members = array_merge($members, $this->build_members($mbox, $msgs));
         }
