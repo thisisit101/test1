@@ -423,7 +423,7 @@ class kolab_tags_engine
             }
 
             foreach ($tag['uids'] as $folder => $uid_list) {
-                $search[$folder] = array_merge((array)$search[$folder], $uid_list);
+                $search[$folder] = array_merge((array)$search[$folder] ?? [], $uid_list);
             }
         }
 
