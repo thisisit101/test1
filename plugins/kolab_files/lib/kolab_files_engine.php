@@ -840,6 +840,11 @@ class kolab_files_engine
         $cells = [];
 
         foreach ($a_show_cols as $col) {
+            // sanity check
+            if (!preg_match('/^[a-zA-Z_-]+$/', $col)) {
+                continue;
+            }
+
             // get column name
             switch ($col) {
                 case 'options':
