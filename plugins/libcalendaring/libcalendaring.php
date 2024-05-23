@@ -1207,7 +1207,14 @@ class libcalendaring extends rcube_plugin
             foreach ($this->ical_parts as $mime_id) {
                 $part    = $this->ical_message->mime_parts[$mime_id];
                 $charset = ($part->ctype_parameters['charset'] ?? '') ?: RCUBE_CHARSET;
-                $this->mail_ical_parser->import($this->ical_message->get_part_body($mime_id, true), $charset);
+                $body = $this->ical_message->get_part_body($mime_id, true);
+
+                if ($body === null || $body === false) {
+                    rcube::raise_error("Failed to get (iTip) body for message part: {$this->ical_message->uid}/{$mime_id}", true);
+                    continue;
+                }
+
+                $this->mail_ical_parser->import($body, $charset);
 
                 // check if the parsed object is an instance of a recurring event/task
                 array_walk($this->mail_ical_parser->objects, 'libcalendaring::identify_recurrence_instance');
