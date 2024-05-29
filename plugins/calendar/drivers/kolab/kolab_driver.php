@@ -1769,7 +1769,7 @@ class kolab_driver extends calendar_driver
                     $candidates[$id] = [
                         'id'       => $id,
                         'title'    => $e['title'],
-                        'location' => $e['location'],
+                        'location' => $e['location'] ?? null,
                         'start'    => $e['start'],
                         'end'      => $e['end'],
                         'notifyat' => $alarm['time'],
