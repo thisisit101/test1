@@ -47,7 +47,13 @@ class kolab_storage_dav_folder extends kolab_storage_folder
         $this->valid = true;
 
         [$this->type, $suffix] = strpos($type, '.') ? explode('.', $type) : [$type, ''];
-        $this->default = $suffix == 'default';
+
+        // For DAV we don't really have a standard way to define "default" folders,
+        // but MS Outlook (ActiveSync) requires them. This will work with Cyrus DAV.
+        $rx = "~/(calendars|addressbooks)/user/[^/]+/(Default|Tasks)/?$~";
+        $rx = rcube::get_instance()->config->get('kolab_dav_default_folder_regex') ?: $rx;
+
+        $this->default = preg_match($rx, $this->href) === 1;
         $this->subtype = $this->default ? '' : $suffix;
 
         // Init cache
