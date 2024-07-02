@@ -61,6 +61,17 @@ class VcalendarTest extends PHPUnit\Framework\TestCase
         $desclines = explode("\n", $event['description']);
         $this->assertEquals(4, count($desclines), "Multiline description");
         $this->assertEquals("French: Fête nationale Suisse", rtrim($desclines[1]), "UTF-8 encoding");
+
+        $ical->reset();
+
+        // An event without DTSTART should not throw an exception
+        // It's a broken iTip from Exchange 2010
+        $ics = file_get_contents(__DIR__ . '/resources/dummy-dupe.ics');
+        $events = $ical->import($ics, 'UTF-8');
+
+        $this->assertEquals(1, count($events));
+        $event = $events[0];
+        $this->assertSame('Summary', $event['title']);
     }
 
     /**

@@ -629,7 +629,8 @@ class libcalendaring_vcalendar implements Iterator
             $event['allday'] = !empty($event['start']->_dateonly);
 
             // events may lack the DTEND property, set it to DTSTART (RFC5545 3.6.1)
-            if (empty($event['end'])) {
+            // Note: Missing event start date is a problem, but should not throw an error here
+            if (empty($event['end']) && !empty($event['start'])) {
                 $event['end'] = clone $event['start'];
             }
             // shift end-date by one day (except Thunderbird)
