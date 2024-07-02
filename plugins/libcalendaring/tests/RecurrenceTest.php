@@ -1,5 +1,7 @@
 <?php
 
+use Roundcube\Tests\StderrMock;
+
 /**
  * libcalendaring_recurrence tests
  *
