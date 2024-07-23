@@ -514,8 +514,8 @@ class kolab_storage_folder extends kolab_storage_folder_api
         foreach ((array)$message->attachments as $part) {
             if (!$xml && ($part->mimetype == $content_type || preg_match('!application/([a-z.]+\+)?xml!i', $part->mimetype))) {
                 $xml = $message->get_part_body($part->mime_id, true);
-            } elseif ($part->filename || $part->content_id) {
-                $key  = $part->content_id ? trim($part->content_id, '<>') : $part->filename;
+            } elseif ($part->filename || !empty($part->content_id)) {
+                $key  = !empty($part->content_id) ? trim($part->content_id, '<>') : $part->filename;
                 $size = null;
 
                 // Use Content-Disposition 'size' as for the Kolab Format spec.
@@ -548,9 +548,9 @@ class kolab_storage_folder extends kolab_storage_folder_api
         }
 
         // check kolab format version
-        $format_version = $message->headers->others['x-kolab-mime-version'];
+        $format_version = $message->headers->others['x-kolab-mime-version'] ?? null;
         if (empty($format_version)) {
-            [$xmltype, $subtype] = explode('.', $object_type);
+            $xmltype = explode('.', $object_type)[0];
             $xmlhead = substr($xml, 0, 512);
 
             // detect old Kolab 2.0 format
